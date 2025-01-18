@@ -618,7 +618,7 @@ const BookingForm = ({ currentUser, pricepernight }: Props) => {
         <h2 className="text-xl font-semibold">Your Price Summary</h2>
         <div className="bg-blue-200 p-4 rounded-md">
           <div className="font-semibold text-lg">
-            Total Cost: £{totalCost}
+            Total Cost: Rs.{totalCost}
           </div>
           <div className="text-xs">Includes taxes and charges</div>
         </div>

@@ -219,7 +219,7 @@ const SearchResultsCard = ({ hotel }: Props) => {
     <div className="flex justify-between items-center mt-auto">
       <div className="text-left">
         <span className="block font-bold text-lg md:text-xl text-blue-800">
-          £{hotel.pricePerNight}
+          Rs.{hotel.pricePerNight}
         </span>
         <span className="text-sm font-normal text-gray-500">per night</span>
       </div>
