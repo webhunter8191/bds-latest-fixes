@@ -5,7 +5,7 @@ const DetailsSection = ({hotel}:any) => {
   const {
     register,
     setValue, // Add setValue to update the selected values
-    watch, // Use watch to get the selected values for the nearbyTemple
+    // watch, // Use watch to get the selected values for the nearbyTemple
     formState: { errors },
   } = useFormContext<HotelFormData>();
 
@@ -37,7 +37,7 @@ const DetailsSection = ({hotel}:any) => {
          // Remove the temple if unchecked
          setValue(
            "nearbyTemple",
-           nearbyTempleValues.filter((temple) => temple !== value)
+           nearbyTempleValues.filter((temple: string) => temple !== value)
          );
        }
      };

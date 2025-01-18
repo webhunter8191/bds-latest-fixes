@@ -1,7 +1,7 @@
 import { useMutation, useQueryClient } from "react-query";
 import * as apiClient from "../api-client";
 import Swal from "sweetalert2"; // Import SweetAlert2
-import { useAppContext } from "../contexts/AppContext";
+// import { useAppContext } from "../contexts/AppContext";
 
 const SignOutButton = () => {
   const queryClient = useQueryClient();

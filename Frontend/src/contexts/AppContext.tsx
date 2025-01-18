@@ -23,7 +23,7 @@ export const AppContextProvider = ({
 }) => {
   const [toast, setToast] = useState<ToastMessage | undefined>(undefined);
   const [isAdmin, setIsAdmin] = useState<boolean>(false);
-  const { isError, isLoading } = useQuery(
+  const { isError } = useQuery(
     "validateToken",
     apiClient.validateToken,
     {

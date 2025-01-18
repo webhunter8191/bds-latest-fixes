@@ -465,7 +465,7 @@ const Search = () => {
           {/* Search Results Cards */}
           <div className="grid grid-rows-1 sm:grid-cols-2 lg:grid-cols-1 lg:m-5 md:grid-cols-1 xl:grid-cols-2 gap-6">
             {hotelData?.data.map((hotel) => (
-              <SearchResultsCard key={hotel.id} hotel={hotel} />
+              <SearchResultsCard key={hotel._id} hotel={hotel} />
             ))}
           </div>
 

@@ -39,14 +39,14 @@ const MyHotels = () => {
                 <h2 className="text-2xl font-bold text-gray-800">
                   {hotel.name}
                 </h2>
-                <div className="text-gray-600">{hotel.description}</div>
+                {/* <div className="text-gray-600">{hotel.description}</div> */}
 
                 <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-5 gap-4 mt-4">
                   <div className="border border-slate-300 rounded-sm p-3 flex items-center space-x-2">
                     <BsMap className="text-xl text-blue-600" />
-                    <span className="text-sm">
+                    {/* <span className="text-sm">
                       {hotel.city}, {hotel.country}
-                    </span>
+                    </span> */}
                   </div>
                   <div className="border border-slate-300 rounded-sm p-3 flex items-center space-x-2">
                     <BsBuilding className="text-xl text-blue-600" />

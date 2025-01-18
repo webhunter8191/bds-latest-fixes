@@ -3,7 +3,7 @@
 // const Hero = () => {
 //   return (
 
-import SearchBar from "./SearchBar";
+// import SearchBar from "./SearchBar";
 
 
   //   <div className="bg-white flex flex-col items-center  py-1">

@@ -292,7 +292,7 @@ import "slick-carousel/slick/slick.css";
 import "slick-carousel/slick/slick-theme.css";
 
 // Custom Next Arrow Component
-const NextArrow = (props) => {
+const NextArrow = (props: { onClick: any; }) => {
   const { onClick } = props;
   return (
     <button
@@ -306,7 +306,7 @@ const NextArrow = (props) => {
 };
 
 // Custom Prev Arrow Component
-const PrevArrow = (props) => {
+const PrevArrow = (props: { onClick: any; }) => {
   const { onClick } = props;
   return (
     <button
@@ -342,8 +342,8 @@ const Detail = () => {
     slidesToShow: 1,
     slidesToScroll: 1,
     adaptiveHeight: true,
-    nextArrow: <NextArrow />,
-    prevArrow: <PrevArrow />,
+    nextArrow: <NextArrow onClick={undefined} />,
+    prevArrow: <PrevArrow onClick={undefined} />,
   };
 
   return (

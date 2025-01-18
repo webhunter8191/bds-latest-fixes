@@ -266,12 +266,12 @@ const SearchBar = () => {
     }
   };
 
-  const handleClear = () => {
-    setDestination("");
-    setCheckIn(null);
-    setCheckOut(null);
-    setRoomCount(1);
-  };
+  // const handleClear = () => {
+  //   setDestination("");
+  //   setCheckIn(null);
+  //   setCheckOut(null);
+  //   setRoomCount(1);
+  // };
 
   const minDate = new Date();
   const maxDate = new Date();

@@ -91,7 +91,7 @@ const MyBookings = () => {
   const {
     data: hotels,
     isLoading,
-    error,
+    // error,
   } = useQuery("fetchMyBookings", apiClient.fetchMyBookings);
 
   // Loading and Error handling
@@ -99,13 +99,13 @@ const MyBookings = () => {
     return <span className="text-xl text-center">Loading...</span>;
   }
 
-  if (error) {
-    return (
-      <span className="text-xl text-center text-red-500">
-        Error: {error.message}
-      </span>
-    );
-  }
+  // if (error) {
+  //   return (
+  //     <span className="text-xl text-center text-red-500">
+  //       Error: {error.message}
+  //     </span>
+  //   );
+  // }
 
   // No bookings found
   if (!hotels || hotels.length === 0) {
@@ -137,14 +137,14 @@ const MyBookings = () => {
           sortedBookings[sortedBookings.length - 1]?.checkOut;
 
         // Format the dates
-        const formatDate = (dateString) => {
+        const formatDate = (dateString: string | number | Date) => {
           const date = new Date(dateString);
           return isNaN(date.getTime()) ? "Invalid Date" : date.toDateString();
         };
 
         return (
           <div
-            key={hotel.id}
+            key={hotel._id}
             className="grid grid-cols-1 lg:grid-cols-[1fr_3fr] border border-slate-300 rounded-lg shadow-lg p-8 gap-5 mb-6 hover:shadow-2xl transition-shadow duration-300"
           >
             <div className="lg:w-full lg:h-[250px]">
@@ -157,9 +157,9 @@ const MyBookings = () => {
             <div className="flex flex-col gap-4 overflow-y-auto max-h-[300px]">
               <div className="text-2xl font-bold text-gray-800">
                 {hotel.name}
-                <div className="text-sm font-normal text-gray-500">
+                {/* <div className="text-sm font-normal text-gray-500">
                   {hotel.city}, {hotel.country}
-                </div>
+                </div> */}
               </div>
               <div className="mt-3">
                 <div>
