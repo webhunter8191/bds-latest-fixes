@@ -124,7 +124,7 @@ const MyBookings = () => {
       {hotels.map((hotel) => {
         // Combine booking information
         const totalRooms = hotel.bookings.reduce(
-          (sum, booking) => sum + booking.roomCount/2,
+          (sum, booking) => sum + booking.roomCount,
           0
         );
 

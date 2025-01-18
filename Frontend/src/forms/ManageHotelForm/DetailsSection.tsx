@@ -1,13 +1,14 @@
 import { useFormContext } from "react-hook-form";
 import { HotelFormData } from "./ManageHotelForm";
 
-const DetailsSection = () => {
+const DetailsSection = ({hotel}:any) => {
   const {
     register,
     setValue, // Add setValue to update the selected values
     watch, // Use watch to get the selected values for the nearbyTemple
     formState: { errors },
   } = useFormContext<HotelFormData>();
+
 
     const nearbyTemples = [
       "Prem Mandir",
@@ -23,7 +24,7 @@ const DetailsSection = () => {
       "Barsana",
   ];
   
-     const nearbyTempleValues = watch("nearbyTemple") || [];
+     const nearbyTempleValues = hotel?.nearByTemple || [];
      const handleTempleChange = (
        event: React.ChangeEvent<HTMLInputElement>
      ) => {
