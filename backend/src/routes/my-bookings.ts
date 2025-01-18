@@ -77,10 +77,17 @@ router.post("/booking", verifyToken, async (req: Request, res: Response) => {
       totalCost,
     };
 
-    hotel.bookings.push(booking);
-    const data = await hotel.save();
+    // hotel.bookings.push(booking);
+    // const data = await hotel.save();
+    const data = await Hotel.findOneAndUpdate(
+      { _id: hotelId },
+      {
+        $push: { bookings: booking },
+      },
+      { new: true }
+    );
 
-    res.status(200).json({ success: true, data: data.bookings });
+    res.status(200).json({ success: true, data: data?.bookings });
   } catch (error) {
     console.log(error);
     res.status(500).json({ message: "Unable to create booking" });
