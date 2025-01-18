@@ -17,12 +17,16 @@ const verifyToken = (req: Request, res: Response, next: NextFunction) => {
       .status(403)
       .json({ message: "Access Denied , No token provided" });
   }
+  console.log(token)
 
   try {
     const decoded = jwt.verify(
       token,
       process.env.JWT_SECRET_KEY as string
     ) as JwtPayload;
+
+    
+    console.log("Decoded Token Payload:", decoded);
     req.userId = decoded.userId;
     req.isAdmin = decoded.isAdmin !== undefined ? decoded.isAdmin : false;
     next();

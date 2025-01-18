@@ -83,9 +83,10 @@ router.post("/:hotelId/bookings", verifyToken, async (req: Request, res: Respons
   try {
     const newBooking: BookingType = {
       ...req.body,
+      
       userId: req.userId,
     };
-
+console.log(newBooking);
     // Find the hotel by ID and add the booking to its booking list
     const hotel = await Hotel.findOneAndUpdate(
       { _id: req.params.hotelId },
