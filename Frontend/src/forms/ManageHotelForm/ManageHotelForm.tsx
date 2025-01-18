@@ -76,7 +76,7 @@ const ManageHotelForm = ({ onSave, isLoading, hotel }: Props) => {
          <h1 className="text-3xl font-semibold text-center mb-6">
            Manage Hotel
          </h1>
-         <DetailsSection />
+         <DetailsSection hotel={hotel} />
          <TypeSection />
          <FacilitiesSection />
          <GuestsSection />

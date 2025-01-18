@@ -23,7 +23,7 @@ const razorpayInstance = new Razorpay({
 });
 
 // Route to Create Razorpay Order
-router.post('/order', verifyToken, (req, res) => {
+router.post('/order', verifyToken,async (req, res) => {
     const { amount } = req.body;
 
     // Validate the `amount` field

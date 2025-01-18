@@ -228,6 +228,7 @@ import { useParams } from "react-router-dom";
 import { useMutation } from "react-query";
 import * as apiClient from "../../api-client";
 import { useAppContext } from "../../contexts/AppContext";
+import { useNavigate } from "react-router-dom";
 
 const RAZORPAY_KEY_ID = import.meta.env.VITE_API_RAZORPAY_KEY_ID;
 const API_BASE_URL = import.meta.env.VITE_API_BASE_URL || "";
@@ -449,6 +450,7 @@ declare global {
 const BookingForm = ({ currentUser, pricepernight }: Props) => {
   const search = useSearchContext();
   const { hotelId } = useParams();
+  const navigate = useNavigate();
   const { showToast } = useAppContext();
 
   // Helper function to calculate number of days between check-in and check-out
@@ -464,6 +466,7 @@ const BookingForm = ({ currentUser, pricepernight }: Props) => {
   const { mutate: bookRoom, isLoading } = useMutation(apiClient.createRoomBooking, {
     onSuccess: () => {
       showToast({ message: "Booking Saved!", type: "SUCCESS" });
+      navigate("/my-bookings");
     },
     onError: () => {
       showToast({ message: "Error saving booking", type: "ERROR" });
@@ -487,9 +490,10 @@ const BookingForm = ({ currentUser, pricepernight }: Props) => {
     },
   });
 
+  let bookingData:any;
   const handlePayment = async () => {
     try {
-      const bookingData = {
+       bookingData = {
         firstName: currentUser.firstName,
         lastName: currentUser.lastName,
         email: currentUser.email,
@@ -500,20 +504,7 @@ const BookingForm = ({ currentUser, pricepernight }: Props) => {
         totalCost,
       };
 
-      const res = await fetch(`${API_BASE_URL}/api/my-bookings/booking`, {
-        method: "POST",
-        credentials: "include",
-        headers: {
-          "Content-Type": "application/json",
-        },
-        body: JSON.stringify(bookingData),
-      });
-
-      const bookingResponse = await res.json();
-
-      if (!bookingResponse.success) {
-        throw new Error("Error creating booking");
-      }
+      
 
       // const { bookingId } = bookingResponse.data;
 
@@ -527,13 +518,32 @@ const BookingForm = ({ currentUser, pricepernight }: Props) => {
       });
 
       const paymentData = await paymentRes.json();
-      handlePaymentVerify(paymentData.data);
+       await handlePaymentVerify(paymentData.data);
+
+      // const res = await fetch(`${API_BASE_URL}/api/my-bookings/booking`, {
+      //   method: "POST",
+      //   credentials: "include",
+      //   headers: {
+      //     "Content-Type": "application/json",
+      //   },
+      //   body: JSON.stringify(bookingData),
+      // });
+
+      // const bookingResponse = await res.json();
+      // console.log("Booking Response:", bookingResponse);
+      
+
+      // if (!bookingResponse.success) {
+      //   throw new Error("Error creating booking");
+      // }      
+
+
     } catch (error) {
       console.error("Error initiating payment:", error);
     }
   };
 
-  const handlePaymentVerify = (orderData: any) => {
+  const handlePaymentVerify =async (orderData: any) => {
     const options = {
       key: RAZORPAY_KEY_ID,
       amount: orderData.amount * 100,
@@ -560,7 +570,9 @@ const BookingForm = ({ currentUser, pricepernight }: Props) => {
           const verifyData = await res.json();
           if (verifyData.message) {
             alert(verifyData.message);
-            bookRoom({ ...verifyData, paymentIntentId: response.razorpay_payment_id });
+            console.log("Verify Data::::::::::::::::::", verifyData);
+            
+            bookRoom({ ...bookingData, paymentIntentId: response.razorpay_payment_id, hotelId });
           }
         } catch (error) {
           console.error("Error verifying payment:", error);
@@ -627,7 +639,8 @@ const BookingForm = ({ currentUser, pricepernight }: Props) => {
       <div className="flex justify-end">
         <button
           disabled={isLoading}
-          onClick={handlePayment}
+          // onClick={handlePayment}
+          type="submit"
           className="bg-blue-600 text-white p-2 font-bold hover:bg-blue-500 text-md disabled:bg-gray-500 ml-2"
         >
           Confirm Booking
