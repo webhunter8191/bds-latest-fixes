@@ -1,46 +1,47 @@
 import { useFormContext } from "react-hook-form";
 import { HotelFormData } from "./ManageHotelForm";
+import React from "react";
 
-const DetailsSection = ({hotel}:any) => {
+const DetailsSection = ({ hotel }: any) => {
   const {
     register,
     setValue, // Add setValue to update the selected values
     // watch, // Use watch to get the selected values for the nearbyTemple
     formState: { errors },
   } = useFormContext<HotelFormData>();
-
-
-    const nearbyTemples = [
-      "Prem Mandir",
-      "Banke Bihari",
-      "Dwarikadish",
-      "ISKON",
-      "Nidhi Van",
-      "Krishna Janmbhoomi",
-      "Mathura",
-      "Vrindavan",
-      "Gokul",
-      "Goverdhan",
-      "Barsana",
+  const [nearbyTempleValues, setNearbyTempleValues] = React.useState<string[]>(
+    []
+  );
+  const nearbyTemples = [
+    "Prem Mandir",
+    "Banke Bihari",
+    "Dwarikadish",
+    "ISKON",
+    "Nidhi Van",
+    "Krishna Janmbhoomi",
+    "Mathura",
+    "Vrindavan",
+    "Gokul",
+    "Goverdhan",
+    "Barsana",
   ];
-  
-     const nearbyTempleValues = hotel?.nearByTemple || [];
-     const handleTempleChange = (
-       event: React.ChangeEvent<HTMLInputElement>
-     ) => {
-       const { value, checked } = event.target;
 
-       if (checked) {
-         // Add the temple if checked
-         setValue("nearbyTemple", [...nearbyTempleValues, value]);
-       } else {
-         // Remove the temple if unchecked
-         setValue(
-           "nearbyTemple",
-           nearbyTempleValues.filter((temple: string) => temple !== value)
-         );
-       }
-     };
+  React.useEffect(() => {
+    if (hotel) {
+      setNearbyTempleValues(hotel.nearByTemple);
+    }
+  }, [hotel]);
+
+  const handleTempleChange = (event: React.ChangeEvent<HTMLInputElement>) => {
+  const { value, checked } = event.target;
+  setNearbyTempleValues((prevValues) => {
+    const updatedValues = checked
+      ? [...prevValues, value]
+      : prevValues.filter((temple) => temple !== value);
+    setValue("nearbyTemple", updatedValues); // Update the form value with the latest state
+    return updatedValues; // Return the updated state
+  });
+};
 
 
   return (

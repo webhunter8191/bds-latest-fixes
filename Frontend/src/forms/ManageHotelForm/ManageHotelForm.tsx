@@ -46,7 +46,7 @@ const ManageHotelForm = ({ onSave, isLoading, hotel }: Props) => {
     });
 
     formData.append("roomCount", formDataJson.roomCount.toString());
-  
+
 
     formDataJson.facilities.forEach((facility, index) => {
       formData.append(`facilities[${index}]`, facility);
