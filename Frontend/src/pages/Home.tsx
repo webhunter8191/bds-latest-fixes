@@ -70,17 +70,17 @@ const Home = () => {
   return (
     <div>
   {/* Hero Section */}
-  <div className=" relative">
+  <div className="relative">
     <Hero />
 
     {/* Search Bar Overlapping Hero */}
-    <div className="absolute left-1/2 transform -translate-x-1/2 z-10  sm:w-[80%] md:w-[80%] lg:w-[80%] bottom-[-100px] sm:bottom-[10px] md:bottom-[-70px] lg:bottom-[-40px]">
+    <div className="absolute left-1/2 transform -translate-x-1/2 z-10  w-[80%] md:w-[80%] lg:w-[80%] bottom-[-100px] sm:bottom-[10px] md:bottom-[-60px] lg:bottom-[-40px]">
       <SearchBar />
     </div>
   </div>
 
   {/* Latest Destinations Section */}
-  <section className="container mx-auto px-4 py-8 space-y-6 mt-[80px] sm:w-[80%] md:w-[80%] lg:w-[85%]">
+  <section className="container mx-auto px-4 py-8 space-y-6 mt-[80px] w-[100%] md:w-[80%] lg:w-[85%]">
     <h2 className="text-4xl font-bold text-gray-800 text-center">
       Latest Destinations
     </h2>

@@ -130,8 +130,8 @@ const Hero = () => {
   }}
 >
   {/* Hero Section */}
-  <div className="text-center bg-opacity-75 p-6 rounded-md mt-0 sm:mt-10 lg:mt-0">
-    <h1 className="text-3xl sm:text-2xl md:text-4xl lg:text-5xl font-bold text-white leading-snug">
+  <div className="text-center bg-opacity-75 p-6 rounded-md mt-0 mt-10 lg:mt-0 lg:mt-0">
+    <h1 className="text-3xl text-xl md:text-4xl lg:text-5xl font-bold text-white leading-snug">
       Hotel for Every Moment Rich in Emotion
     </h1>
     <p className="text-sm sm:text-base md:text-lg text-white mt-4">
