@@ -123,7 +123,7 @@ const Hero = () => {
     <div
   className="min-h-screen flex flex-col items-center  lg:justify-center md:justify-center sm:justify-start"
   style={{
-    backgroundImage: `linear-gradient(rgba(0, 0, 0, 0.2), rgba(0, 0, 0, 0.2)), url('../../src/assets/hotel1.jpeg')`,
+    backgroundImage: `linear-gradient(rgba(0, 0, 0, 0.2), rgba(0, 0, 0, 0.2)), url('./hotel1.jpeg')`, 
     backgroundSize: 'cover',
     backgroundPosition: 'center',
     minHeight: '80vh',
