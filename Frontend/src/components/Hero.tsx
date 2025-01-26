@@ -121,12 +121,12 @@
 const Hero = () => {
   return (
     <div
-  className="min-h-screen flex flex-col items-center  lg:justify-center md:justify-center sm:justify-start"
+  className="lg:min-h-[80vh] min-h-[70vh] flex flex-col items-center  lg:justify-center md:justify-center sm:justify-start"
   style={{
     backgroundImage: `linear-gradient(rgba(0, 0, 0, 0.2), rgba(0, 0, 0, 0.2)), url('https://images.pexels.com/photos/258154/pexels-photo-258154.jpeg?auto=compress&cs=tinysrgb&w=1260&h=750&dpr=1')`, 
     backgroundSize: 'cover',
     backgroundPosition: 'center',
-    minHeight: '80vh',
+    // minHeight: '80vh',
   }}
 >
   {/* Hero Section */}

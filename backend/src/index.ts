@@ -53,7 +53,6 @@ const corsOptions =Object.freeze({
 app.use(
   cors(corsOptions)
 );
-console.log("corsOptions:::::::::::::::::::::::::::::",corsOptions);
 
 
 
