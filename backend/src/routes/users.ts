@@ -35,7 +35,7 @@ router.post(
     if (!errors.isEmpty()) {
       return res.status(400).json({ message: errors.array() });
     }
-    const { firstName, lastName, email, password, confirmPassword, isAdmin } =
+    const { firstName, lastName, email, password, confirmPassword, mobNo, isAdmin } =
       req.body;
     
        if (password !== confirmPassword) {
@@ -56,6 +56,7 @@ router.post(
         lastName,
         email,
         password,
+        mobNo,
         isAdmin: isAdmin !== undefined ? isAdmin : false, 
       });
       await user.save();

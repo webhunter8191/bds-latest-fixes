@@ -12,6 +12,7 @@ export type RegisterFormData = {
   email: string;
   password: string;
   confirmPassword: string;
+  mobNo: string;
 };
 
 const Register = () => {
@@ -81,6 +82,18 @@ const Register = () => {
           )}
         </label>
         <label className="flex-1 text-gray-700 text-sm font-semibold">
+          mobile no. 
+          <input
+            className="border border-gray-300 rounded-md w-full py-2 px-3 mt-1 font-normal transition-colors focus:outline-none focus:border-blue-500"
+            {...register("mobNo", { required: "This field is required" })}
+          />
+          {errors.firstName && (
+            <span className="text-red-500 text-sm">
+              {errors.firstName.message}
+            </span>
+          )}
+        </label>
+        <label className="flex-1 text-gray-700 text-sm font-semibold">
           Last Name
           <input
             className="border border-gray-300 rounded-md w-full py-2 px-3 mt-1 font-normal transition-colors focus:outline-none focus:border-blue-500"
@@ -93,6 +106,7 @@ const Register = () => {
           )}
         </label>
       </div>
+      
 
       <label className="text-gray-700 text-sm font-semibold">
         Email

@@ -8,6 +8,7 @@ const userSchema = new mongoose.Schema({
   firstName: { type: String, required: true },
   lastName: { type: String, required: true },
   isAdmin: { type: Boolean, default: false },
+  mobNo: { type: String, required: true },
 });
 
 userSchema.pre("save", async function (next) {

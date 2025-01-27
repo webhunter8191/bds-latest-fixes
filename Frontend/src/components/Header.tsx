@@ -240,7 +240,7 @@ const Header = () => {
                 ) : (
                   <NavLink
                     to="/my-hotels"
-                    className="inline-block lg:bg-[#6A5631] text-white px-4 py-2 rounded-lg hover:bg-[#6A5631] transition duration-300 mb-4"
+                    className="inline-block bg-[#6A5631] text-white px-4 py-2 rounded-lg hover:bg-[#6A5631] transition duration-300 mb-4"
                     onClick={() => setIsMenuOpen(false)}
                   >
                     My Hotels
@@ -261,6 +261,7 @@ const Header = () => {
             )}
           </nav>
         </div>
+
 
         {/* Normal Navigation for Larger Screens */}
         <nav className="hidden lg:flex items-center space-x-4">

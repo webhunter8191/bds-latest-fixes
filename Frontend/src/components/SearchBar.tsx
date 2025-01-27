@@ -238,9 +238,7 @@
 
 
 
-
-
-import { FormEvent, useState } from "react";
+import { FormEvent, useState, useEffect } from "react";
 import { useSearchContext } from "../contexts/SearchContext";
 import { MdTravelExplore } from "react-icons/md";
 import DatePicker from "react-datepicker";
@@ -251,10 +249,24 @@ const SearchBar = () => {
   const navigate = useNavigate();
   const search = useSearchContext();
 
+  // Get today's date and calculate the next day
+  const today = new Date();
+  const tomorrow = new Date(today);
+  tomorrow.setDate(today.getDate() + 1);
+
   const [destination, setDestination] = useState<string>(search.destination);
-  const [checkIn, setCheckIn] = useState<Date | null>(search.checkIn);
-  const [checkOut, setCheckOut] = useState<Date | null>(search.checkOut);
+  const [checkIn, setCheckIn] = useState<Date | null>(search.checkIn || today); // default to today's date
+  const [checkOut, setCheckOut] = useState<Date | null>(search.checkOut || tomorrow); // default to tomorrow's date
   const [roomCount, setRoomCount] = useState<number>(search.roomCount);
+
+  // Effect to ensure that checkOut is always 1 day after checkIn when the component mounts
+  useEffect(() => {
+    if (checkIn && !checkOut) {
+      const nextDay = new Date(checkIn);
+      nextDay.setDate(checkIn.getDate() + 1);
+      setCheckOut(nextDay);
+    }
+  }, [checkIn]); // Runs whenever checkIn changes
 
   const handleSubmit = (event: FormEvent) => {
     event.preventDefault();
@@ -266,16 +278,18 @@ const SearchBar = () => {
     }
   };
 
-  // const handleClear = () => {
-  //   setDestination("");
-  //   setCheckIn(null);
-  //   setCheckOut(null);
-  //   setRoomCount(1);
-  // };
-
   const minDate = new Date();
   const maxDate = new Date();
   maxDate.setFullYear(maxDate.getFullYear() + 1);
+
+  const handleCheckInChange = (date: Date | null) => {
+    setCheckIn(date);
+    if (date) {
+      const nextDay = new Date(date);
+      nextDay.setDate(date.getDate() + 1); // Set check-out to one day after check-in
+      setCheckOut(nextDay);
+    }
+  };
 
   return (
     <form
@@ -311,7 +325,7 @@ const SearchBar = () => {
       <div className="flex w-full flex-row sm:flex-row gap-4 sm:gap-2 w-full">
         <DatePicker
           selected={checkIn}
-          onChange={(date) => setCheckIn(date as Date | null)}
+          onChange={handleCheckInChange}
           selectsStart
           startDate={checkIn}
           endDate={checkOut}
@@ -332,7 +346,6 @@ const SearchBar = () => {
           className="w-full bg-gray-100 p-3 rounded-lg shadow-sm hover:shadow-lg focus:outline-none transition-all duration-300"
         />
       </div>
-      
 
       {/* Buttons */}
       <div className="flex ">
@@ -342,16 +355,10 @@ const SearchBar = () => {
         >
           Search
         </button>
-        {/* <button
-          type="button"
-          onClick={handleClear}
-          className="w-1/3 bg-red-600 text-white py-3 font-bold text-lg hover:bg-red-500 transition-all duration-300 rounded-lg"
-        >
-          Clear
-        </button> */}
       </div>
     </form>
   );
 };
 
 export default SearchBar;
+

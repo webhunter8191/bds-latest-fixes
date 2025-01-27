@@ -4,13 +4,15 @@ export type UserType = {
   password: string;
   firstName: string;
   lastName: string;
-  isAdmin:boolean
+  isAdmin:boolean;
+  mobNo : string;
 };
 
 
 export type HotelType = {
   starRating: number;
   description: string;
+  location: string;
   _id: string;
   userId: string;
   name: string;

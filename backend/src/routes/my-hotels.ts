@@ -22,6 +22,7 @@ router.post(
   [
     body("name").notEmpty().withMessage("Name is required"),
     body("type").notEmpty().withMessage("Hotel type is required"),
+    body("description").notEmpty().withMessage("Description is required"),
     body("pricePerNight")
       .notEmpty()
       .isNumeric()

@@ -7,9 +7,10 @@ import ImagesSection from "./ImagesSection";
 import { HotelType } from "../../../../backend/src/shared/types";
 import { useEffect } from "react";
 import { useNavigate } from "react-router-dom";
+
 export type HotelFormData = {
   name: string;
-
+  description: string;
   type: string;
   pricePerNight: number;
   facilities: string[];
@@ -17,6 +18,7 @@ export type HotelFormData = {
   imageUrls: string[];
   roomCount:number,
   nearbyTemple: string[];
+  location:string;
 };
 
 type Props = {
@@ -40,9 +42,11 @@ const ManageHotelForm = ({ onSave, isLoading, hotel }: Props) => {
     }
     formData.append("name", formDataJson.name);
     formData.append("type", formDataJson.type);
+    formData.append("description", formDataJson.description);
+    formData.append("location", formDataJson.location);
     formData.append("pricePerNight", formDataJson.pricePerNight.toString());
     formDataJson.nearbyTemple.forEach((temple) => {
-      formData.append("nearByTemple[]", temple); // Allow multiple entries
+    formData.append("nearByTemple[]", temple); // Allow multiple entries
     });
 
     formData.append("roomCount", formDataJson.roomCount.toString());

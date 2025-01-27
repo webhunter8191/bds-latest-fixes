@@ -57,6 +57,28 @@ const DetailsSection = ({ hotel }: any) => {
           <span className="text-red-500 text-sm">{errors.name.message}</span>
         )}
       </label>
+      <label className="block text-sm font-semibold text-gray-700">
+        Location
+        <input
+          type="text"
+          className="mt-1 block w-full p-3 border border-gray-300 rounded-md shadow-sm focus:ring-blue-500 focus:border-blue-500"
+          {...register("location", { required: "This field is required" })}
+        />
+        {errors.name && (
+          <span className="text-red-500 text-sm">{errors.name.message}</span>
+        )}
+      </label>
+      <label className="text-gray-700 text-sm font-bold flex-1">
+        Description
+        <textarea
+          rows={10}
+          className="border rounded w-full py-1 px-2 font-normal"
+          {...register("description", { required: "This field is required" })}
+        ></textarea>
+        {errors.description && (
+          <span className="text-red-500">{errors.description.message}</span>
+        )}
+      </label>
 
       <div className="flex space-x-6">
         <label className="w-1/2 text-sm font-semibold text-gray-700">

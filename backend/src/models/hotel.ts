@@ -15,6 +15,8 @@ const bookingSchema = new mongoose.Schema({
 const hotelSchema = new mongoose.Schema({
   userId: { type: String, required: true },
   name: { type: String, required: true },
+  description: { type: String, required: true },
+  location: { type: String, required: true },
   city: { type: String, default: "Mathura" },
   country: { type: String, default: "India" },
   type: { type: String, required: true },
