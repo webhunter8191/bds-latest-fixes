@@ -45,7 +45,7 @@ app.options(
 
 const corsOptions =Object.freeze({
   origin: process.env.FRONTEND_URL,
-  methods: ["POST", "GET", "PUT", "DELETE"],
+  methods: ["POST", "GET", "PUT", "DELETE", "PATCH"],
   allowedHeaders: ["Content-Type", "Authorization"],
   credentials: true,
   maxAge: 86400,

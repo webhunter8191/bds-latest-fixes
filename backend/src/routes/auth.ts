@@ -41,8 +41,6 @@ router.post(
           expiresIn: "1d",
         }
       );
-      // console.log(token)
-
       res.cookie("auth_token", token, {
         httpOnly: true,
         secure: process.env.NODE_ENV === "production",

@@ -55,7 +55,7 @@ const MyHotels = () => {
                   <div className="border border-slate-300 rounded-sm p-3 flex items-center space-x-2">
                     <BiMoney className="text-xl text-blue-600" />
                     <span className="text-sm">
-                      £{hotel.pricePerNight} per night
+                    ₹{hotel.pricePerNight} per night
                     </span>
                   </div>
                   <div className="border border-slate-300 rounded-sm p-3 flex items-center space-x-2">

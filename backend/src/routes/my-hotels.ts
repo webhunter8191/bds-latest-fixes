@@ -19,34 +19,32 @@ const upload = multer({
 router.post(
   "/",
   verifyToken,
-  [
-    body("name").notEmpty().withMessage("Name is required"),
-    body("type").notEmpty().withMessage("Hotel type is required"),
-    body("description").notEmpty().withMessage("Description is required"),
-    body("pricePerNight")
-      .notEmpty()
-      .isNumeric()
-      .withMessage("Price per night is required and must be a number"),
-    body("facilities")
-      .notEmpty()
-      .isArray()
-      .withMessage("Facilities are required"),
-    body("nearByTemple")
-      .notEmpty()
-      .isArray()
-      .withMessage("Nearest temples are required"),
-  ],
+  // [
+  //   body("name").notEmpty().withMessage("Name is required"),
+  //   body("type").notEmpty().withMessage("Hotel type is required"),
+  //   body("description").notEmpty().withMessage("Description is required"),
+  //   body("pricePerNight")
+  //     .notEmpty()
+  //     .isNumeric()
+  //     .withMessage("Price per night is required and must be a number"),
+  //   body("facilities")
+  //     .notEmpty()
+  //     .isArray()
+  //     .withMessage("Facilities are required"),
+  //   body("nearByTemple")
+  //     .notEmpty()
+  //     .isArray()
+  //     .withMessage("Nearest temples are required"),
+  // ],
   upload.array("imageFiles", 6),
   async (req: Request, res: Response) => {
     try {
-      console.log("req body for hotel is", req.body);
-
       // Normalize the nearbyTemple entries
       if (req.body.nearByTemple) {
         req.body.nearByTemple = req.body.nearByTemple.map((temple: string) =>
           temple.trim().replace(/\s+/g, " ").toLowerCase()
         );
-      }
+      }      
 
       const imageFiles = req.files as Express.Multer.File[];
       const newHotel = req.body;
@@ -59,8 +57,7 @@ router.post(
 
       const hotel = new Hotel(newHotel);
       await hotel.save();
-
-      res.status(201).send(hotel);
+      res.status(201).json({"message":"Hotel created successfully","data":hotel});
     } catch (e) {
       console.log(e);
       res.status(500).json({ message: "Something went wrong" });
@@ -96,7 +93,6 @@ router.put(
   upload.array("imageFiles"),
   async (req: Request, res: Response) => {
     try {
-      console.log("updated hotel bpdy",req.body)
       const updatedHotel = req.body;
       updatedHotel.lastUpdated = new Date();
 
@@ -128,6 +124,20 @@ router.put(
     }
   }
 );
+
+router.get("/my-bookings/:userId", async (req: Request, res: Response) => {
+  try {
+    const hotel = await Hotel.find({
+      userId: req.params.userId,
+    }, {name:1,bookings:1});
+    if(!hotel){
+      return res.status(404).json({ message: "Hotel not found" });
+    }
+   return res.status(200).json({"message":"Data fetched successfully","data":hotel});
+  } catch (error) {
+    res.status(500).json({ message: "Error fetching hotels" });
+  }
+})
 
 async function uploadImages(imageFiles: Express.Multer.File[]) {
   const uploadPromises = imageFiles.map(async (image) => {

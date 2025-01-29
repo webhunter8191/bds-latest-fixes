@@ -23,7 +23,6 @@ export type HotelType = {
   imageUrls: string[];
   lastUpdated: Date;
   nearByTemple: string[];
-  bookings: BookingType[];
 };
 
 export type BookingType = {

@@ -1,5 +1,6 @@
 import express, { Request, Response } from "express";
 import Hotel from "../models/hotel";
+import BookingModel from "../models/booking";
 import { BookingType, HotelSearchResponse } from "../shared/types";
 import { param, validationResult } from "express-validator";
 import verifyToken from "../middleware/auth";
@@ -8,10 +9,8 @@ const router = express.Router();
 
 // Search route to find hotels
 router.get("/search", async (req: Request, res: Response) => {
-  try {
+  try {    
     const query = constructSearchQuery(req.query);
-    console.log("query", query);
-
     let sortOptions = {};
     switch (req.query.sortOption) {
       case "starRating":
@@ -29,7 +28,6 @@ router.get("/search", async (req: Request, res: Response) => {
     const pageNumber = parseInt(req.query.page ? req.query.page.toString() : "1");
     const skip = (pageNumber - 1) * pageSize;
 
-    console.log("final Query is", query);
     const hotels = await Hotel.find(query).sort(sortOptions).skip(skip).limit(pageSize);
     const total = await Hotel.countDocuments(query);
 
@@ -52,7 +50,7 @@ router.get("/search", async (req: Request, res: Response) => {
 // Fetch all hotels
 router.get("/", async (req: Request, res: Response) => {
   try {
-    const hotels = await Hotel.find().sort("-lastUpdated");
+    const hotels = await Hotel.find({status:"active"}).sort("-lastUpdated");
     res.json(hotels);
   } catch (error) {
     console.log("error", error);
@@ -81,26 +79,14 @@ router.get("/:id", [param("id").notEmpty().withMessage("Hotel ID is required")],
 // Handle booking creation without Stripe
 router.post("/:hotelId/bookings", verifyToken, async (req: Request, res: Response) => {
   try {
-    const newBooking: BookingType = {
-      ...req.body,
-      
-      userId: req.userId,
-    };
-console.log(newBooking);
-    // Find the hotel by ID and add the booking to its booking list
-    const hotel = await Hotel.findOneAndUpdate(
-      { _id: req.params.hotelId },
-      {
-        $push: { bookings: newBooking },
-      }
-    );
-
-    if (!hotel) {
-      return res.status(400).json({ message: "hotel not found" });
+    const bookingDetails = req.body;
+    const hotelId = req.params.hotelId;
+    const hotel = await Hotel.findById(hotelId);
+    if(!hotel){
+      return res.status(400).json({message:"Hotel not found"});
     }
-
-    // await hotel.save();
-    res.status(200).send();
+    await BookingModel.create(bookingDetails);
+    return res.status(200).json({"message":"Hotel Booked Successfully"});
   } catch (error) {
     console.log(error);
     res.status(500).json({ message: "something went wrong" });
@@ -160,5 +146,25 @@ const constructSearchQuery = (queryParams: any) => {
 
   return constructedQuery;
 };
+
+router.patch("/:id",verifyToken, async (req: Request, res: Response) => {
+  try{
+    const {id}=req.params;
+    const {status='archive'}=req.query;
+    const response = await Hotel.findByIdAndUpdate({
+      _id:id
+    },{
+      $set:{status}
+    });
+    if(!response){
+      return res.status(400).json({message:"Hotel not found"});
+    }
+    return res.status(200).json({message:"Hotel status updated successfully"});    
+  }
+  catch(error){
+    console.log(error);
+    res.status(500).json({message:"Something went wrong"});
+  }
+});
 
 export default router;
