@@ -1,15 +1,25 @@
-import { SetStateAction, useState } from "react";
+import React, { SetStateAction, useState } from "react";
 import { useFormContext } from "react-hook-form";
 import { HotelFormData } from "./ManageHotelForm";
 import { Dialog } from "@headlessui/react";
 
+type existingRooms = {
+  category: string;
+  totalRooms: number;
+  price: number;
+  images: string[];
+  features: string[];
+  availableRooms: number;
 
-const GuestsSection = () => {
+}
+
+const GuestsSection = ({existingRooms}: {existingRooms: existingRooms[]}) => {
   const {
     register,
     formState: { errors },
     setValue,
   } = useFormContext<HotelFormData>();
+  console.log("existingRooms in GuestsSection", existingRooms);
 
   
 
@@ -23,20 +33,46 @@ const GuestsSection = () => {
     { value: 3, label: "4 Bed AC" },
     { value: 4, label: "4 Bed Non-AC" },
   ];
+  const categoriesTitles: Record<string, string> = {
+    "1": "2 Bed AC",
+   "2": "2 Bed Non-AC",
+    "3": "4 Bed AC",
+    "4": "4 Bed Non-AC",
+  }
+console.log("rooms in GuestsSection", rooms);
 
   const toggleRoomsVisibility = () => {
     setShowRooms((prev) => !prev);
   };
 
+  React.useEffect(() => {
+    if(existingRooms){
+    setRooms(existingRooms);
+    }
+  }, [existingRooms]);
+
   const handleSaveRoom = (event: { preventDefault: () => void; stopPropagation: () => void; target: HTMLFormElement | undefined; }) => {
     event.preventDefault();
     event.stopPropagation();
     const formData = new FormData(event.target);
+    
+    // Get the new uploaded files
+    const newImages = formData.getAll("images");
+    console.log("newImages in handleSaveRoom", newImages);
+    // If editing, combine existing images with new uploads (if any)
+    let finalImages: string[] = [];
+    if (newImages.length > 0 && (newImages[0] instanceof File ? newImages[0].name !== '' : false)) {
+      finalImages = Array.from(newImages) as string[];
+    } else if (editingRoomIndex !== null) {
+      finalImages = rooms[editingRoomIndex].images;
+    }
+
     const newRoom = {
-      category: Number(formData.get("category")),
+      category: formData.get("category"),
       totalRooms: Number(formData.get("totalRooms")),
+      availableRooms: Number(formData.get("totalRooms")),
       price: Number(formData.get("price")),
-      images: Array.from(formData.getAll("images")),
+      images: finalImages,
     };
 
     if (editingRoomIndex !== null) {
@@ -59,7 +95,11 @@ const GuestsSection = () => {
   };
 
   const handleDeleteRoom = (index: number) => {
-    setRooms(rooms.filter((_, i) => i !== index));
+    setRooms(prevValue=>{
+      const updatedRooms = prevValue.filter((_, i) => i !== index);
+      setValue("rooms", updatedRooms);
+      return updatedRooms;
+    });
   };
 
   return (
@@ -97,22 +137,24 @@ const GuestsSection = () => {
               category: string;
               totalRooms: number;
               price: number;
-              images: File[];
+              images: string[] | File[];
             },
             index
           ) => (
             <div key={index} className="p-4 border rounded-lg mb-4">
-              <h3 className="font-semibold">Category: {room.category}</h3>
+              <h3 className="font-semibold">Category: {categoriesTitles[room.category]}</h3>
               <p>Total Rooms: {room.totalRooms}</p>
               <p>Price: {room.price}</p>
               <div className="flex gap-2 mt-2">
-                {room.images.map((image, i) => (
-                  <img
-                    key={i}
-                    src={URL.createObjectURL(image)}
-                    alt="Room"
-                    className="w-16 h-16 rounded"
-                  />
+                {room.images && room.images.map((image: string | File, i: number) => (
+                  image && (typeof image === 'string' || image instanceof File) ? (
+                    <img
+                      key={i}
+                      src={image instanceof File ? URL.createObjectURL(image) : image}
+                      alt="Room"
+                      className="w-16 h-16 rounded object-cover"
+                    />
+                  ) : null
                 ))}
               </div>
               <div className="mt-2 flex gap-2">
@@ -146,13 +188,15 @@ const GuestsSection = () => {
         <div className="fixed inset-0 bg-black bg-opacity-30 flex justify-center items-center">
           <div className="bg-white p-6 rounded-lg w-96">
             <h3 className="text-lg font-semibold mb-4">
-              {editingRoomIndex !== null
-                ? "Edit Room Category"
-                : "Add Room Category"}
+              {editingRoomIndex !== null ? "Edit Room Category" : "Add Room Category"}
             </h3>
             <form onSubmit={handleSaveRoom}>
               <label className="block mb-2">Category</label>
-              <select name="category" className="border w-full p-2 rounded">
+              <select 
+                name="category" 
+                className="border w-full p-2 rounded"
+                defaultValue={editingRoomIndex !== null ? rooms[editingRoomIndex].category : ''}
+              >
                 {categories.map((category) => (
                   <option key={category.value} value={category.value}>
                     {category.label}
@@ -164,12 +208,14 @@ const GuestsSection = () => {
                 name="totalRooms"
                 type="number"
                 className="border w-full p-2 rounded"
+                defaultValue={editingRoomIndex !== null ? rooms[editingRoomIndex].totalRooms : ''}
               />
               <label className="block mt-4">Room Price</label>
               <input
                 name="price"
                 type="number"
                 className="border w-full p-2 rounded"
+                defaultValue={editingRoomIndex !== null ? rooms[editingRoomIndex].price : ''}
               />
               <label className="block mt-4">Upload Images</label>
               <input
@@ -178,6 +224,20 @@ const GuestsSection = () => {
                 multiple
                 className="border w-full p-2 rounded"
               />
+              {editingRoomIndex !== null && rooms[editingRoomIndex].images && (
+                <div className="mt-2 flex gap-2">
+                  {rooms[editingRoomIndex].images.map((image: string | File, i: number) => (
+                    image && (typeof image === 'string' || image instanceof File) ? (
+                      <img
+                        key={i}
+                        src={image instanceof File ? URL.createObjectURL(image) : image}
+                        alt="Room"
+                        className="w-16 h-16 rounded object-cover"
+                      />
+                    ) : null
+                  ))}
+                </div>
+              )}
               <div className="mt-4 flex justify-end">
                 <button
                   type="button"

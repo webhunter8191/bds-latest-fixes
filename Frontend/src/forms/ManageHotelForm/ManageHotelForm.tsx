@@ -62,7 +62,9 @@ const ManageHotelForm = ({ onSave, isLoading, hotel }: Props) => {
     formDataJson.rooms.forEach((room) => {
       if (room.images && room.images.length > 0) {
         room.images.forEach((image) => {
-          formData.append(`roomImages${room.category}`, image);
+          if (image instanceof File) {
+            formData.append(`roomImages${room.category}`, image);
+          } 
         });
       }
     });
@@ -96,7 +98,7 @@ const ManageHotelForm = ({ onSave, isLoading, hotel }: Props) => {
          <DetailsSection hotel={hotel} />
          <TypeSection />
          <FacilitiesSection />
-         <GuestsSection/>
+         <GuestsSection existingRooms={hotel?.rooms as []}/>
          <ImagesSection />
          <div className="flex justify-end mt-6 space-x-4">
            <button

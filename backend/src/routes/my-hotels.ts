@@ -110,8 +110,28 @@ router.put(
     try {
       const updatedHotel = req.body;
       updatedHotel.rooms = JSON.parse(updatedHotel.rooms);
-      console.log("updatedHotel is", updatedHotel);
       updatedHotel.lastUpdated = new Date();
+      const files = req.files as Express.Multer.File[];
+      const hotelImages = files.filter((file: Express.Multer.File) => file.fieldname.startsWith("imageFiles"));
+      const roomImages = files.filter((file: Express.Multer.File) => file.fieldname.startsWith("roomImages"));        
+      const updatedImageUrls = await uploadImages(hotelImages);
+      updatedHotel.imageUrls = [
+        ...updatedImageUrls,
+        ...(updatedHotel.imageUrls || []),
+      ];
+      const roomImageUrls = await Promise.all(roomImages.map(async (file) => {
+        const roomImage = await uploadImages([file]);
+        return {
+          category: file.fieldname.split("roomImages")[1],
+          images: roomImage
+        }
+      }));    
+      updatedHotel.rooms = updatedHotel.rooms.map((room: any) => {
+        room.images = roomImageUrls.find((roomImage: any) =>
+          roomImage.category == room.category
+        )?.images || updatedHotel.rooms.find((existingRoom: any) => existingRoom.category == room.category)?.images || [];
+        return room;
+      });
       const hotel = await Hotel.findOneAndUpdate(
         {
           _id: req.params.hotelId,
@@ -119,19 +139,11 @@ router.put(
         },
         updatedHotel,
         { new: true }
-      );
-
+      );      
       if (!hotel) {
         return res.status(404).json({ message: "Hotel not found" });
       }
-      const files = req.files as Express.Multer.File[];      
-      const updatedImageUrls = await uploadImages(files);
-      hotel.imageUrls = [
-        ...updatedImageUrls,
-        ...(updatedHotel.imageUrls || []),
-      ];
-      await hotel.save();
-      res.status(201).json(hotel);
+      return res.status(201).json(hotel);
     } catch (error) {
       console.log("error is", error);
       res.status(500).json({ message: "Something went throw" });
