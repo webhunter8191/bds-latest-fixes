@@ -22,7 +22,8 @@ export type HotelType = {
   pricePerNight: number;
   imageUrls: string[];
   lastUpdated: Date;
-  nearByTemple: string[];
+  nearbyTemple: string[];
+  rooms:object[];
 };
 
 export type BookingType = {

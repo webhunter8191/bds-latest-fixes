@@ -28,21 +28,25 @@ const DetailsSection = ({ hotel }: any) => {
 
   React.useEffect(() => {
     if (hotel) {
-      setNearbyTempleValues(hotel.nearByTemple);
+      // Convert to lowercase when setting initial values
+      const lowerCaseTemples = hotel.nearbyTemple.map(temple => temple.toLowerCase());
+      setNearbyTempleValues(lowerCaseTemples);
+      setValue("nearbyTemple", lowerCaseTemples);
     }
-  }, [hotel]);
+  }, [hotel, setValue]);
 
   const handleTempleChange = (event: React.ChangeEvent<HTMLInputElement>) => {
-  const { value, checked } = event.target;
-  setNearbyTempleValues((prevValues) => {
-    const updatedValues = checked
-      ? [...prevValues, value]
-      : prevValues.filter((temple) => temple !== value);
-    setValue("nearbyTemple", updatedValues); // Update the form value with the latest state
-    return updatedValues; // Return the updated state
-  });
-};
-
+    const { value, checked } = event.target;
+    // Convert to lowercase when handling changes
+    const lowerCaseValue = value.toLowerCase();
+    setNearbyTempleValues((prevValues) => {
+      const updatedValues = checked
+        ? [...prevValues, lowerCaseValue]
+        : prevValues.filter((temple) => temple !== lowerCaseValue);
+      setValue("nearbyTemple", updatedValues);
+      return updatedValues;
+    });
+  };
 
   return (
     <div className="space-y-6">
@@ -81,23 +85,6 @@ const DetailsSection = ({ hotel }: any) => {
       </label>
 
       <div className="flex space-x-6">
-        <label className="w-1/2 text-sm font-semibold text-gray-700">
-          Price Per Night
-          <input
-            type="number"
-            min={1}
-            className="mt-1 block w-full p-3 border border-gray-300 rounded-md shadow-sm focus:ring-blue-500 focus:border-blue-500"
-            {...register("pricePerNight", {
-              required: "This field is required",
-            })}
-          />
-          {errors.pricePerNight && (
-            <span className="text-red-500 text-sm">
-              {errors.pricePerNight.message}
-            </span>
-          )}
-        </label>
-
         <div className="text-gray-700 text-sm font-bold max-w-[50%]">
           <span>Attach a Tag</span>
           {nearbyTemples.map((temple) => (
@@ -105,8 +92,8 @@ const DetailsSection = ({ hotel }: any) => {
               <input
                 type="checkbox"
                 value={temple}
-                checked={nearbyTempleValues.includes(temple)} // Check if the temple is selected
-                onChange={handleTempleChange} // Custom change handler
+                checked={nearbyTempleValues.includes(temple.toLowerCase())} // Convert to lowercase here
+                onChange={handleTempleChange}
               />
               <span className="ml-2">{temple}</span>
             </label>

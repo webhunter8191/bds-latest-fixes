@@ -50,8 +50,48 @@ router.get("/search", async (req: Request, res: Response) => {
 // Fetch all hotels
 router.get("/", async (req: Request, res: Response) => {
   try {
-    const hotels = await Hotel.find({status:"active"}).sort("-lastUpdated");
-    res.json(hotels);
+    const aggregation = [
+      { $match: { status: "active" } },
+      {
+        $addFields: {
+          status: {
+            $cond: {
+              if: {
+                $gt: [
+                  {
+                    $size: {
+                      $filter: {
+                        input: "$rooms",
+                        as: "room",
+                        cond: {
+                          $and: [
+                            { $lte: ["$$room.availableRooms", "$$room.totalRooms"] },
+                            { $ne: ["$$room.availableRooms", 0] }
+                          ]
+                        }
+                      }
+                    }
+                  },
+                  0
+                ]
+              },
+              then: "active",
+              else: "booked"
+            }
+          }
+        }
+      },
+      {
+        $project: {
+          name: 1,
+          status: 1,
+          imageUrls: 1,
+        }
+      }
+    ];
+    const hotels = await Hotel.aggregate(aggregation);
+    return res.status(200).json(hotels);
+
   } catch (error) {
     console.log("error", error);
     res.status(500).json({ message: "Error fetching hotels" });
@@ -60,16 +100,15 @@ router.get("/", async (req: Request, res: Response) => {
 
 // Fetch specific hotel details by ID
 router.get("/:id", [param("id").notEmpty().withMessage("Hotel ID is required")], async (req: Request, res: Response) => {
+  try {
   const errors = validationResult(req);
   if (!errors.isEmpty()) {
     return res.status(400).json({ errors: errors.array() });
   }
 
-  const id = req.params.id.toString();
-
-  try {
+  const id = req.params.id.toString(); 
     const hotel = await Hotel.findById(id);
-    res.json(hotel);
+    return res.status(200).json(hotel);
   } catch (error) {
     console.log(error);
     res.status(500).json({ message: "Error fetching hotel" });
@@ -104,7 +143,7 @@ const constructSearchQuery = (queryParams: any) => {
         )
       : [queryParams.destination.trim().replace(/\s+/g, " ").toLowerCase()];
 
-    constructedQuery.nearByTemple = {
+    constructedQuery.nearbyTemple = {
       $in: templeSearchTerms,
     };
   }

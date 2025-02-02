@@ -5,8 +5,9 @@ import FacilitiesSection from "./FacilitiesSection";
 import GuestsSection from "./GuestsSection";
 import ImagesSection from "./ImagesSection";
 import { HotelType } from "../../../../backend/src/shared/types";
-import { useEffect } from "react";
+import { useEffect, useState } from "react";
 import { useNavigate } from "react-router-dom";
+
 
 export type HotelFormData = {
   name: string;
@@ -19,6 +20,12 @@ export type HotelFormData = {
   roomCount:number,
   nearbyTemple: string[];
   location:string;
+  rooms: {
+    category: string;
+    totalRooms: number;
+    price: number;
+    images: File[];
+  }[];
 };
 
 type Props = {
@@ -26,6 +33,7 @@ type Props = {
   onSave: (hotelFormData: FormData) => void;
   isLoading: boolean;
 };
+
 const ManageHotelForm = ({ onSave, isLoading, hotel }: Props) => {
   const formMethods = useForm<HotelFormData>();
   const { handleSubmit, reset } = formMethods;
@@ -36,6 +44,8 @@ const ManageHotelForm = ({ onSave, isLoading, hotel }: Props) => {
   }, [hotel, reset]);
 
   const onSubmit = handleSubmit((formDataJson: HotelFormData) => {
+    console.log("in handle submit",formDataJson);
+    
     const formData = new FormData();
     if (hotel) {
       formData.append("hotelId",hotel._id);
@@ -44,13 +54,18 @@ const ManageHotelForm = ({ onSave, isLoading, hotel }: Props) => {
     formData.append("type", formDataJson.type);
     formData.append("description", formDataJson.description);
     formData.append("location", formDataJson.location);
-    formData.append("pricePerNight", formDataJson.pricePerNight.toString());
     formDataJson.nearbyTemple.forEach((temple) => {
-    formData.append("nearByTemple[]", temple); // Allow multiple entries
+    formData.append("nearbyTemple[]", temple); // Allow multiple entries
     });
 
-    formData.append("roomCount", formDataJson.roomCount.toString());
-
+    formData.append("rooms", JSON.stringify(formDataJson.rooms));
+    formDataJson.rooms.forEach((room) => {
+      if (room.images && room.images.length > 0) {
+        room.images.forEach((image) => {
+          formData.append(`roomImages${room.category}`, image);
+        });
+      }
+    });
 
     formDataJson.facilities.forEach((facility, index) => {
       formData.append(`facilities[${index}]`, facility);
@@ -65,8 +80,6 @@ const ManageHotelForm = ({ onSave, isLoading, hotel }: Props) => {
     Array.from(formDataJson.imageFiles).forEach((imageFile) => {
       formData.append(`imageFiles`, imageFile);
     });
-
-    console.log("formadata is", formData);
     onSave(formData);
   });
 
@@ -83,7 +96,7 @@ const ManageHotelForm = ({ onSave, isLoading, hotel }: Props) => {
          <DetailsSection hotel={hotel} />
          <TypeSection />
          <FacilitiesSection />
-         <GuestsSection />
+         <GuestsSection/>
          <ImagesSection />
          <div className="flex justify-end mt-6 space-x-4">
            <button

@@ -6,9 +6,11 @@ import { HotelType } from "../shared/types";
 
 const roomSchema=new mongoose.Schema({
   price:{type:Number,required:true},
+  category:{type:Number,required:true},
+  totalRooms:{type:Number,required:true},
+  availableRooms:{type:Number,required:true},
   features:[{type:String}],
   images:[{type:String}],
-  status:{type:String,enum:["available","booked","archive"],default:"available"},
 })
 
 const hotelSchema = new mongoose.Schema({
@@ -20,7 +22,7 @@ const hotelSchema = new mongoose.Schema({
   country: { type: String, default: "India" },
   type: { type: String, required: true },
   facilities: [{ type: String, required: true }],
-  nearByTemple: [{ type: String, required: true }],
+  nearbyTemple: [{ type: String, required: true }],
   imageUrls: [{ type: String, required: true }],
   lastUpdated: { type: Date, required: true },
   rooms:[roomSchema],

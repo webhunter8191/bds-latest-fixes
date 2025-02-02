@@ -5,7 +5,7 @@ import Hotel from "../models/hotel";
 import verifyToken from "../middleware/auth";
 import { body } from "express-validator";
 import { HotelType } from "../shared/types";
-
+import BookingModel from "../models/booking";
 const router = express.Router();
 
 const storage = multer.memoryStorage();
@@ -14,7 +14,7 @@ const upload = multer({
   limits: {
     fileSize: 5 * 1024 * 1024, // 5MB
   },
-});
+}).any();
 
 router.post(
   "/",
@@ -31,30 +31,45 @@ router.post(
   //     .notEmpty()
   //     .isArray()
   //     .withMessage("Facilities are required"),
-  //   body("nearByTemple")
+  //   body("nearbyTemple")
   //     .notEmpty()
   //     .isArray()
   //     .withMessage("Nearest temples are required"),
   // ],
-  upload.array("imageFiles", 6),
+  upload,
   async (req: Request, res: Response) => {
     try {
       // Normalize the nearbyTemple entries
-      if (req.body.nearByTemple) {
-        req.body.nearByTemple = req.body.nearByTemple.map((temple: string) =>
+      if (req.body.nearbyTemple) {
+        req.body.nearbyTemple = req.body.nearbyTemple.map((temple: string) =>
           temple.trim().replace(/\s+/g, " ").toLowerCase()
         );
       }      
-
-      const imageFiles = req.files as Express.Multer.File[];
+      const files = req.files as Express.Multer.File[];
+      const hotelImages = files.filter((file: Express.Multer.File) => file.fieldname.startsWith("imageFiles"));
+      const roomImages = files.filter((file: Express.Multer.File) => file.fieldname.startsWith("roomImages"));  
       const newHotel = req.body;
-
-      const imageUrls = await uploadImages(imageFiles);
-
+      const imageUrls = await uploadImages(hotelImages);
+      const roomImageUrls = await Promise.all(roomImages.map(async (file) => {
+        const roomImage = await uploadImages([file]);
+        return {
+          category: file.fieldname.split("roomImages")[1],
+          images: roomImage
+        }
+      }));    
       newHotel.imageUrls = imageUrls;
+      newHotel.rooms = JSON.parse(newHotel.rooms);
+      const rooms = newHotel.rooms.map((room: any) => {
+        room.images = roomImageUrls.find((roomImage: any) =>
+          {
+            room.availableRooms = room.totalRooms;
+            return roomImage.category == room.category}
+        )?.images || [];
+        return room;
+      });
+      newHotel.rooms = rooms;
       newHotel.lastUpdated = new Date();
       newHotel.userId = req.userId;
-
       const hotel = new Hotel(newHotel);
       await hotel.save();
       res.status(201).json({"message":"Hotel created successfully","data":hotel});
@@ -90,12 +105,13 @@ router.get("/:id", verifyToken, async (req: Request, res: Response) => {
 router.put(
   "/:hotelId",
   verifyToken,
-  upload.array("imageFiles"),
+  upload,
   async (req: Request, res: Response) => {
     try {
       const updatedHotel = req.body;
+      updatedHotel.rooms = JSON.parse(updatedHotel.rooms);
+      console.log("updatedHotel is", updatedHotel);
       updatedHotel.lastUpdated = new Date();
-
       const hotel = await Hotel.findOneAndUpdate(
         {
           _id: req.params.hotelId,
@@ -108,34 +124,36 @@ router.put(
       if (!hotel) {
         return res.status(404).json({ message: "Hotel not found" });
       }
-
-      const files = req.files as Express.Multer.File[];
+      const files = req.files as Express.Multer.File[];      
       const updatedImageUrls = await uploadImages(files);
-
       hotel.imageUrls = [
         ...updatedImageUrls,
         ...(updatedHotel.imageUrls || []),
       ];
-
       await hotel.save();
       res.status(201).json(hotel);
     } catch (error) {
+      console.log("error is", error);
       res.status(500).json({ message: "Something went throw" });
     }
   }
 );
 
-router.get("/my-bookings/:userId", async (req: Request, res: Response) => {
-  try {
-    const hotel = await Hotel.find({
-      userId: req.params.userId,
-    }, {name:1,bookings:1});
-    if(!hotel){
+router.get("/my-bookings/:userId",
+  // verifyToken,
+   async (req: Request, res: Response) => {
+  try{
+    const userId = req.params.userId;
+    const hotels = (await Hotel.find({userId},{_id:1})).map(hotel=>hotel._id.toString());
+    if(!hotels){
       return res.status(404).json({ message: "Hotel not found" });
     }
-   return res.status(200).json({"message":"Data fetched successfully","data":hotel});
-  } catch (error) {
-    res.status(500).json({ message: "Error fetching hotels" });
+    const bookings = await BookingModel.find({hotelId:{$in:hotels}},{_id:0, hotelId:0, userId:0, __v:0});
+    return res.status(200).json({"message":"bookings fetched successfully", data: bookings });
+  }
+  catch(error){
+    console.log(error);
+    return res.status(500).json({ message: "Unable to fetch bookings" });
   }
 })
 

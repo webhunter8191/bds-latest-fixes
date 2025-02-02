@@ -6,38 +6,38 @@ import BookingModel from "../models/booking";
 
 const router = express.Router();
 
-// /api/my-bookings
-// router.get("/", verifyToken, async (req: Request, res: Response) => {
-//   try {
-//     const hotels = await Hotel.find({
-//       bookings: { $elemMatch: { userId: req.userId } },
-//     });
-
-//     const results = hotels.map((hotel) => {
-//       const userBookings = hotel.bookings.filter(
-//         (booking) => booking.userId === req.userId
-//       );
-
-//       const hotelWithUserBookings: HotelType = {
-//         ...hotel.toObject(),
-//         bookings: userBookings,
-//       };
-
-//       return hotelWithUserBookings;
-//     });
-
-//     res.status(200).send(results);
-//   } catch (error) {
-//     console.log(error);
-//     res.status(500).json({ message: "Unable to fetch bookings" });
-//   }
-// });
-
-router.post("/booking", async (req: Request, res: Response) => {
+//  /api/my-bookings
+router.get("/", 
+  verifyToken,
+  async (req: Request, res: Response) => {
   try {
-    // const userId = req.userId;
-    const userId='678a87c5a90a33eebae907a5';
-    const { firstName, lastName, email, checkIn, checkOut, hotelId, totalCost, roomsId } = req.body;
+    const userId = req.userId;
+    const bookings = await BookingModel.find({ userId, deletedAt:null }).sort({ checkIn: -1 });
+    const hotelIds = bookings.map((booking) => booking.hotelId);
+    const hotels = await Hotel.find({ _id: { $in: hotelIds } },{name:1,rooms:1});    
+    const data = bookings.map((booking) => {
+      const hotel = hotels.find((hotel) => hotel._id.toString() === booking.hotelId);
+      return {
+        ...booking.toJSON(),
+        hotelName: hotel?.name,
+        rooms:booking?.rooms,
+      };
+    });
+    console.log("hotels are", hotels);
+    
+    return res.status(200).json({"message":"bookings fetched successfully", data });
+  } catch (error) {
+    console.log(error);
+    return res.status(500).json({ message: "Unable to fetch bookings" });
+  }
+});
+
+router.post("/booking", 
+  verifyToken, 
+  async (req: Request, res: Response) => {
+  try {
+    const userId = req.userId;
+    const { firstName, lastName, email, checkIn, checkOut, hotelId, totalCost, roomsId, rooms } = req.body;
 
     // Validate request payload
     const checkInDate = new Date(checkIn);
@@ -52,21 +52,6 @@ router.post("/booking", async (req: Request, res: Response) => {
       return res.status(404).json({ message: "Hotel not found" });
     }
 
-    // Check if a booking already exists for the user with overlapping dates
-    // const existingBooking = hotel.bookings.find(
-    //   (booking) =>
-    //     booking.userId === userId &&
-    //     ((checkInDate >= new Date(booking.checkIn) && checkInDate <= new Date(booking.checkOut)) ||
-    //       (checkOutDate >= new Date(booking.checkIn) && checkOutDate <= new Date(booking.checkOut)))
-    // );
-
-    // if (existingBooking) {
-    //   return res.status(400).json({
-    //     success: false,
-    //     message: "A booking already exists for the selected dates.",
-    //   });
-    // }
-
     // Add the new booking
     const booking = {
       firstName,
@@ -78,15 +63,37 @@ router.post("/booking", async (req: Request, res: Response) => {
       hotelId,
       userId,
       totalCost,
+      rooms,
+
     };
 
     const data = await BookingModel.create(booking);
-    await Hotel.updateOne({_id : hotelId, "rooms._id":{$in:roomsId}},{$set:{"rooms.$.status":"booked"}});
+    await Hotel.updateOne({_id : hotelId, "rooms._id":{$in:roomsId}},{$inc:{"rooms.$.availableRooms":-rooms}});
     return res.status(200).json({ "message":"booking created successfully", data: data });
   } catch (error) {
     console.log(error);
     res.status(500).json({ message: "Unable to create booking" });
   }
 });
+// for normal user
+router.patch("/checkout/:bookingId",
+  // verifyToken, 
+  async (req: Request, res: Response) => {
+  try {
+    const bookingId = req.params.bookingId;
+    const booking = await BookingModel
+      .findOne({ _id: bookingId,deletedAt:null },{hotelId:1,roomsId:1,rooms:1});
+    if (!booking) {
+      return res.status(404).json({ message: "Booking not found" });
+    }
+    await BookingModel.updateOne({ _id: bookingId }, {deletedAt:new Date()});
+    await Hotel.updateOne({_id : booking.hotelId, "rooms._id":{$in:booking.roomsId}},{$inc:{"rooms.$.availableRooms":booking.rooms}});
+    return res.status(200).json({ message: "Booking cancelled successfully" });
+  } catch (error) {
+    console.log(error);
+    res.status(500).json({ message: "Unable to cancel booking" });
+  }
+}
+);
 
 export default router;
