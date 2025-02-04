@@ -9,11 +9,11 @@ const router = express.Router();
 
 //  /api/my-bookings
 router.get("/", 
-  // verifyToken,
+  verifyToken,
   async (req: Request, res: Response) => {
   try {
     
-    const userId = "678a87c5a90a33eebae907a5";
+    const userId = req.userId;
     const bookings = await BookingModel.find({ userId, deletedAt:null},{deletedAt:0,__v:0}).sort({ checkIn: -1 });    
     const hotelIds = bookings.map((booking) => booking.hotelId);    
     const userDetails = await UserModel.findOne({_id:userId},{mobNo:1,_id:0});
