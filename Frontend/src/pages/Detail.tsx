@@ -80,17 +80,24 @@ const Detail = () => {
   const [selectedRoomId,setSelectedRoomId]=useState<string>("");
 
   const handleRoomSelection = (availableRooms: number, category: string, price: number, roomId: string) => {
-    console.log("Selected Room ID:", roomId);
-    setSelectedRooms((prev) => ({
-      ...prev,
-      [category]: !prev[category]
-    }));
+    setSelectedRooms((prev) => {
+      // If clicking the same room that's already selected, unselect it
+      if (prev[category]) {
+        return {};
+      }
+      // Otherwise, clear all selections and select the new room
+      return {
+        [category]: true
+      };
+    });
     
+    // If we're selecting a new room
     if (!selectedRooms[category]) {
       setAvailableRooms(availableRooms);
       setSelectedRoomPrice(price);
       setSelectedRoomId(roomId);
     } else {
+      // If we're unselecting the current room
       setAvailableRooms(0);
       setSelectedRoomPrice(0);
       setSelectedRoomId("");

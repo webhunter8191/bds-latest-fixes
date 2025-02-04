@@ -4,6 +4,7 @@ import BookingModel from "../models/booking";
 import { BookingType, HotelSearchResponse } from "../shared/types";
 import { param, validationResult } from "express-validator";
 import verifyToken from "../middleware/auth";
+import mongoose from "mongoose";
 
 const router = express.Router();
 
@@ -66,7 +67,7 @@ router.get("/", async (req: Request, res: Response) => {
                         cond: {
                           $and: [
                             { $lte: ["$$room.availableRooms", "$$room.totalRooms"] },
-                            { $ne: ["$$room.availableRooms", 0] }
+                            { $ne: ["$$room.availableRooms", 0] },
                           ]
                         }
                       }
@@ -100,13 +101,27 @@ router.get("/", async (req: Request, res: Response) => {
 // Fetch specific hotel details by ID
 router.get("/:id", [param("id").notEmpty().withMessage("Hotel ID is required")], async (req: Request, res: Response) => {
   try {
-  const errors = validationResult(req);
-  if (!errors.isEmpty()) {
-    return res.status(400).json({ errors: errors.array() });
-  }
+    const errors = validationResult(req);
+    if (!errors.isEmpty()) {
+      return res.status(400).json({ errors: errors.array() });
+    }
 
-  const id = req.params.id.toString(); 
-    const hotel = await Hotel.findById(id);
+    const id = req.params.id.toString(); 
+    const aggregation = [
+      { $match: { _id: new mongoose.Types.ObjectId(id) } },
+      {
+        $addFields: {
+          rooms: {
+            $filter: {
+              input: "$rooms",
+              as: "room",
+              cond: { $gt: ["$$room.availableRooms", 0] }
+            }
+          }
+        }
+      }
+    ];
+    const [hotel] = await Hotel.aggregate(aggregation);
     return res.status(200).json(hotel);
   } catch (error) {
     console.log(error);

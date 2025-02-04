@@ -3,32 +3,72 @@ import verifyToken from "../middleware/auth";
 import Hotel from "../models/hotel";
 import { HotelType } from "../shared/types";
 import BookingModel from "../models/booking";
+import UserModel from "../models/user";
 
 const router = express.Router();
 
 //  /api/my-bookings
 router.get("/", 
-  verifyToken,
+  // verifyToken,
   async (req: Request, res: Response) => {
   try {
     
-    const userId = req.userId;
-    const bookings = await BookingModel.find({ userId, deletedAt:null }).sort({ checkIn: -1 });
-    console.log("bookings", bookings);
-    
-    const hotelIds = bookings.map((booking) => booking.hotelId);
-    console.log("hotelIds", hotelIds);
-    
-    const hotels = await Hotel.find({ _id: { $in: hotelIds } },{name:1,rooms:1});    
+    const userId = "678a87c5a90a33eebae907a5";
+    const bookings = await BookingModel.find({ userId, deletedAt:null},{deletedAt:0,__v:0}).sort({ checkIn: -1 });    
+    const hotelIds = bookings.map((booking) => booking.hotelId);    
+    const userDetails = await UserModel.findOne({_id:userId},{mobNo:1,_id:0});
+    const hotels = await Hotel.find({ _id: { $in: hotelIds } },{name:1,rooms:1,"imageUrls":1});    
     const data = bookings.map((booking) => {
       const hotel = hotels.find((hotel) => hotel._id.toString() === booking.hotelId);
+      const rooms = hotel?.rooms.filter((room:any) => booking.roomsId.includes(room._id.toString()));      
       return {
         ...booking.toJSON(),
         hotelName: hotel?.name,
-        rooms:booking?.rooms,
+        roomsCount:booking?.rooms,
+        imageUrl:hotel?.imageUrls[0],
+        rooms,
+
       };
     });    
-    return res.status(200).json(data);
+
+const finalData = data.map((booking) => {
+   return {
+
+    hotelName:booking.hotelName,
+    firstName:booking.firstName,
+    lastName:booking.lastName,
+    email:booking.email,
+    phone:userDetails?.mobNo,
+    imageUrl:booking.imageUrl,
+    bookings:booking?.rooms?.map((room:any) => {
+      return {
+        checkIn:booking.checkIn,
+        checkOut:booking.checkOut,
+        category:room.category,
+        bookingId:booking._id,
+        roomsCount:booking.roomsCount,
+        totalCost:Math.abs(booking.totalCost),
+      }
+    })
+   }
+})
+
+// Group bookings by hotel name
+const groupedData = finalData.reduce((acc: any, curr) => {
+  const existingHotel = acc.find((hotel: any) => hotel.hotelName === curr.hotelName);
+  if (!existingHotel) {
+    acc.push({
+      ...curr,
+      bookings: curr.bookings || []
+    });
+  } else if (curr.bookings && curr.bookings.length > 0) {
+    existingHotel.bookings.push(...curr.bookings);
+  }
+  
+  return acc;
+}, []);
+
+    return res.status(200).json(groupedData);
   } catch (error) {
     console.log(error);
     return res.status(500).json({ message: "Unable to fetch bookings" });

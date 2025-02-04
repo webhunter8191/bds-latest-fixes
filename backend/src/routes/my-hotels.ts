@@ -6,6 +6,7 @@ import verifyToken from "../middleware/auth";
 import { body } from "express-validator";
 import { HotelType } from "../shared/types";
 import BookingModel from "../models/booking";
+import UserModel from "../models/user";
 const router = express.Router();
 
 const storage = multer.memoryStorage();
@@ -152,16 +153,55 @@ router.put(
 );
 
 router.get("/my-bookings/:userId",
-  // verifyToken,
+  verifyToken,
    async (req: Request, res: Response) => {
   try{
-    const userId = req.params.userId;
-    const hotels = (await Hotel.find({userId},{_id:1})).map(hotel=>hotel._id.toString());
-    if(!hotels){
+    const userId = req.userId; 
+    const hotelData = await Hotel.find({userId},{name:1,rooms:1,imageUrls:1});
+          
+    if(!hotelData){
       return res.status(404).json({ message: "Hotel not found" });
     }
-    const bookings = await BookingModel.find({hotelId:{$in:hotels}},{_id:0, hotelId:0, userId:0, __v:0});
-    return res.status(200).json({"message":"bookings fetched successfully", data: bookings });
+    const hotelIds = hotelData.map((hotel:any)=>hotel._id.toString());
+    const bookings = await BookingModel.find({hotelId:{$in:hotelIds},deletedAt:null},{hotelId:0, __v:0}).lean();
+
+const userIds = [...new Set(bookings.map((booking: any) => booking.userId))];
+const userData = await UserModel.find({_id:{$in:userIds}},{mobNo:1});
+const groupedBookings = bookings.reduce((acc: any, booking: any) => {
+  const roomId = booking.roomsId[0];
+  const hotel = hotelData.find((h: any) => 
+    h.rooms.some((r: any) => r._id.toString() === roomId)
+  );
+  const user = userData.find((u: any) => u._id.toString() === booking.userId);
+  
+  const hotelName = hotel?.name || '';
+  if (!acc[hotelName]) {
+    acc[hotelName] = {
+      hotelName,
+      firstName: booking.firstName,
+      lastName: booking.lastName,
+      email: booking.email,
+      phone: user?.mobNo,
+      imageUrl: hotel?.imageUrls?.[0] || '',
+      bookings: []
+    };
+  }
+  const room = hotel?.rooms.find((r: any) => r._id.toString() === roomId);  
+  acc[hotelName].bookings.push({
+    checkIn: booking.checkIn,
+    checkOut: booking.checkOut,
+    category: (room as any)?.category,
+    bookingId: booking._id.toString(),
+    roomsCount: booking.roomsId.length.toString(),
+    totalCost: booking.totalCost
+  });
+
+  return acc;
+}, {});
+
+// Transform the groupedBookings object into an array
+const bookingsArray = Object.values(groupedBookings);
+    return res.status(200).json(bookingsArray);
   }
   catch(error){
     console.log(error);
