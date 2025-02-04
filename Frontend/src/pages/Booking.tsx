@@ -2,13 +2,16 @@ import { useQuery } from "react-query";
 import * as apiClient from "../api-client";
 import BookingForm from "../forms/BookingForm/BookingForm";
 import { useSearchContext } from "../contexts/SearchContext";
-import { useParams } from "react-router-dom";
+import { useParams, useLocation } from "react-router-dom";
 import { useEffect, useState } from "react";
 import BookingDetailsSummary from "../components/BookingDetailsSummary";
 
 
 const Booking = () => {
   const { hotelId } = useParams();
+  const { roomsId } = useLocation().state as { roomsId: string };
+  console.log("roomsId", roomsId);
+  
   const search = useSearchContext();
   const [numberOfNights, setNumberOfNights] = useState<number>(0);
 
@@ -53,8 +56,8 @@ const Booking = () => {
       {currentUser &&  (
         <BookingForm
           currentUser={currentUser}
-          pricepernight={hotel.pricePerNight}
-         
+          totalCost={search.totalCost}
+          roomsId={roomsId}
         />
       )}
     </div>

@@ -1,114 +1,19 @@
-// import { useQuery } from "react-query";
-// import * as apiClient from "../api-client";
-
-// const MyBookings = () => {
-//   const {
-//     data: hotels,
-//     isLoading,
-//     error,
-//   } = useQuery("fetchMyBookings", apiClient.fetchMyBookings);
-
-//   // Loading and Error handling
-//   if (isLoading) {
-//     return <span className="text-xl text-center">Loading...</span>;
-//   }
-
-//   if (error) {
-//     return (
-//       <span className="text-xl text-center text-red-500">
-//         Error: {error.message}
-//       </span>
-//     );
-//   }
-
-//   // No bookings found
-//   if (!hotels || hotels.length === 0) {
-//     return (
-//       <div className="flex items-center justify-center min-h-screen">
-//         <span className="text-2xl font-semibold text-gray-600">
-//           No bookings found
-//         </span>
-//       </div>
-//     );
-//   }
-
-//   return (
-//     <div className="space-y-5 p-5">
-//       <h1 className="text-3xl font-bold text-center mb-6">My Bookings</h1>
-//       {hotels.map((hotel) => (
-//         <div
-//           key={hotel.id}
-//           className="grid grid-cols-1 lg:grid-cols-[1fr_3fr] border border-slate-300 rounded-lg shadow-lg p-8 gap-5 mb-6 hover:shadow-2xl transition-shadow duration-300"
-//         >
-//           <div className="lg:w-full lg:h-[250px]">
-//             <img
-//               src={hotel.imageUrls[0]}
-//               alt={hotel.name}
-//               className="w-full h-full object-cover object-center rounded-lg"
-//             />
-//           </div>
-//           <div className="flex flex-col gap-4 overflow-y-auto max-h-[300px]">
-//             <div className="text-2xl font-bold text-gray-800">
-//               {hotel.name}
-//               <div className="text-sm font-normal text-gray-500">
-//                 {hotel.city}, {hotel.country}
-//               </div>
-//             </div>
-//             {hotel.bookings.map((booking, index) => (
-//               <div key={index} className="mt-3">
-//                 <div>
-//                   <span className="font-semibold text-gray-700 mr-2">
-//                     Dates:{" "}
-//                   </span>
-//                   <span className="text-gray-600">
-//                     {new Date(booking.checkIn).toDateString()} -{" "}
-//                     {new Date(booking.checkOut).toDateString()}
-//                   </span>
-//                 </div>
-//                 <div>
-//                   <span className="font-semibold text-gray-700 mr-2">
-//                     Guests:
-//                   </span>
-//                   <span className="text-gray-600">
-//                     {booking.roomCount} rooms
-//                   </span>
-//                 </div>
-//               </div>
-//             ))}
-//           </div>
-//         </div>
-//       ))}
-//     </div>
-//   );
-// };
-
-// export default MyBookings;
-
 import { useQuery } from "react-query";
 import * as apiClient from "../api-client";
 
 const MyBookings = () => {
   const {
-    data: hotels,
+    data: bookings,
     isLoading,
     // error,
-  } = useQuery("fetchMyBookings", apiClient.fetchMyBookings);
-
+  } = useQuery("fetchMyBookings", apiClient.fetchMyBookings);  
   // Loading and Error handling
   if (isLoading) {
     return <span className="text-xl text-center">Loading...</span>;
   }
 
-  // if (error) {
-  //   return (
-  //     <span className="text-xl text-center text-red-500">
-  //       Error: {error.message}
-  //     </span>
-  //   );
-  // }
-
   // No bookings found
-  if (!hotels || hotels.length === 0) {
+  if (!bookings || bookings.length === 0) {
     return (
       <div className="flex items-center justify-center min-h-screen">
         <span className="text-2xl font-semibold text-gray-600">
@@ -118,65 +23,58 @@ const MyBookings = () => {
     );
   }
 
+  // Format the dates
+  const formatDate = (dateString: string | number | Date) => {
+    const date = new Date(dateString);
+    return isNaN(date.getTime()) ? "Invalid Date" : date.toDateString();
+  };
+
   return (
     <div className="space-y-5 p-5">
       <h1 className="text-3xl font-bold text-center mb-6">My Bookings</h1>
-      {hotels.map((hotel) => {
-        // Combine booking information
-        const totalRooms = hotel.bookings.reduce(
-          (sum, booking) => sum + booking.roomCount,
-          0
-        );
-
-        // Determine the earliest check-in and latest check-out
-        const sortedBookings = hotel.bookings.sort(
-          (a, b) => new Date(a.checkIn).getTime() - new Date(b.checkIn).getTime()
-        );
-        const firstCheckIn = sortedBookings[0]?.checkIn;
-        const lastCheckOut =
-          sortedBookings[sortedBookings.length - 1]?.checkOut;
-
-        // Format the dates
-        const formatDate = (dateString: string | number | Date) => {
-          const date = new Date(dateString);
-          return isNaN(date.getTime()) ? "Invalid Date" : date.toDateString();
-        };
-
-        return (
-          <div
-            key={hotel._id}
-            className="grid grid-cols-1 lg:grid-cols-[1fr_3fr] border border-slate-300 rounded-lg shadow-lg p-8 gap-5 mb-6 hover:shadow-2xl transition-shadow duration-300"
-          >
-            <div className="lg:w-full lg:h-[250px]">
-              <img
-                src={hotel.imageUrls[0]}
-                alt={hotel.name}
-                className="w-full h-full object-cover object-center rounded-lg"
-              />
+      {bookings.map((booking) => (
+        <div
+          key={booking._id}
+          className="grid grid-cols-1 lg:grid-cols-[1fr_3fr] border border-slate-300 rounded-lg shadow-lg p-8 gap-5 mb-6 hover:shadow-2xl transition-shadow duration-300"
+        >
+          <div className="lg:w-full lg:h-[250px]">
+            {/* <img
+              src={booking.imageUrls[0]}
+              alt={booking.hotelName}
+              className="w-full h-full object-cover object-center rounded-lg"
+            /> */}
+          </div>
+          <div className="flex flex-col gap-4">
+            <div className="text-2xl font-bold text-gray-800">
+              {booking.hotelName}
             </div>
-            <div className="flex flex-col gap-4 overflow-y-auto max-h-[300px]">
-              <div className="text-2xl font-bold text-gray-800">
-                {hotel.name}
-                {/* <div className="text-sm font-normal text-gray-500">
-                  {hotel.city}, {hotel.country}
-                </div> */}
+            <div className="mt-3">
+              <div>
+                <span className="font-semibold text-gray-700 mr-2">Dates:</span>
+                <span className="text-gray-600">
+                  {formatDate(booking.checkIn)} - {formatDate(booking.checkOut)}
+                </span>
               </div>
-              <div className="mt-3">
-                <div>
-                  <span className="font-semibold text-gray-700 mr-2">Dates:</span>
-                  <span className="text-gray-600">
-                    {formatDate(firstCheckIn)} - {formatDate(lastCheckOut)}
-                  </span>
-                </div>
-                <div>
-                  <span className="font-semibold text-gray-700 mr-2">rooms:</span>
-                  <span className="text-gray-600">{totalRooms} rooms</span>
-                </div>
+              <div>
+                <span className="font-semibold text-gray-700 mr-2">Rooms:</span>
+                <span className="text-gray-600">{booking.rooms} rooms</span>
+              </div>
+              <div>
+                <span className="font-semibold text-gray-700 mr-2">Guest:</span>
+                <span className="text-gray-600">
+                  {booking.firstName} {booking.lastName}
+                </span>
+              </div>
+              <div>
+                <span className="font-semibold text-gray-700 mr-2">Total Cost:</span>
+                <span className="text-gray-600">
+                ₹{booking.totalCost.toFixed(2)}
+                </span>
               </div>
             </div>
           </div>
-        );
-      })}
+        </div>
+      ))}
     </div>
   );
 };

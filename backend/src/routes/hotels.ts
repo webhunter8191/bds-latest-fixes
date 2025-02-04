@@ -91,7 +91,6 @@ router.get("/", async (req: Request, res: Response) => {
     ];
     const hotels = await Hotel.aggregate(aggregation);
     return res.status(200).json(hotels);
-
   } catch (error) {
     console.log("error", error);
     res.status(500).json({ message: "Error fetching hotels" });
@@ -116,21 +115,21 @@ router.get("/:id", [param("id").notEmpty().withMessage("Hotel ID is required")],
 });
 
 // Handle booking creation without Stripe
-router.post("/:hotelId/bookings", verifyToken, async (req: Request, res: Response) => {
-  try {
-    const bookingDetails = req.body;
-    const hotelId = req.params.hotelId;
-    const hotel = await Hotel.findById(hotelId);
-    if(!hotel){
-      return res.status(400).json({message:"Hotel not found"});
-    }
-    await BookingModel.create(bookingDetails);
-    return res.status(200).json({"message":"Hotel Booked Successfully"});
-  } catch (error) {
-    console.log(error);
-    res.status(500).json({ message: "something went wrong" });
-  }
-});
+// router.post("/:hotelId/bookings", verifyToken, async (req: Request, res: Response) => {
+//   try {
+//     const bookingDetails = req.body;
+//     const hotelId = req.params.hotelId;
+//     const hotel = await Hotel.findById(hotelId);
+//     if(!hotel){
+//       return res.status(400).json({message:"Hotel not found"});
+//     }
+//     await BookingModel.create(bookingDetails);
+//     return res.status(200).json({"message":"Hotel Booked Successfully"});
+//   } catch (error) {
+//     console.log(error);
+//     res.status(500).json({ message: "something went wrong" });
+//   }
+// });
 
 // Construct search query for filtering hotels
 const constructSearchQuery = (queryParams: any) => {

@@ -11,9 +11,14 @@ router.get("/",
   verifyToken,
   async (req: Request, res: Response) => {
   try {
+    
     const userId = req.userId;
     const bookings = await BookingModel.find({ userId, deletedAt:null }).sort({ checkIn: -1 });
+    console.log("bookings", bookings);
+    
     const hotelIds = bookings.map((booking) => booking.hotelId);
+    console.log("hotelIds", hotelIds);
+    
     const hotels = await Hotel.find({ _id: { $in: hotelIds } },{name:1,rooms:1});    
     const data = bookings.map((booking) => {
       const hotel = hotels.find((hotel) => hotel._id.toString() === booking.hotelId);
@@ -22,22 +27,25 @@ router.get("/",
         hotelName: hotel?.name,
         rooms:booking?.rooms,
       };
-    });
-    console.log("hotels are", hotels);
-    
-    return res.status(200).json({"message":"bookings fetched successfully", data });
+    });    
+    return res.status(200).json(data);
   } catch (error) {
     console.log(error);
     return res.status(500).json({ message: "Unable to fetch bookings" });
   }
 });
 
-router.post("/booking", 
+router.post("/booking/:hotelId", 
   verifyToken, 
   async (req: Request, res: Response) => {
   try {
+    console.log("in booking route");
+    
     const userId = req.userId;
-    const { firstName, lastName, email, checkIn, checkOut, hotelId, totalCost, roomsId, rooms } = req.body;
+    const hotelId = req.params.hotelId;
+    const { firstName, lastName, email, checkIn, checkOut, totalCost, roomsId, roomCount } = req.body;
+    console.log("in booking route", req.body);
+
 
     // Validate request payload
     const checkInDate = new Date(checkIn);
@@ -51,6 +59,8 @@ router.post("/booking",
     if (!hotel) {
       return res.status(404).json({ message: "Hotel not found" });
     }
+
+    const rooms = roomCount;
 
     // Add the new booking
     const booking = {
