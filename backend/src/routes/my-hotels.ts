@@ -209,6 +209,59 @@ const bookingsArray = Object.values(groupedBookings);
   }
 })
 
+router.get("/admin/bookings",
+  // verifyToken,
+  async(req:Request,res:Response)=>{
+  try{
+    const hotelData = await Hotel.find({},{name:1,rooms:1,imageUrls:1});
+    if(!hotelData){
+      return res.status(404).json({ message: "Hotel not found" });
+    }
+    const hotelIds = hotelData.map((hotel:any)=>hotel._id.toString());
+    const bookings = await BookingModel.find({hotelId:{$in:hotelIds},deletedAt:null},{hotelId:0, __v:0}).lean();
+const userIds = [...new Set(bookings.map((booking: any) => booking.userId))];
+const userData = await UserModel.find({_id:{$in:userIds}},{mobNo:1});
+const groupedBookings = bookings.reduce((acc: any, booking: any) => {
+  const roomId = booking.roomsId[0];
+  const hotel = hotelData.find((h: any) => 
+    h.rooms.some((r: any) => r._id.toString() === roomId)
+  );
+  const user = userData.find((u: any) => u._id.toString() === booking.userId);
+  
+  const hotelName = hotel?.name || '';
+  if (!acc[hotelName]) {
+    acc[hotelName] = {
+      hotelName,
+      firstName: booking.firstName,
+      lastName: booking.lastName,
+      email: booking.email,
+      phone: user?.mobNo,
+      imageUrl: hotel?.imageUrls?.[0] || '',
+      bookings: []
+    };
+  }
+  const room = hotel?.rooms.find((r: any) => r._id.toString() === roomId);  
+  acc[hotelName].bookings.push({
+    checkIn: booking.checkIn,
+    checkOut: booking.checkOut,
+    category: (room as any)?.category,
+    bookingId: booking._id.toString(),
+    roomsCount: booking.roomsId.length.toString(),
+    totalCost: booking.totalCost
+  });
+
+  return acc;
+}, {});
+
+// Transform the groupedBookings object into an array
+const bookingsArray = Object.values(groupedBookings);
+    return res.status(200).json(bookingsArray);
+  }catch(error){
+    console.log(error);
+    return res.status(500).json({ message: "Unable to fetch hotels" });
+  }
+})
+
 async function uploadImages(imageFiles: Express.Multer.File[]) {
   const uploadPromises = imageFiles.map(async (image) => {
     const b64 = Buffer.from(image.buffer).toString("base64");
