@@ -70,10 +70,10 @@ export const SearchContextProvider = ({
     }
 
     sessionStorage.setItem("destination", destination);
-    sessionStorage.setItem("checkIn", checkIn.toISOString());
-    sessionStorage.setItem("checkOut", checkOut.toISOString());
-    sessionStorage.setItem("roomCount", roomCount.toString());
-    sessionStorage.setItem("totalCost", totalCost.toString());
+    sessionStorage.setItem("checkIn", checkIn?.toISOString());
+    sessionStorage.setItem("checkOut", checkOut?.toISOString());
+    sessionStorage.setItem("roomCount", roomCount?.toString());
+    sessionStorage.setItem("totalCost", totalCost?.toString());
 
     if (hotelId) {
       sessionStorage.setItem("hotelId", hotelId);
