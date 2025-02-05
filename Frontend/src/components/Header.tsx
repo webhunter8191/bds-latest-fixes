@@ -10,7 +10,7 @@
 
 //   // Function to handle search button click
 //   const handleSearchClick = () => {
-   
+
 //     navigate("/search")
 //   };
 
@@ -81,7 +81,6 @@
 // };
 
 // export default Header;
-
 
 // import { NavLink, useNavigate } from "react-router-dom";
 // import { useAppContext } from "../contexts/AppContext";
@@ -182,7 +181,6 @@
 
 // export default Header;
 
-
 import { useState } from "react";
 import { NavLink } from "react-router-dom";
 import { FaBars, FaTimes, FaUserCircle } from "react-icons/fa";
@@ -215,7 +213,9 @@ const Header = () => {
 
         {/* Full-Screen Dropdown Menu for small screens */}
         <div
-          className={`fixed inset-0  bg-opacity-50 backdrop-blur-lg z-50 ${isMenuOpen ? "block" : "hidden"} lg:hidden`}
+          className={`fixed inset-0  bg-opacity-50 backdrop-blur-lg z-50 ${
+            isMenuOpen ? "block" : "hidden"
+          } lg:hidden`}
         >
           <nav className="absolute top-0 left-0 w-full h-full flex flex-col items-center justify-center  shadow-lg p-4">
             {/* Close Button */}
@@ -262,7 +262,6 @@ const Header = () => {
           </nav>
         </div>
 
-
         {/* Normal Navigation for Larger Screens */}
         <nav className="hidden lg:flex items-center space-x-4">
           {isLoggedIn ? (
@@ -301,5 +300,3 @@ const Header = () => {
 };
 
 export default Header;
-
-

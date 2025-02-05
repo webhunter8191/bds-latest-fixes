@@ -29,7 +29,7 @@ const DetailsSection = ({ hotel }: any) => {
   React.useEffect(() => {
     if (hotel) {
       // Convert to lowercase when setting initial values
-      const lowerCaseTemples = hotel.nearbyTemple.map(temple => temple.toLowerCase());
+      const lowerCaseTemples = hotel.nearbyTemple.map((temple: string) => temple.toLowerCase());
       setNearbyTempleValues(lowerCaseTemples);
       setValue("nearbyTemple", lowerCaseTemples);
     }

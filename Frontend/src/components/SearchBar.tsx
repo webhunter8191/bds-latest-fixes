@@ -1,244 +1,4 @@
-// import { FormEvent, useState } from "react";
-// import { useSearchContext } from "../contexts/SearchContext";
-// import { MdTravelExplore } from "react-icons/md";
-// import DatePicker from "react-datepicker";
-// import "react-datepicker/dist/react-datepicker.css";
-// import { useNavigate } from "react-router-dom";
-
-// const SearchBar = () => {
-//   const navigate = useNavigate();
-//   const search = useSearchContext();
-
-//   const [destination, setDestination] = useState<string>(search.destination);
-//   const [checkIn, setCheckIn] = useState<Date | null>(search.checkIn);
-//   const [checkOut, setCheckOut] = useState<Date | null>(search.checkOut);
-//   const [roomCount, setRoomCount] = useState<number>(search.roomCount);
- 
-
-//   const handleSubmit = (event: FormEvent) => {
-//     event.preventDefault();
-
-//     if (checkIn && checkOut) {
-//       // Only save the values if both checkIn and checkOut are valid dates
-//       search.saveSearchValues(
-//         destination,
-//         checkIn,
-//         checkOut,
-//      roomCount
-//       );
-//       navigate("/search");
-//     } else {
-//       alert("Please select valid check-in and check-out dates.");
-//     }
-//   };
-
-//   const handleClear = () => {
-//     setDestination("");
-//     setCheckIn(null);
-//     setCheckOut(null);
-//     setRoomCount(1);
-//   };
-
-//   const minDate = new Date();
-//   const maxDate = new Date();
-//   maxDate.setFullYear(maxDate.getFullYear() + 1);
-
-//   return (
-//     <form
-//       onSubmit={handleSubmit}
-//       className="-mt-8 p-5 bg-white rounded-lg shadow-md grid grid-cols-2 lg:grid-cols-3 2xl:grid-cols-5 items-center gap-4 animate__animated animate__fadeInUp"
-//     >
-//       <div className="flex flex-row items-center flex-1 bg-white p-2 rounded-lg shadow-sm hover:shadow-lg transition-all duration-300">
-//         <MdTravelExplore size={25} className="mr-2" />
-//         <input
-//           placeholder="Where are you going?"
-//           className="text-md w-full focus:outline-none"
-//           value={destination}
-//           onChange={(event) => setDestination(event.target.value)}
-//         />
-//       </div>
-
-//       <div className="flex bg-white px-2 py-1 gap-2 rounded-lg">
-//         <label className="items-center flex">
-//           Rooms:
-//           <input
-//             className="w-full p-1 focus:outline-none font-bold"
-//             type="number"
-//             min={1}
-//             max={20}
-//             value={roomCount}
-//             onChange={(event) => setRoomCount(parseInt(event.target.value))}
-//           />
-//         </label>
-//       </div>
-
-//       <div >
-//         <DatePicker
-//           selected={checkIn}
-//           onChange={(date) => setCheckIn(date as Date | null)} // Allow null
-//           selectsStart
-//           startDate={checkIn}
-//           endDate={checkOut}
-//           minDate={minDate}
-//           maxDate={maxDate}
-//           placeholderText="Check-in Date"
-//           className="min-w-full bg-white p-2 focus:outline-none rounded-lg"
-//           wrapperClassName="min-w-full"
-//         />
-//       </div>
-
-//       <div >
-//         <DatePicker
-//           selected={checkOut}
-//           onChange={(date) => setCheckOut(date as Date | null)} // Allow null
-//           selectsStart
-//           startDate={checkIn}
-//           endDate={checkOut}
-//           minDate={minDate}
-//           maxDate={maxDate}
-//           placeholderText="Check-out Date"
-//           className="min-w-full bg-white p-2 focus:outline-none rounded-lg"
-//           wrapperClassName="min-w-full"
-//         />
-//       </div>
-
-//       <div className="flex gap-3">
-//         <button className="w-2/3 bg-blue-600 text-white h-full p-2 font-bold text-xl hover:bg-blue-500 transition-all duration-300 rounded-lg">
-//           Search
-//         </button>
-//         <button
-//           type="button"
-//           className="w-1/3 bg-red-600 text-white h-full p-2 font-bold text-xl hover:bg-red-500 transition-all duration-300 rounded-lg"
-//           onClick={handleClear}
-//         >
-//           Clear
-//         </button>
-//       </div>
-//     </form>
-//   );
-// };
-
-// export default SearchBar;
-
-// import { FormEvent, useState } from "react";
-// import { useSearchContext } from "../contexts/SearchContext";
-// import { MdTravelExplore } from "react-icons/md";
-// import DatePicker from "react-datepicker";
-// import "react-datepicker/dist/react-datepicker.css";
-// import { useNavigate } from "react-router-dom";
-
-// const SearchBar = () => {
-//   const navigate = useNavigate();
-//   const search = useSearchContext();
-
-//   const [destination, setDestination] = useState<string>(search.destination);
-//   const [checkIn, setCheckIn] = useState<Date | null>(search.checkIn);
-//   const [checkOut, setCheckOut] = useState<Date | null>(search.checkOut);
-//   const [roomCount, setRoomCount] = useState<number>(search.roomCount);
-
-//   const handleSubmit = (event: FormEvent) => {
-//     event.preventDefault();
-//     if (checkIn && checkOut) {
-//       search.saveSearchValues(destination, checkIn, checkOut, roomCount);
-//       navigate("/search");
-//     } else {
-//       alert("Please select valid check-in and check-out dates.");
-//     }
-//   };
-
-//   const handleClear = () => {
-//     setDestination("");
-//     setCheckIn(null);
-//     setCheckOut(null);
-//     setRoomCount(1);
-//   };
-
-//   const minDate = new Date();
-//   const maxDate = new Date();
-//   maxDate.setFullYear(maxDate.getFullYear() + 1);
-
-//   return (
-//     <form
-//       onSubmit={handleSubmit}
-//       className="p-5 bg-white rounded-lg shadow-lg grid gap-6 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-5 items-center animate__animated animate__fadeInUp"
-//     >
-//       {/* Destination Input */}
-//       <div className="flex items-center bg-gray-100 p-3 rounded-lg shadow-sm hover:shadow-lg transition-all duration-300">
-//         <MdTravelExplore size={25} className="text-gray-600 mr-2" />
-//         <input
-//           placeholder="Where are you going?"
-//           className="text-md w-full bg-transparent focus:outline-none"
-//           value={destination}
-//           onChange={(event) => setDestination(event.target.value)}
-//         />
-//       </div>
-
-//       {/* Rooms Input */}
-//       <div className="flex w-auto items-center bg-gray-100 p-3 rounded-lg shadow-sm hover:shadow-lg transition-all duration-300">
-//         <label className="text-gray-600 font-medium mr-3">Rooms:</label>
-//         <input
-//           type="number"
-//           min={1}
-//           max={20}
-//           className="w-auto bg-transparent focus:outline-none text-left font-bold"
-//           value={roomCount}
-//           onChange={(event) => setRoomCount(parseInt(event.target.value))}
-//         />
-//       </div>
-
-//       {/* Check-in Date */}
-//       <div className="relative flex gap-4 ">
-//         <DatePicker
-//           selected={checkIn}
-//           onChange={(date) => setCheckIn(date as Date | null)}
-//           selectsStart
-//           startDate={checkIn}
-//           endDate={checkOut}
-//           minDate={minDate}
-//           maxDate={maxDate}
-//           placeholderText="Check-in Date"
-//           className="w-full bg-gray-100 p-3 rounded-lg shadow-sm hover:shadow-lg focus:outline-none transition-all duration-300"
-//         />
-         
-//         <DatePicker
-//           selected={checkOut}
-//           onChange={(date) => setCheckOut(date as Date | null)}
-//           selectsEnd
-//           startDate={checkIn}
-//           endDate={checkOut}
-//           minDate={checkIn || minDate}
-//           maxDate={maxDate}
-//           placeholderText="Check-out Date"
-//           className="w-full bg-gray-100 p-3 rounded-lg shadow-sm hover:shadow-lg focus:outline-none transition-all duration-300"
-//         />
-//       </div>
-
-      
-//       {/* Buttons */}
-//       <div className="flex gap-3">
-//         <button
-//           type="submit"
-//           className="w-2/3 bg-blue-600 text-white py-3 font-bold text-lg hover:bg-blue-500 transition-all duration-300 rounded-lg"
-//         >
-//           Search
-//         </button>
-//         <button
-//           type="button"
-//           onClick={handleClear}
-//           className="w-1/3 bg-red-600 text-white py-3 font-bold text-lg hover:bg-red-500 transition-all duration-300 rounded-lg"
-//         >
-//           Clear
-//         </button>
-//       </div>
-//     </form>
-//   );
-// };
-
-// export default SearchBar;
-
-
-
-import { FormEvent, useState, useEffect } from "react";
+import { FormEvent, useState, useEffect, useRef } from "react";
 import { useSearchContext } from "../contexts/SearchContext";
 import { MdTravelExplore } from "react-icons/md";
 import DatePicker from "react-datepicker";
@@ -248,110 +8,185 @@ import { useNavigate } from "react-router-dom";
 const SearchBar = () => {
   const navigate = useNavigate();
   const search = useSearchContext();
+  const dropdownRef = useRef<HTMLDivElement>(null);
 
-  // Get today's date and calculate the next day
   const today = new Date();
   const tomorrow = new Date(today);
   tomorrow.setDate(today.getDate() + 1);
 
   const [destination, setDestination] = useState<string>(search.destination);
-  const [checkIn, setCheckIn] = useState<Date | null>(search.checkIn || today); // default to today's date
-  const [checkOut, setCheckOut] = useState<Date | null>(search.checkOut || tomorrow); // default to tomorrow's date
+  const [checkIn, setCheckIn] = useState<Date | null>(search.checkIn || today);
+  const [checkOut, setCheckOut] = useState<Date | null>(
+    search.checkOut || tomorrow
+  );
   const [roomCount, setRoomCount] = useState<number>(search.roomCount);
+  const [showDropdown, setShowDropdown] = useState<boolean>(false);
+  const [filteredLocations, setFilteredLocations] = useState<string[]>([]);
 
-  // Effect to ensure that checkOut is always 1 day after checkIn when the component mounts
+  // List of suggested locations
+  const locations = [
+    "Prem Mandir",
+    "Banke Bihari",
+    "ISKON Temple",
+    "Nidhi Van",
+    "Mathura",
+    "Vrindavan",
+  ];
+
   useEffect(() => {
     if (checkIn && !checkOut) {
       const nextDay = new Date(checkIn);
       nextDay.setDate(checkIn.getDate() + 1);
       setCheckOut(nextDay);
     }
-  }, [checkIn]); // Runs whenever checkIn changes
+  }, [checkIn]);
 
   const handleSubmit = (event: FormEvent) => {
     event.preventDefault();
     if (checkIn && checkOut) {
-      search.saveSearchValues(destination, checkIn, checkOut, roomCount);
+      search.saveSearchValues(destination, checkIn, checkOut, roomCount,totalCost);
       navigate("/search");
     } else {
       alert("Please select valid check-in and check-out dates.");
     }
   };
 
-  const minDate = new Date();
-  const maxDate = new Date();
-  maxDate.setFullYear(maxDate.getFullYear() + 1);
-
   const handleCheckInChange = (date: Date | null) => {
     setCheckIn(date);
     if (date) {
       const nextDay = new Date(date);
-      nextDay.setDate(date.getDate() + 1); // Set check-out to one day after check-in
+      nextDay.setDate(date.getDate() + 1);
       setCheckOut(nextDay);
     }
   };
 
+  // Handle input change and filter locations
+  const handleLocationChange = (event: React.ChangeEvent<HTMLInputElement>) => {
+    const value = event.target.value;
+    setDestination(value);
+    setShowDropdown(value.length > 0);
+    setFilteredLocations(
+      locations.filter((loc) => loc.toLowerCase().includes(value.toLowerCase()))
+    );
+  };
+
+  // Handle location selection from dropdown
+  const handleLocationSelect = (location: string) => {
+    setDestination(location);
+    setShowDropdown(false);
+  };
+
+  // Close dropdown when clicking outside
+  useEffect(() => {
+    const handleClickOutside = (event: MouseEvent) => {
+      if (
+        dropdownRef.current &&
+        !dropdownRef.current.contains(event.target as Node)
+      ) {
+        setShowDropdown(false);
+      }
+    };
+    document.addEventListener("mousedown", handleClickOutside);
+    return () => document.removeEventListener("mousedown", handleClickOutside);
+  }, []);
+
   return (
     <form
       onSubmit={handleSubmit}
-      className="p-4 bg-white rounded-lg shadow-lg grid gap-3 md:grid-cols-2 lg:grid-cols-4 items-center animate__animated animate__fadeInUp"
+      className="p-5 bg-white rounded-lg grid grid-cols-2 md:grid-cols-2 lg:grid-cols-5 gap-4 shadow-lg animate__animated animate__fadeInUp"
     >
-      {/* Destination Input */}
-      <div className="flex items-center bg-gray-100 p-3 rounded-lg shadow-sm hover:shadow-lg transition-all duration-300">
-        <MdTravelExplore size={25} className="text-gray-600 mr-2" />
-        <input
-          placeholder="Where are you going?"
-          className="text-md w-full bg-transparent focus:outline-none"
-          value={destination}
-          onChange={(event) => setDestination(event.target.value)}
-        />
+      {/* Location Input */}
+      <div className="flex flex-col md:col-span-1 relative" ref={dropdownRef}>
+        <label className="block text-gray-700 font-bold mb-2">Location</label>
+        <div className="flex items-center p-3 bg-gray-100 rounded-lg transition-all duration-300">
+          <MdTravelExplore size={25} className="text-gray-600 mr-2" />
+          <input
+            type="text"
+            placeholder="Enter location"
+            className="text-md w-full bg-transparent focus:outline-none"
+            value={destination}
+            onChange={handleLocationChange}
+            onFocus={() => setShowDropdown(true)}
+          />
+        </div>
+
+        {/* Dropdown List */}
+        {showDropdown && (
+          <ul className="absolute top-full left-0 w-full bg-white border border-gray-300 rounded-lg shadow-lg z-10 max-h-40 overflow-y-auto">
+            {filteredLocations.length > 0 ? (
+              filteredLocations.map((loc, index) => (
+                <li
+                  key={index}
+                  className="p-2 hover:bg-gray-200 cursor-pointer"
+                  onClick={() => handleLocationSelect(loc)}
+                >
+                  {loc}
+                </li>
+              ))
+            ) : (
+              <li className="p-2 text-gray-500">No results found</li>
+            )}
+          </ul>
+        )}
       </div>
 
-      {/* Rooms Input */}
-      <div className="flex items-center bg-gray-100 p-3 rounded-lg shadow-sm hover:shadow-lg transition-all duration-300">
-        <label className="text-gray-600 font-medium mr-3">Rooms:</label>
-        <input
-          type="number"
-          min={1}
-          max={20}
-          className="w-full bg-transparent focus:outline-none text-left font"
-          value={roomCount}
-          placeholder="How many rooms do you want? "
-          onChange={(event) => setRoomCount(parseInt(event.target.value))}
-        />
+      {/* Room Count Input */}
+      <div className="flex flex-col md:col-span-1">
+        <label className="block text-gray-700 font-bold mb-2">Rooms</label>
+        <div className="flex items-center p-3 bg-gray-100 rounded-lg transition-all duration-300">
+          <input
+            type="number"
+            min={1}
+            max={20}
+            className="w-full bg-transparent focus:outline-none text-left"
+            value={roomCount}
+            placeholder="How many rooms do you want?"
+            onChange={(event) => setRoomCount(parseInt(event.target.value))}
+          />
+        </div>
       </div>
 
-      {/* Check-in and Check-out Date Inputs */}
-      <div className="flex w-full flex-row sm:flex-row gap-4 sm:gap-2 w-full">
+      {/* Check-in Date Input */}
+      <div className="flex flex-col md:col-span-1">
+        <label className="block text-gray-700 font-bold mb-2">Check-in</label>
         <DatePicker
           selected={checkIn}
           onChange={handleCheckInChange}
           selectsStart
           startDate={checkIn}
           endDate={checkOut}
-          minDate={minDate}
-          maxDate={maxDate}
+          minDate={today}
+          maxDate={
+            new Date(today.getFullYear() + 1, today.getMonth(), today.getDate())
+          }
           placeholderText="Check-in Date"
-          className="w-full bg-gray-100 p-3 rounded-lg shadow-sm hover:shadow-lg focus:outline-none transition-all duration-300"
+          className="w-full p-3 rounded-lg bg-gray-100 focus:outline-none transition-all duration-300"
         />
+      </div>
+
+      {/* Check-out Date Input */}
+      <div className="flex flex-col md:col-span-1">
+        <label className="block text-gray-700 font-bold mb-2">Check-out</label>
         <DatePicker
           selected={checkOut}
           onChange={(date) => setCheckOut(date as Date | null)}
           selectsEnd
           startDate={checkIn}
           endDate={checkOut}
-          minDate={checkIn || minDate}
-          maxDate={maxDate}
+          minDate={checkIn || today}
+          maxDate={
+            new Date(today.getFullYear() + 1, today.getMonth(), today.getDate())
+          }
           placeholderText="Check-out Date"
-          className="w-full bg-gray-100 p-3 rounded-lg shadow-sm hover:shadow-lg focus:outline-none transition-all duration-300"
+          className="w-full p-3 rounded-lg bg-gray-100 focus:outline-none transition-all duration-300"
         />
       </div>
 
-      {/* Buttons */}
-      <div className="flex ">
+      {/* Search Button */}
+      <div className="col-span-2 md:col-span-2 lg:col-span-1 flex items-end">
         <button
           type="submit"
-          className="w-full bg-[#6A5631] text-white py-3 font-bold text-lg hover:bg-opacity-90 transition-all duration-300 rounded-lg"
+          className="w-full bg-[#6A5631] text-white p-3 font-bold text-lg hover:bg-opacity-90 transition-all duration-300 rounded-lg"
         >
           Search
         </button>
@@ -361,4 +196,3 @@ const SearchBar = () => {
 };
 
 export default SearchBar;
-
