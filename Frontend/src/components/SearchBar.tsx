@@ -44,7 +44,13 @@ const SearchBar = () => {
   const handleSubmit = (event: FormEvent) => {
     event.preventDefault();
     if (checkIn && checkOut) {
-      search.saveSearchValues(destination, checkIn, checkOut, roomCount,totalCost);
+      search.saveSearchValues(
+        destination,
+        checkIn,
+        checkOut,
+        roomCount,
+        totalCost
+      );
       navigate("/search");
     } else {
       alert("Please select valid check-in and check-out dates.");
