@@ -10,9 +10,10 @@ const router = express.Router();
 
 // Search route to find hotels
 router.get("/search", async (req: Request, res: Response) => {
-  try {    
+  try {        
     const query = constructSearchQuery(req.query);
-    let sortOptions = {};
+    
+    let sortOptions:{[key:string]:1 | -1} = { pricePerNight: 1 };;
     switch (req.query.sortOption) {
       case "starRating":
         sortOptions = { starRating: -1 };
@@ -27,9 +28,41 @@ router.get("/search", async (req: Request, res: Response) => {
 
     const pageSize = 5;
     const pageNumber = parseInt(req.query.page ? req.query.page.toString() : "1");
-    const skip = (pageNumber - 1) * pageSize;
-
-    const hotels = await Hotel.find(query).sort(sortOptions).skip(skip).limit(pageSize);
+    const skip = (pageNumber - 1) * pageSize;    
+    const hotels = await Hotel.aggregate([
+      { $match: query },
+      {
+        $addFields: {
+          pricePerNight: {
+            $min: {
+              $map: {
+                input: {
+                  $filter: {
+                    input: "$rooms",
+                    cond: { $gte: ["$$this.availableRooms", parseInt(req.query.roomCount as string)] }
+                  }
+                },
+                in: "$$this.price"
+              }
+            }
+          }
+        }
+      },
+      { $sort:  sortOptions },
+      { $skip: skip },
+      { $limit: pageSize },
+      {
+        $project:{
+          name:1,
+          imageUrls:1,
+          pricePerNight:1,
+          type:1,
+          facilities:1,
+          
+        }
+      }
+    ]);    
+    
     const total = await Hotel.countDocuments(query);
 
     const response: HotelSearchResponse = {
@@ -162,6 +195,14 @@ const constructSearchQuery = (queryParams: any) => {
     };
   }
 
+  if (queryParams.roomCount) {
+    constructedQuery['rooms'] = {
+      $elemMatch: {
+        availableRooms: { $gte: parseInt(queryParams.roomCount) }
+      }
+    };
+  }
+
   if (queryParams.facilities) {
     constructedQuery.facilities = {
       $all: Array.isArray(queryParams.facilities)
@@ -188,12 +229,6 @@ const constructSearchQuery = (queryParams: any) => {
   if (queryParams.maxPrice) {
     constructedQuery.pricePerNight = {
       $lte: parseInt(queryParams.maxPrice).toString(),
-    };
-  }
-
-  if (queryParams.roomCount) {
-    constructedQuery.roomCount = {
-      $gte: parseInt(queryParams.roomCount), // Ensures the hotel has enough rooms available
     };
   }
 
