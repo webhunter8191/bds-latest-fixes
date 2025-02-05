@@ -98,7 +98,7 @@ const App = () => {
               }
             />
             <Route
-                  path="/admin-bookings"
+                  path={isAdmin?"/admin-bookings":"/"}
                   element={
                     <Layout>
                       <AdminBookingspage />
