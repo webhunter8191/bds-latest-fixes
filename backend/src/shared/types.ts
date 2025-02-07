@@ -10,6 +10,7 @@ export type UserType = {
 
 
 export type HotelType = {
+  [x: string]: any;
   starRating: number;
   description: string;
   location: string;

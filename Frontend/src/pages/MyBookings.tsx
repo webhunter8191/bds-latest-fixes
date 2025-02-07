@@ -1,6 +1,13 @@
 import { useQuery, useQueryClient } from "react-query";
 import * as apiClient from "../api-client";
-import { useState } from "react";
+import {
+  JSXElementConstructor,
+  Key,
+  ReactElement,
+  ReactNode,
+  ReactPortal,
+  useState,
+} from "react";
 
 const API_BASE_URL = import.meta.env.VITE_API_BASE_URL || "";
 
@@ -87,40 +94,74 @@ const MyBookings = () => {
                     </tr>
                   </thead>
                   <tbody>
-                    {hotel.bookings?.map((booking, index) => (
-                      <tr key={index} className="border-b">
-                        <td className="p-3">
-                          {hotel.firstName} {hotel.lastName}
-                        </td>
-                        <td className="p-3">{hotel.email}</td>
-                        <td className="p-3">{hotel.phone}</td>
-                        <td className="p-3">
-                          {new Date(booking.checkIn).toLocaleDateString()}
-                        </td>
-                        <td className="p-3">
-                          {new Date(booking.checkOut).toLocaleDateString()}
-                        </td>
-                        <td className="p-3">{categories[booking.category as keyof typeof categories]}</td>
-                        <td className="p-3">{booking.roomsCount}</td>
-                        <td className="p-3 font-bold">
-                          ₹{Math.round(booking.totalCost)}
-                        </td>
-                        <td className="p-3">
-                          <button
-                            onClick={() => handleCheckout(booking.bookingId)}
-                            disabled={checkingOut === booking.bookingId}
-                            className="bg-blue-600 text-white font-semibold px-4 py-2 rounded-lg shadow-md hover:bg-blue-700 transition disabled:bg-blue-400"
-                          >
-                            {checkingOut === booking.bookingId ? "Processing..." : "Checkout"}
-                          </button>
-                        </td>
-                      </tr>
-                    ))}
+                    {hotel.bookings?.map(
+                      (
+                        booking: {
+                          checkIn: string | number | Date;
+                          checkOut: string | number | Date;
+                          category: number;
+                          roomsCount:
+                            | string
+                            | number
+                            | boolean
+                            | ReactElement<
+                                any,
+                                string | JSXElementConstructor<any>
+                              >
+                            | Iterable<ReactNode>
+                            | ReactPortal
+                            | null
+                            | undefined;
+                          totalCost: number;
+                          bookingId: string | null;
+                        },
+                        index: Key | null | undefined
+                      ) => (
+                        <tr key={index} className="border-b">
+                          <td className="p-3">
+                            {hotel.firstName} {hotel.lastName}
+                          </td>
+                          <td className="p-3">{hotel.email}</td>
+                          <td className="p-3">{hotel.phone}</td>
+                          <td className="p-3">
+                            {new Date(booking.checkIn).toLocaleDateString()}
+                          </td>
+                          <td className="p-3">
+                            {new Date(booking.checkOut).toLocaleDateString()}
+                          </td>
+                          <td className="p-3">
+                            {
+                              categories[
+                                booking.category as keyof typeof categories
+                              ]
+                            }
+                          </td>
+                          <td className="p-3">{booking.roomsCount}</td>
+                          <td className="p-3 font-bold">
+                            ₹{Math.round(booking.totalCost)}
+                          </td>
+                          <td className="p-3">
+                            <button
+                              onClick={() =>
+                                booking?.bookingId &&
+                                handleCheckout(booking.bookingId)
+                              }
+                              disabled={checkingOut === booking?.bookingId}
+                              className="bg-blue-600 text-white font-semibold px-4 py-2 rounded-lg shadow-md hover:bg-blue-700 transition disabled:bg-blue-400"
+                            >
+                              {checkingOut === booking.bookingId
+                                ? "Processing..."
+                                : "Checkout"}
+                            </button>
+                          </td>
+                        </tr>
+                      )
+                    )}
                   </tbody>
                 </table>
               </div>
               <div className="md:hidden">
-                {hotel.bookings.map((booking, index) => (
+                {hotel.bookings.map((booking: { checkIn: string | number | Date; checkOut: string | number | Date; category: keyof typeof categories; roomsCount: string | number | boolean | ReactElement<any, string | JSXElementConstructor<any>> | Iterable<ReactNode> | ReactPortal | null | undefined; totalCost: number; bookingId: string | null; }, index: number) => (
                   <div
                     key={index}
                     className="border p-6 rounded-lg shadow-md bg-gray-100 mb-4"
@@ -147,11 +188,13 @@ const MyBookings = () => {
                       Total Cost: ₹{Math.round(booking.totalCost)}
                     </p>
                     <button
-                      onClick={() => handleCheckout(booking.bookingId)}
+                      onClick={() => booking.bookingId && handleCheckout(booking.bookingId)}
                       disabled={checkingOut === booking.bookingId}
                       className="mt-4 bg-blue-600 text-white font-semibold px-4 py-2 rounded-lg shadow-md hover:bg-blue-700 transition w-full disabled:bg-blue-400"
                     >
-                      {checkingOut === booking.bookingId ? "Processing..." : "Checkout"}
+                      {checkingOut === booking.bookingId
+                        ? "Processing..."
+                        : "Checkout"}
                     </button>
                   </div>
                 ))}

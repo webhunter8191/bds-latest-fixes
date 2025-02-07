@@ -303,7 +303,6 @@
 
 // export default Search;
 
-
 import { useQuery } from "react-query";
 import { useSearchContext } from "../contexts/SearchContext";
 import * as apiClient from "../api-client";
@@ -382,7 +381,7 @@ const Search = () => {
         {/* Filters Sidebar */}
         <div className="lg:block ">
           {/* Show/Hide Filters and Sort By Buttons */}
-        <div className="lg:hidden flex justify-between items-center mb-4">
+          <div className="lg:hidden flex justify-between items-center mb-4">
             <button
               className="bg-indigo-600 text-white px-3 py-1 rounded-md font-medium hover:bg-indigo-500 transition-transform duration-300 transform hover:scale-105 w-fit"
               onClick={() => setFiltersVisible(!isFiltersVisible)}
@@ -403,10 +402,7 @@ const Search = () => {
                 Price Per Night (high to low)
               </option>
             </select>
-           
           </div>
-
-          
 
           {/* Filters Content */}
           <div
@@ -482,6 +478,3 @@ const Search = () => {
 };
 
 export default Search;
-
-
-

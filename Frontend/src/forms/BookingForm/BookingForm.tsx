@@ -1,6 +1,5 @@
-
 import { useForm } from "react-hook-form";
-import {  UserType } from "../../../../backend/src/shared/types";
+import { UserType } from "../../../../backend/src/shared/types";
 import { useSearchContext } from "../../contexts/SearchContext";
 import { useParams } from "react-router-dom";
 import { useMutation } from "react-query";
@@ -35,32 +34,31 @@ declare global {
   }
 }
 
-
-
-
-
 const BookingForm = ({ currentUser, totalCost, roomsId }: Props) => {
-  const search = useSearchContext();  
+  const search = useSearchContext();
   const { hotelId } = useParams();
   const navigate = useNavigate();
   const { showToast } = useAppContext();
 
   // Helper function to calculate number of days between check-in and check-out
-  const calculateDays = (checkIn: Date, checkOut: Date) => {
-    const checkInDate = new Date(checkIn);
-    const checkOutDate = new Date(checkOut);
-    return Math.max(1, (checkOutDate.getTime() - checkInDate.getTime()) / (1000 * 60 * 60 * 24));
-  };
+  // const calculateDays = (checkIn: Date, checkOut: Date) => {
+  //   const checkInDate = new Date(checkIn);
+  //   const checkOutDate = new Date(checkOut);
+  //   return Math.max(1, (checkOutDate.getTime() - checkInDate.getTime()) / (1000 * 60 * 60 * 24));
+  // };
 
-  const { mutate: bookRoom, isLoading } = useMutation(apiClient.createRoomBooking, {
-    onSuccess: () => {
-      showToast({ message: "Booking Saved!", type: "SUCCESS" });
-      navigate("/my-bookings");
-    },
-    onError: () => {
-      showToast({ message: "Error saving booking", type: "ERROR" });
-    },
-  });
+  const { mutate: bookRoom, isLoading } = useMutation(
+    apiClient.createRoomBooking,
+    {
+      onSuccess: () => {
+        showToast({ message: "Booking Saved!", type: "SUCCESS" });
+        navigate("/my-bookings");
+      },
+      onError: () => {
+        showToast({ message: "Error saving booking", type: "ERROR" });
+      },
+    }
+  );
 
   // Ensure checkIn and checkOut are valid Date objects
   const formattedCheckIn = new Date(search.checkIn).toISOString();
@@ -79,10 +77,10 @@ const BookingForm = ({ currentUser, totalCost, roomsId }: Props) => {
     },
   });
 
-  let bookingData:any;
+  let bookingData: any;
   const handlePayment = async () => {
     try {
-       bookingData = {
+      bookingData = {
         firstName: currentUser.firstName,
         lastName: currentUser.lastName,
         email: currentUser.email,
@@ -92,8 +90,6 @@ const BookingForm = ({ currentUser, totalCost, roomsId }: Props) => {
         hotelId: hotelId,
         totalCost,
       };
-
-      
 
       // const { bookingId } = bookingResponse.data;
 
@@ -107,14 +103,13 @@ const BookingForm = ({ currentUser, totalCost, roomsId }: Props) => {
       });
 
       const paymentData = await paymentRes.json();
-       await handlePaymentVerify(paymentData.data);
-
+      await handlePaymentVerify(paymentData.data);
     } catch (error) {
       console.error("Error initiating payment:", error);
     }
   };
 
-  const handlePaymentVerify =async (orderData: any) => {
+  const handlePaymentVerify = async (orderData: any) => {
     const options = {
       key: RAZORPAY_KEY_ID,
       amount: orderData.amount * 100,
@@ -140,8 +135,13 @@ const BookingForm = ({ currentUser, totalCost, roomsId }: Props) => {
 
           const verifyData = await res.json();
           if (verifyData.message) {
-            alert(verifyData.message);            
-            bookRoom({ ...bookingData, paymentIntentId: response.razorpay_payment_id, hotelId, roomsId });
+            alert(verifyData.message);
+            bookRoom({
+              ...bookingData,
+              paymentIntentId: response.razorpay_payment_id,
+              hotelId,
+              roomsId,
+            });
           }
         } catch (error) {
           console.error("Error verifying payment:", error);

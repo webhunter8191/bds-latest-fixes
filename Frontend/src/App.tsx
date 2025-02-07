@@ -22,7 +22,7 @@ import Footer from "./components/Footer";
 import AdminBookingspage from "./pages/AdminBookingspage";
 
 const App = () => {
-  const { isLoggedIn, isAdmin, isLoading } = useAppContext();
+  const { isLoggedIn, isAdmin } = useAppContext();
   console.log(typeof isAdmin);
   return (
     <Router>

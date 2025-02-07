@@ -1,4 +1,4 @@
-import React, { SetStateAction, useState } from "react";
+import React, { useState } from "react";
 import { useFormContext } from "react-hook-form";
 import { HotelFormData } from "./ManageHotelForm";
 import { Dialog } from "@headlessui/react";
@@ -10,23 +10,19 @@ type existingRooms = {
   images: string[];
   features: string[];
   availableRooms: number;
+};
 
-}
-
-const GuestsSection = ({existingRooms}: {existingRooms: existingRooms[]}) => {
-  const {
-    register,
-    formState: { errors },
-    setValue,
-  } = useFormContext<HotelFormData>();
-  console.log("existingRooms in GuestsSection", existingRooms);
-
-  
+const GuestsSection = ({
+  existingRooms,
+}: {
+  existingRooms: existingRooms[];
+}) => {
+  const { setValue } = useFormContext<HotelFormData>();
 
   const [showRooms, setShowRooms] = useState(true);
   const [isDialogOpen, setIsDialogOpen] = useState(false);
   const [rooms, setRooms] = useState<any[]>([]);
-  const [editingRoomIndex, setEditingRoomIndex] = useState(null);
+  const [editingRoomIndex, setEditingRoomIndex] = useState<number | null>(null);
   const categories = [
     { value: 1, label: "2 Bed AC" },
     { value: 2, label: "2 Bed Non-AC" },
@@ -35,33 +31,36 @@ const GuestsSection = ({existingRooms}: {existingRooms: existingRooms[]}) => {
   ];
   const categoriesTitles: Record<string, string> = {
     "1": "2 Bed AC",
-   "2": "2 Bed Non-AC",
+    "2": "2 Bed Non-AC",
     "3": "4 Bed AC",
     "4": "4 Bed Non-AC",
-  }
-console.log("rooms in GuestsSection", rooms);
+  };
+  console.log("rooms in GuestsSection", rooms);
 
   const toggleRoomsVisibility = () => {
     setShowRooms((prev) => !prev);
   };
 
   React.useEffect(() => {
-    if(existingRooms){
-    setRooms(existingRooms);
+    if (existingRooms) {
+      setRooms(existingRooms);
     }
   }, [existingRooms]);
 
-  const handleSaveRoom = (event: { preventDefault: () => void; stopPropagation: () => void; target: HTMLFormElement | undefined; }) => {
+  const handleSaveRoom = (event: React.FormEvent<HTMLFormElement>) => {
     event.preventDefault();
     event.stopPropagation();
-    const formData = new FormData(event.target);
-    
+    const formData = new FormData(event.target as HTMLFormElement);
+
     // Get the new uploaded files
     const newImages = formData.getAll("images");
     console.log("newImages in handleSaveRoom", newImages);
     // If editing, combine existing images with new uploads (if any)
     let finalImages: string[] = [];
-    if (newImages.length > 0 && (newImages[0] instanceof File ? newImages[0].name !== '' : false)) {
+    if (
+      newImages.length > 0 &&
+      (newImages[0] instanceof File ? newImages[0].name !== "" : false)
+    ) {
       finalImages = Array.from(newImages) as string[];
     } else if (editingRoomIndex !== null) {
       finalImages = rooms[editingRoomIndex].images;
@@ -89,13 +88,13 @@ console.log("rooms in GuestsSection", rooms);
     setIsDialogOpen(false);
   };
 
-  const handleEditRoom = (index: number | SetStateAction<null>) => {
+  const handleEditRoom = (index: number | null) => {
     setEditingRoomIndex(index);
     setIsDialogOpen(true);
   };
 
   const handleDeleteRoom = (index: number) => {
-    setRooms(prevValue=>{
+    setRooms((prevValue) => {
       const updatedRooms = prevValue.filter((_, i) => i !== index);
       setValue("rooms", updatedRooms);
       return updatedRooms;
@@ -142,20 +141,28 @@ console.log("rooms in GuestsSection", rooms);
             index
           ) => (
             <div key={index} className="p-4 border rounded-lg mb-4">
-              <h3 className="font-semibold">Category: {categoriesTitles[room.category]}</h3>
+              <h3 className="font-semibold">
+                Category: {categoriesTitles[room.category]}
+              </h3>
               <p>Total Rooms: {room.totalRooms}</p>
               <p>Price: {room.price}</p>
               <div className="flex gap-2 mt-2">
-                {room.images && room.images.map((image: string | File, i: number) => (
-                  image && (typeof image === 'string' || image instanceof File) ? (
-                    <img
-                      key={i}
-                      src={image instanceof File ? URL.createObjectURL(image) : image}
-                      alt="Room"
-                      className="w-16 h-16 rounded object-cover"
-                    />
-                  ) : null
-                ))}
+                {room.images &&
+                  room.images.map((image: string | File, i: number) =>
+                    image &&
+                    (typeof image === "string" || image instanceof File) ? (
+                      <img
+                        key={i}
+                        src={
+                          image instanceof File
+                            ? URL.createObjectURL(image)
+                            : image
+                        }
+                        alt="Room"
+                        className="w-16 h-16 rounded object-cover"
+                      />
+                    ) : null
+                  )}
               </div>
               <div className="mt-2 flex gap-2">
                 <button
@@ -188,14 +195,20 @@ console.log("rooms in GuestsSection", rooms);
         <div className="fixed inset-0 bg-black bg-opacity-30 flex justify-center items-center">
           <div className="bg-white p-6 rounded-lg w-96">
             <h3 className="text-lg font-semibold mb-4">
-              {editingRoomIndex !== null ? "Edit Room Category" : "Add Room Category"}
+              {editingRoomIndex !== null
+                ? "Edit Room Category"
+                : "Add Room Category"}
             </h3>
             <form onSubmit={handleSaveRoom}>
               <label className="block mb-2">Category</label>
-              <select 
-                name="category" 
+              <select
+                name="category"
                 className="border w-full p-2 rounded"
-                defaultValue={editingRoomIndex !== null ? rooms[editingRoomIndex].category : ''}
+                defaultValue={
+                  editingRoomIndex !== null
+                    ? rooms[editingRoomIndex].category
+                    : ""
+                }
               >
                 {categories.map((category) => (
                   <option key={category.value} value={category.value}>
@@ -208,14 +221,20 @@ console.log("rooms in GuestsSection", rooms);
                 name="totalRooms"
                 type="number"
                 className="border w-full p-2 rounded"
-                defaultValue={editingRoomIndex !== null ? rooms[editingRoomIndex].totalRooms : ''}
+                defaultValue={
+                  editingRoomIndex !== null
+                    ? rooms[editingRoomIndex].totalRooms
+                    : ""
+                }
               />
               <label className="block mt-4">Room Price</label>
               <input
                 name="price"
                 type="number"
                 className="border w-full p-2 rounded"
-                defaultValue={editingRoomIndex !== null ? rooms[editingRoomIndex].price : ''}
+                defaultValue={
+                  editingRoomIndex !== null ? rooms[editingRoomIndex].price : ""
+                }
               />
               <label className="block mt-4">Upload Images</label>
               <input
@@ -226,16 +245,22 @@ console.log("rooms in GuestsSection", rooms);
               />
               {editingRoomIndex !== null && rooms[editingRoomIndex].images && (
                 <div className="mt-2 flex gap-2">
-                  {rooms[editingRoomIndex].images.map((image: string | File, i: number) => (
-                    image && (typeof image === 'string' || image instanceof File) ? (
-                      <img
-                        key={i}
-                        src={image instanceof File ? URL.createObjectURL(image) : image}
-                        alt="Room"
-                        className="w-16 h-16 rounded object-cover"
-                      />
-                    ) : null
-                  ))}
+                  {rooms[editingRoomIndex].images.map(
+                    (image: string | File, i: number) =>
+                      image &&
+                      (typeof image === "string" || image instanceof File) ? (
+                        <img
+                          key={i}
+                          src={
+                            image instanceof File
+                              ? URL.createObjectURL(image)
+                              : image
+                          }
+                          alt="Room"
+                          className="w-16 h-16 rounded object-cover"
+                        />
+                      ) : null
+                  )}
                 </div>
               )}
               <div className="mt-4 flex justify-end">

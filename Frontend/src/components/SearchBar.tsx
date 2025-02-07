@@ -44,7 +44,7 @@ const SearchBar = () => {
   const handleSubmit = (event: FormEvent) => {
     event.preventDefault();
     if (checkIn && checkOut) {
-      search.saveSearchValues(destination, checkIn, checkOut, roomCount,totalCost);
+      search.saveSearchValues(destination, checkIn, checkOut, roomCount, 0);
       navigate("/search");
     } else {
       alert("Please select valid check-in and check-out dates.");
@@ -93,7 +93,7 @@ const SearchBar = () => {
   return (
     <form
       onSubmit={handleSubmit}
-      className="p-5 bg-white rounded-lg grid grid-cols-2 md:grid-cols-2 lg:grid-cols-5 gap-4 shadow-lg animate__animated animate__fadeInUp"
+      className="p-6 bg-white  border border-[#6A5631]-5 outline-5 rounded-3xl  grid grid-cols-2 md:grid-cols-2 lg:grid-cols-5 gap-4 shadow-lg animate__animated animate__fadeInUp"
     >
       {/* Location Input */}
       <div className="flex flex-col md:col-span-1 relative" ref={dropdownRef}>
