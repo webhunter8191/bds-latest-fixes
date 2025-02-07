@@ -18,9 +18,12 @@ import MyBookings from "./pages/MyBookings";
 import Home from "./pages/Home";
 import Header from "./components/Header";
 import Footer from "./components/Footer";
+// import AdminBookings from "./components/AdminBookings";
+import AdminBookingspage from "./pages/AdminBookingspage";
 
 const App = () => {
   const { isLoggedIn, isAdmin } = useAppContext();
+  console.log(typeof isAdmin);
   return (
     <Router>
       <Routes>
@@ -28,11 +31,10 @@ const App = () => {
           path="/"
           element={
             <div className="mx-auto">
-              <Header/>              
+              <Header />
               <Home />
-              <Footer/>
+              <Footer />
             </div>
-            
           }
         />
         <Route
@@ -95,6 +97,22 @@ const App = () => {
                 </Layout>
               }
             />
+            <Route
+              path="/admin-bookings"
+              element={
+                <Layout>
+                  <AdminBookingspage />
+                </Layout>
+              }
+            />
+            {/* <Route
+              path={!isLoading && isAdmin ? "/admin-bookings" : "/"}
+              element={
+                <Layout>
+                  <AdminBookingspage />
+                </Layout>
+              }
+            /> */}
 
             {/* Admin Routes */}
 
@@ -113,6 +131,14 @@ const App = () => {
                   element={
                     <Layout>
                       <EditHotel />
+                    </Layout>
+                  }
+                />
+                <Route
+                  path="/admin-bookings"
+                  element={
+                    <Layout>
+                      <AdminBookingspage />
                     </Layout>
                   }
                 />

@@ -109,7 +109,7 @@ const constructSearchQuery = (queryParams) => {
         const templeSearchTerms = Array.isArray(queryParams.destination)
             ? queryParams.destination.map((term) => term.trim().replace(/\s+/g, " ").toLowerCase())
             : [queryParams.destination.trim().replace(/\s+/g, " ").toLowerCase()];
-        constructedQuery.nearByTemple = {
+        constructedQuery.nearbyTemple = {
             $in: templeSearchTerms,
         };
     }

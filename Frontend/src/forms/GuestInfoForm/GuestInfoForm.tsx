@@ -7,6 +7,8 @@ import { useLocation, useNavigate } from "react-router-dom";
 type Props = {
   hotelId: string;
   pricePerNight: number;
+  availableRooms:number;
+  roomsId:string;
 };
 
 type GuestInfoFormData = {
@@ -16,7 +18,7 @@ type GuestInfoFormData = {
   totalCost: number;
 };
 
-const GuestInfoForm = ({ hotelId, pricePerNight }: Props) => {
+const GuestInfoForm = ({ hotelId, pricePerNight, availableRooms, roomsId }: Props) => {
   const search = useSearchContext();
   const { isLoggedIn } = useAppContext();
   const navigate = useNavigate();
@@ -49,32 +51,39 @@ const GuestInfoForm = ({ hotelId, pricePerNight }: Props) => {
       "",
       data.checkIn,
       data.checkOut,
-      data.roomCount
+      data.roomCount,
+      0,
     );
     navigate("/sign-in", { state: { from: location } });
   };
 
   const onSubmit = (data: GuestInfoFormData) => {
     // Calculate the number of nights
-    const numberOfNights =
-      Math.abs(data.checkOut.getTime() - data.checkIn.getTime()) / (1000 * 60 * 60 * 24);
+    const checkInDate = new Date(data.checkIn);
+    const checkOutDate = new Date(data.checkOut);
 
+    // If check-in and check-out are the same day, treat it as 1 night
+    const numberOfNights =
+      checkInDate.getTime() === checkOutDate.getTime()
+        ? 1 // Single day stay
+        : Math.abs(checkOutDate.getTime() - checkInDate.getTime()) / (1000 * 60 * 60 * 24); // Normal difference in days
     // Calculate the total cost
-    const totalCost = numberOfNights * pricePerNight * data.roomCount;
+    const totalCost =  numberOfNights * pricePerNight * data.roomCount;        
 
     search.saveSearchValues(
       "",
       data.checkIn,
       data.checkOut,
-      data.roomCount
+      data.roomCount,
+      totalCost,
     );
 
     // Navigate with the total cost state
-    navigate(`/hotel/${hotelId}/booking`, { state: { totalCost } });
+    navigate(`/hotel/${hotelId}/booking`, { state: { totalCost, roomsId } });
   };
 
   return (
-    <div className="flex flex-col p-4 bg-blue-200 gap-4">
+    <div className="flex flex-col p-4 bg-blue-50 gap-4">
       <h3 className="text-md font-bold">₹{pricePerNight} per night</h3>
       <form
         onSubmit={isLoggedIn ? handleSubmit(onSubmit) : handleSubmit(onSignInClick)}
@@ -100,7 +109,7 @@ const GuestInfoForm = ({ hotelId, pricePerNight }: Props) => {
               required
               selected={checkOut}
               onChange={(date) => setValue("checkOut", date as Date)}
-              selectsStart
+              selectsEnd
               startDate={checkIn}
               endDate={checkOut}
               minDate={minDate}
@@ -124,6 +133,10 @@ const GuestInfoForm = ({ hotelId, pricePerNight }: Props) => {
                     value: 1,
                     message: "There must be at least one room",
                   },
+                  max:{
+                    value:availableRooms,
+                    message:`Maximum ${availableRooms} rooms available`,
+                  },
                   valueAsNumber: true,
                 })}
               />
@@ -142,18 +155,27 @@ const GuestInfoForm = ({ hotelId, pricePerNight }: Props) => {
               ₹{
                 (pricePerNight *
                   watch("roomCount") *
-                  Math.abs(watch("checkOut").getTime() - watch("checkIn").getTime()) /
-                  (1000 * 60 * 60 * 24)).toFixed(2)
+                  (checkIn.getTime() === checkOut.getTime()
+                    ? 1
+                    : Math.abs(checkOut.getTime() - checkIn.getTime()) /
+                      (1000 * 60 * 60 * 24))
+                ).toFixed(2)
               }
             </div>
           </div>
 
           {isLoggedIn ? (
-            <button className="bg-blue-600 text-white h-full p-2 font-bold hover:bg-blue-500 text-xl">
+            <button 
+              className="bg-blue-600 text-white h-full p-2 font-bold hover:bg-blue-500 text-xl disabled:bg-gray-400 disabled:cursor-not-allowed"
+              disabled={!pricePerNight || pricePerNight === 0}
+            >
               Book Now
             </button>
           ) : (
-            <button className="bg-blue-600 text-white h-full p-2 font-bold hover:bg-blue-500 text-xl">
+            <button 
+              className="bg-blue-600 text-white h-full p-2 font-bold hover:bg-blue-500 text-xl disabled:bg-gray-400 disabled:cursor-not-allowed"
+              disabled={!pricePerNight || pricePerNight === 0}
+            >
               Sign in to Book
             </button>
           )}

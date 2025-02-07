@@ -12,6 +12,7 @@ type AppContext = {
   showToast: (toastMessage: ToastMessage) => void;
   isLoggedIn: boolean;
   isAdmin: boolean;
+  isLoading: boolean;
 };
 
 const AppContext = React.createContext<AppContext | undefined>(undefined);
@@ -22,17 +23,11 @@ export const AppContextProvider = ({
   children: React.ReactNode;
 }) => {
   const [toast, setToast] = useState<ToastMessage | undefined>(undefined);
-  const [isAdmin, setIsAdmin] = useState<boolean>(false);
-  const { isError } = useQuery(
+  const { isError, data, isLoading } = useQuery(
     "validateToken",
     apiClient.validateToken,
     {
       retry: false,
-      onSuccess: (data) => {
-        if (data?.isAdmin !== undefined) {
-          setIsAdmin(data.isAdmin);
-        }
-      },
     }
   );
 
@@ -42,8 +37,9 @@ export const AppContextProvider = ({
         showToast: (toastMessage) => {
           setToast(toastMessage);
         },
-        isAdmin,
+        isAdmin: data?.isAdmin ?? false,
         isLoggedIn: !isError,
+        isLoading,
       }}
     >
       {toast && (

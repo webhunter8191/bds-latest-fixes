@@ -1,16 +1,17 @@
 import mongoose from "mongoose";
-import { BookingType, HotelType } from "../shared/types";
+import { HotelType } from "../shared/types";
 
-const bookingSchema = new mongoose.Schema({
-  firstName: { type: String, required: true },
-  lastName: { type: String, required: true },
-  email: { type: String, required: true },
-  roomCount: { type: Number, required: true },
-  checkIn: { type: Date, required: true },
-  checkOut: { type: Date, required: true },
-  userId: { type: String, required: true },
-  totalCost: { type: Number, required: true },
-});
+
+
+
+const roomSchema=new mongoose.Schema({
+  price:{type:Number,required:true},
+  category:{type:Number,required:true},
+  totalRooms:{type:Number,required:true},
+  availableRooms:{type:Number,required:true},
+  features:[{type:String}],
+  images:[{type:String}],
+})
 
 const hotelSchema = new mongoose.Schema({
   userId: { type: String, required: true },
@@ -20,13 +21,12 @@ const hotelSchema = new mongoose.Schema({
   city: { type: String, default: "Mathura" },
   country: { type: String, default: "India" },
   type: { type: String, required: true },
-  roomCount:{type:Number,required:true},
   facilities: [{ type: String, required: true }],
-  pricePerNight: { type: Number, required: true },
-  nearByTemple: [{ type: String, required: true }],
+  nearbyTemple: [{ type: String, required: true }],
   imageUrls: [{ type: String, required: true }],
   lastUpdated: { type: Date, required: true },
-  bookings: [bookingSchema],
+  rooms:[roomSchema],
+  status:{type:String, enum:["active","archive"], default:"active"},
 });
 
 const Hotel = mongoose.model<HotelType>("Hotel", hotelSchema);

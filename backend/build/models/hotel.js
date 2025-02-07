@@ -23,7 +23,7 @@ const hotelSchema = new mongoose_1.default.Schema({
     roomCount: { type: Number, required: true },
     facilities: [{ type: String, required: true }],
     pricePerNight: { type: Number, required: true },
-    nearByTemple: [{ type: String, required: true }],
+    nearbyTemple: [{ type: String, required: true }],
     imageUrls: [{ type: String, required: true }],
     lastUpdated: { type: Date, required: true },
     bookings: [bookingSchema],

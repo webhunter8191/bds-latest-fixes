@@ -10,6 +10,7 @@ export type UserType = {
 
 
 export type HotelType = {
+  [x: string]: any;
   starRating: number;
   description: string;
   location: string;
@@ -22,8 +23,8 @@ export type HotelType = {
   pricePerNight: number;
   imageUrls: string[];
   lastUpdated: Date;
-  nearByTemple: string[];
-  bookings: BookingType[];
+  nearbyTemple: string[];
+  rooms:object[];
 };
 
 export type BookingType = {

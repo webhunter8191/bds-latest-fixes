@@ -14,13 +14,11 @@ const verifyToken = (req: Request, res: Response, next: NextFunction) => {
   
   
   const token = req.cookies["auth_token"];
-  // console.log("login token::::::::::::::::::::::",token,"request cookises::::::::::::::::::::::::::::",JSON.stringify(req.cookies));
   if (!token) {
     return res
       .status(403)
       .json({ message: "Access Denied , No token provided" });
   }
-  console.log(token)
 
   try {
     const decoded = jwt.verify(
@@ -29,7 +27,6 @@ const verifyToken = (req: Request, res: Response, next: NextFunction) => {
     ) as JwtPayload;
 
     
-    console.log("Decoded Token Payload:", decoded);
     req.userId = decoded.userId;
     req.isAdmin = decoded.isAdmin !== undefined ? decoded.isAdmin : false;
     next();

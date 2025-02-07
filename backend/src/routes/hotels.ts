@@ -1,18 +1,19 @@
 import express, { Request, Response } from "express";
 import Hotel from "../models/hotel";
+import BookingModel from "../models/booking";
 import { BookingType, HotelSearchResponse } from "../shared/types";
 import { param, validationResult } from "express-validator";
 import verifyToken from "../middleware/auth";
+import mongoose from "mongoose";
 
 const router = express.Router();
 
 // Search route to find hotels
 router.get("/search", async (req: Request, res: Response) => {
-  try {
+  try {        
     const query = constructSearchQuery(req.query);
-    console.log("query", query);
-
-    let sortOptions = {};
+    
+    let sortOptions:{[key:string]:1 | -1} = { pricePerNight: 1 };;
     switch (req.query.sortOption) {
       case "starRating":
         sortOptions = { starRating: -1 };
@@ -27,10 +28,41 @@ router.get("/search", async (req: Request, res: Response) => {
 
     const pageSize = 5;
     const pageNumber = parseInt(req.query.page ? req.query.page.toString() : "1");
-    const skip = (pageNumber - 1) * pageSize;
-
-    console.log("final Query is", query);
-    const hotels = await Hotel.find(query).sort(sortOptions).skip(skip).limit(pageSize);
+    const skip = (pageNumber - 1) * pageSize;    
+    const hotels = await Hotel.aggregate([
+      { $match: query },
+      {
+        $addFields: {
+          pricePerNight: {
+            $min: {
+              $map: {
+                input: {
+                  $filter: {
+                    input: "$rooms",
+                    cond: { $gte: ["$$this.availableRooms", parseInt(req.query.roomCount as string)] }
+                  }
+                },
+                in: "$$this.price"
+              }
+            }
+          }
+        }
+      },
+      { $sort:  sortOptions },
+      { $skip: skip },
+      { $limit: pageSize },
+      {
+        $project:{
+          name:1,
+          imageUrls:1,
+          pricePerNight:1,
+          type:1,
+          facilities:1,
+          
+        }
+      }
+    ]);    
+    
     const total = await Hotel.countDocuments(query);
 
     const response: HotelSearchResponse = {
@@ -52,8 +84,47 @@ router.get("/search", async (req: Request, res: Response) => {
 // Fetch all hotels
 router.get("/", async (req: Request, res: Response) => {
   try {
-    const hotels = await Hotel.find().sort("-lastUpdated");
-    res.json(hotels);
+    const aggregation = [
+      { $match: { status: "active" } },
+      {
+        $addFields: {
+          status: {
+            $cond: {
+              if: {
+                $gt: [
+                  {
+                    $size: {
+                      $filter: {
+                        input: "$rooms",
+                        as: "room",
+                        cond: {
+                          $and: [
+                            { $lte: ["$$room.availableRooms", "$$room.totalRooms"] },
+                            { $ne: ["$$room.availableRooms", 0] },
+                          ]
+                        }
+                      }
+                    }
+                  },
+                  0
+                ]
+              },
+              then: "active",
+              else: "booked"
+            }
+          }
+        }
+      },
+      {
+        $project: {
+          name: 1,
+          status: 1,
+          imageUrls: 1,
+        }
+      }
+    ];
+    const hotels = await Hotel.aggregate(aggregation);
+    return res.status(200).json(hotels);
   } catch (error) {
     console.log("error", error);
     res.status(500).json({ message: "Error fetching hotels" });
@@ -62,16 +133,29 @@ router.get("/", async (req: Request, res: Response) => {
 
 // Fetch specific hotel details by ID
 router.get("/:id", [param("id").notEmpty().withMessage("Hotel ID is required")], async (req: Request, res: Response) => {
-  const errors = validationResult(req);
-  if (!errors.isEmpty()) {
-    return res.status(400).json({ errors: errors.array() });
-  }
-
-  const id = req.params.id.toString();
-
   try {
-    const hotel = await Hotel.findById(id);
-    res.json(hotel);
+    const errors = validationResult(req);
+    if (!errors.isEmpty()) {
+      return res.status(400).json({ errors: errors.array() });
+    }
+
+    const id = req.params.id.toString(); 
+    const aggregation = [
+      { $match: { _id: new mongoose.Types.ObjectId(id) } },
+      {
+        $addFields: {
+          rooms: {
+            $filter: {
+              input: "$rooms",
+              as: "room",
+              cond: { $gt: ["$$room.availableRooms", 0] }
+            }
+          }
+        }
+      }
+    ];
+    const [hotel] = await Hotel.aggregate(aggregation);
+    return res.status(200).json(hotel);
   } catch (error) {
     console.log(error);
     res.status(500).json({ message: "Error fetching hotel" });
@@ -79,33 +163,21 @@ router.get("/:id", [param("id").notEmpty().withMessage("Hotel ID is required")],
 });
 
 // Handle booking creation without Stripe
-router.post("/:hotelId/bookings", verifyToken, async (req: Request, res: Response) => {
-  try {
-    const newBooking: BookingType = {
-      ...req.body,
-      
-      userId: req.userId,
-    };
-console.log(newBooking);
-    // Find the hotel by ID and add the booking to its booking list
-    const hotel = await Hotel.findOneAndUpdate(
-      { _id: req.params.hotelId },
-      {
-        $push: { bookings: newBooking },
-      }
-    );
-
-    if (!hotel) {
-      return res.status(400).json({ message: "hotel not found" });
-    }
-
-    // await hotel.save();
-    res.status(200).send();
-  } catch (error) {
-    console.log(error);
-    res.status(500).json({ message: "something went wrong" });
-  }
-});
+// router.post("/:hotelId/bookings", verifyToken, async (req: Request, res: Response) => {
+//   try {
+//     const bookingDetails = req.body;
+//     const hotelId = req.params.hotelId;
+//     const hotel = await Hotel.findById(hotelId);
+//     if(!hotel){
+//       return res.status(400).json({message:"Hotel not found"});
+//     }
+//     await BookingModel.create(bookingDetails);
+//     return res.status(200).json({"message":"Hotel Booked Successfully"});
+//   } catch (error) {
+//     console.log(error);
+//     res.status(500).json({ message: "something went wrong" });
+//   }
+// });
 
 // Construct search query for filtering hotels
 const constructSearchQuery = (queryParams: any) => {
@@ -118,8 +190,16 @@ const constructSearchQuery = (queryParams: any) => {
         )
       : [queryParams.destination.trim().replace(/\s+/g, " ").toLowerCase()];
 
-    constructedQuery.nearByTemple = {
+    constructedQuery.nearbyTemple = {
       $in: templeSearchTerms,
+    };
+  }
+
+  if (queryParams.roomCount) {
+    constructedQuery['rooms'] = {
+      $elemMatch: {
+        availableRooms: { $gte: parseInt(queryParams.roomCount) }
+      }
     };
   }
 
@@ -152,13 +232,27 @@ const constructSearchQuery = (queryParams: any) => {
     };
   }
 
-  if (queryParams.roomCount) {
-    constructedQuery.roomCount = {
-      $gte: parseInt(queryParams.roomCount), // Ensures the hotel has enough rooms available
-    };
-  }
-
   return constructedQuery;
 };
+
+router.patch("/:id",verifyToken, async (req: Request, res: Response) => {
+  try{
+    const {id}=req.params;
+    const {status='archive'}=req.query;
+    const response = await Hotel.findByIdAndUpdate({
+      _id:id
+    },{
+      $set:{status}
+    });
+    if(!response){
+      return res.status(400).json({message:"Hotel not found"});
+    }
+    return res.status(200).json({message:"Hotel status updated successfully"});    
+  }
+  catch(error){
+    console.log(error);
+    res.status(500).json({message:"Something went wrong"});
+  }
+});
 
 export default router;

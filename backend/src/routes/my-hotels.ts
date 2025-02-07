@@ -3,9 +3,8 @@ import multer from "multer";
 import cloudinary from "cloudinary";
 import Hotel from "../models/hotel";
 import verifyToken from "../middleware/auth";
-import { body } from "express-validator";
-import { HotelType } from "../shared/types";
-
+import BookingModel from "../models/booking";
+import UserModel from "../models/user";
 const router = express.Router();
 
 const storage = multer.memoryStorage();
@@ -14,53 +13,65 @@ const upload = multer({
   limits: {
     fileSize: 5 * 1024 * 1024, // 5MB
   },
-});
+}).any();
 
 router.post(
   "/",
   verifyToken,
-  [
-    body("name").notEmpty().withMessage("Name is required"),
-    body("type").notEmpty().withMessage("Hotel type is required"),
-    body("description").notEmpty().withMessage("Description is required"),
-    body("pricePerNight")
-      .notEmpty()
-      .isNumeric()
-      .withMessage("Price per night is required and must be a number"),
-    body("facilities")
-      .notEmpty()
-      .isArray()
-      .withMessage("Facilities are required"),
-    body("nearByTemple")
-      .notEmpty()
-      .isArray()
-      .withMessage("Nearest temples are required"),
-  ],
-  upload.array("imageFiles", 6),
+  // [
+  //   body("name").notEmpty().withMessage("Name is required"),
+  //   body("type").notEmpty().withMessage("Hotel type is required"),
+  //   body("description").notEmpty().withMessage("Description is required"),
+  //   body("pricePerNight")
+  //     .notEmpty()
+  //     .isNumeric()
+  //     .withMessage("Price per night is required and must be a number"),
+  //   body("facilities")
+  //     .notEmpty()
+  //     .isArray()
+  //     .withMessage("Facilities are required"),
+  //   body("nearbyTemple")
+  //     .notEmpty()
+  //     .isArray()
+  //     .withMessage("Nearest temples are required"),
+  // ],
+  upload,
   async (req: Request, res: Response) => {
     try {
-      console.log("req body for hotel is", req.body);
-
       // Normalize the nearbyTemple entries
-      if (req.body.nearByTemple) {
-        req.body.nearByTemple = req.body.nearByTemple.map((temple: string) =>
+      if (req.body.nearbyTemple) {
+        req.body.nearbyTemple = req.body.nearbyTemple.map((temple: string) =>
           temple.trim().replace(/\s+/g, " ").toLowerCase()
         );
-      }
-
-      const imageFiles = req.files as Express.Multer.File[];
+      }      
+      const files = req.files as Express.Multer.File[];
+      const hotelImages = files.filter((file: Express.Multer.File) => file.fieldname.startsWith("imageFiles"));
+      const roomImages = files.filter((file: Express.Multer.File) => file.fieldname.startsWith("roomImages"));  
       const newHotel = req.body;
-
-      const imageUrls = await uploadImages(imageFiles);
-
+      const imageUrls = await uploadImages(hotelImages);
+      const roomImageUrls = await Promise.all(roomImages.map(async (file) => {
+        const roomImage = await uploadImages([file]);
+        return {
+          category: file.fieldname.split("roomImages")[1],
+          images: roomImage
+        }
+      }));    
       newHotel.imageUrls = imageUrls;
+      newHotel.rooms = JSON.parse(newHotel.rooms);
+      const rooms = newHotel.rooms.map((room: any) => {
+        room.images = roomImageUrls.find((roomImage: any) =>
+          {
+            room.availableRooms = room.totalRooms;
+            return roomImage.category == room.category}
+        )?.images || [];
+        return room;
+      });
+      newHotel.rooms = rooms;
       newHotel.lastUpdated = new Date();
       newHotel.userId = req.userId;
-
       const hotel = new Hotel(newHotel);
       await hotel.save();
-
-      res.status(201).send(hotel);
+      res.status(201).json({"message":"Hotel created successfully","data":hotel});
     } catch (e) {
       console.log(e);
       res.status(500).json({ message: "Something went wrong" });
@@ -93,13 +104,33 @@ router.get("/:id", verifyToken, async (req: Request, res: Response) => {
 router.put(
   "/:hotelId",
   verifyToken,
-  upload.array("imageFiles"),
+  upload,
   async (req: Request, res: Response) => {
     try {
-      console.log("updated hotel bpdy",req.body)
       const updatedHotel = req.body;
+      updatedHotel.rooms = JSON.parse(updatedHotel.rooms);
       updatedHotel.lastUpdated = new Date();
-
+      const files = req.files as Express.Multer.File[];
+      const hotelImages = files.filter((file: Express.Multer.File) => file.fieldname.startsWith("imageFiles"));
+      const roomImages = files.filter((file: Express.Multer.File) => file.fieldname.startsWith("roomImages"));        
+      const updatedImageUrls = await uploadImages(hotelImages);
+      updatedHotel.imageUrls = [
+        ...updatedImageUrls,
+        ...(updatedHotel.imageUrls || []),
+      ];
+      const roomImageUrls = await Promise.all(roomImages.map(async (file) => {
+        const roomImage = await uploadImages([file]);
+        return {
+          category: file.fieldname.split("roomImages")[1],
+          images: roomImage
+        }
+      }));    
+      updatedHotel.rooms = updatedHotel.rooms.map((room: any) => {
+        room.images = roomImageUrls.find((roomImage: any) =>
+          roomImage.category == room.category
+        )?.images || updatedHotel.rooms.find((existingRoom: any) => existingRoom.category == room.category)?.images || [];
+        return room;
+      });
       const hotel = await Hotel.findOneAndUpdate(
         {
           _id: req.params.hotelId,
@@ -107,27 +138,127 @@ router.put(
         },
         updatedHotel,
         { new: true }
-      );
-
+      );      
       if (!hotel) {
         return res.status(404).json({ message: "Hotel not found" });
       }
-
-      const files = req.files as Express.Multer.File[];
-      const updatedImageUrls = await uploadImages(files);
-
-      hotel.imageUrls = [
-        ...updatedImageUrls,
-        ...(updatedHotel.imageUrls || []),
-      ];
-
-      await hotel.save();
-      res.status(201).json(hotel);
+      return res.status(201).json(hotel);
     } catch (error) {
+      console.log("error is", error);
       res.status(500).json({ message: "Something went throw" });
     }
   }
 );
+
+router.get("/my-bookings/:userId",
+  verifyToken,
+   async (req: Request, res: Response) => {
+  try{
+    const userId = req.userId; 
+    const hotelData = await Hotel.find({userId},{name:1,rooms:1,imageUrls:1});
+          
+    if(!hotelData){
+      return res.status(404).json({ message: "Hotel not found" });
+    }
+    const hotelIds = hotelData.map((hotel:any)=>hotel._id.toString());
+    const bookings = await BookingModel.find({hotelId:{$in:hotelIds},deletedAt:null},{hotelId:0, __v:0}).lean();
+
+const userIds = [...new Set(bookings.map((booking: any) => booking.userId))];
+const userData = await UserModel.find({_id:{$in:userIds}},{mobNo:1});
+const groupedBookings = bookings.reduce((acc: any, booking: any) => {
+  const roomId = booking.roomsId[0];
+  const hotel = hotelData.find((h: any) => 
+    h.rooms.some((r: any) => r._id.toString() === roomId)
+  );
+  const user = userData.find((u: any) => u._id.toString() === booking.userId);
+  
+  const hotelName = hotel?.name || '';
+  if (!acc[hotelName]) {
+    acc[hotelName] = {
+      hotelName,
+      firstName: booking.firstName,
+      lastName: booking.lastName,
+      email: booking.email,
+      phone: user?.mobNo,
+      imageUrl: hotel?.imageUrls?.[0] || '',
+      bookings: []
+    };
+  }
+  const room = hotel?.rooms.find((r: any) => r._id.toString() === roomId);  
+  acc[hotelName].bookings.push({
+    checkIn: booking.checkIn,
+    checkOut: booking.checkOut,
+    category: (room as any)?.category,
+    bookingId: booking._id.toString(),
+    roomsCount: booking.roomsId.length.toString(),
+    totalCost: booking.totalCost
+  });
+
+  return acc;
+}, {});
+
+// Transform the groupedBookings object into an array
+const bookingsArray = Object.values(groupedBookings);
+    return res.status(200).json(bookingsArray);
+  }
+  catch(error){
+    console.log(error);
+    return res.status(500).json({ message: "Unable to fetch bookings" });
+  }
+})
+
+router.get("/admin/bookings",
+  verifyToken,
+  async(req:Request,res:Response)=>{
+  try{
+    const hotelData = await Hotel.find({},{name:1,rooms:1,imageUrls:1});
+    if(!hotelData){
+      return res.status(404).json({ message: "Hotel not found" });
+    }
+    const hotelIds = hotelData.map((hotel:any)=>hotel._id.toString());
+    const bookings = await BookingModel.find({hotelId:{$in:hotelIds},deletedAt:null},{hotelId:0, __v:0}).lean();
+    const userIds = [...new Set(bookings.map((booking: any) => booking.userId))];
+    const userData = await UserModel.find({_id:{$in:userIds}},{mobNo:1});
+    const groupedBookings = bookings.reduce((acc: any, booking: any) => {
+    const roomId = booking.roomsId[0];
+    const hotel = hotelData.find((h: any) => 
+      h.rooms.some((r: any) => r._id.toString() === roomId)
+    );
+    const user = userData.find((u: any) => u._id.toString() === booking.userId);
+  
+    const hotelName = hotel?.name || '';
+    if (!acc[hotelName]) {
+      acc[hotelName] = {
+        hotelName,
+        firstName: booking.firstName,
+        lastName: booking.lastName,
+        email: booking.email,
+        phone: user?.mobNo,
+        imageUrl: hotel?.imageUrls?.[0] || '',
+        bookings: []
+      };
+    }
+    const room = hotel?.rooms.find((r: any) => r._id.toString() === roomId);  
+    acc[hotelName].bookings.push({
+      checkIn: booking.checkIn,
+      checkOut: booking.checkOut,
+      category: (room as any)?.category,
+      bookingId: booking._id.toString(),
+      roomsCount: booking.roomsId.length.toString(),
+      totalCost: booking.totalCost
+    });
+  
+    return acc;
+}, {});
+
+// Transform the groupedBookings object into an array
+  const bookingsArray = Object.values(groupedBookings);
+      return res.status(200).json(bookingsArray);
+    }catch(error){
+      console.log(error);
+      return res.status(500).json({ message: "Unable to fetch hotels" });
+    }
+  })
 
 async function uploadImages(imageFiles: Express.Multer.File[]) {
   const uploadPromises = imageFiles.map(async (image) => {

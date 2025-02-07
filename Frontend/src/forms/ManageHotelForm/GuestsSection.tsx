@@ -1,79 +1,110 @@
-// import { useFormContext } from "react-hook-form";
-// import { HotelFormData } from "./ManageHotelForm";
-
-// const GuestsSection = () => {
-//   const {
-//     register,
-//     formState: { errors },
-//   } = useFormContext<HotelFormData>();
-
-//   return (
-//     <div className="mb-8">
-//       <h2 className="text-2xl font-semibold mb-4">Guests</h2>
-//       <div className="grid grid-cols-1 sm:grid-cols-2 gap-6 bg-gray-100 p-6 rounded-lg">
-//         <label className="text-gray-700 text-sm font-semibold">
-//           Rooms
-//           <input
-//             className="border rounded w-full py-2 px-3 mt-2"
-//             type="number"
-//             min={1}
-//             {...register("roomCount", {
-//               required: "This field is required",
-//             })}
-//           />
-//           {errors.roomCount?.message && (
-//             <span className="text-red-500 text-sm font-medium mt-2 inline-block">
-//               {errors.roomCount?.message}
-//             </span>
-//           )}
-//         </label>
-
-       
-//       </div>
-//     </div>
-//   );
-// };
-
-// export default GuestsSection;
-
-import { useState } from "react";
+import React, { useState } from "react";
 import { useFormContext } from "react-hook-form";
 import { HotelFormData } from "./ManageHotelForm";
+import { Dialog } from "@headlessui/react";
 
-const GuestsSection = () => {
-  const {
-    register,
-    formState: { errors },
-  } = useFormContext<HotelFormData>();
+type existingRooms = {
+  category: string;
+  totalRooms: number;
+  price: number;
+  images: string[];
+  features: string[];
+  availableRooms: number;
+};
+
+const GuestsSection = ({
+  existingRooms,
+}: {
+  existingRooms: existingRooms[];
+}) => {
+  const { setValue } = useFormContext<HotelFormData>();
 
   const [showRooms, setShowRooms] = useState(true);
+  const [isDialogOpen, setIsDialogOpen] = useState(false);
+  const [rooms, setRooms] = useState<any[]>([]);
+  const [editingRoomIndex, setEditingRoomIndex] = useState<number | null>(null);
+  const categories = [
+    { value: 1, label: "2 Bed AC" },
+    { value: 2, label: "2 Bed Non-AC" },
+    { value: 3, label: "4 Bed AC" },
+    { value: 4, label: "4 Bed Non-AC" },
+  ];
+  const categoriesTitles: Record<string, string> = {
+    "1": "2 Bed AC",
+    "2": "2 Bed Non-AC",
+    "3": "4 Bed AC",
+    "4": "4 Bed Non-AC",
+  };
+  console.log("rooms in GuestsSection", rooms);
 
   const toggleRoomsVisibility = () => {
     setShowRooms((prev) => !prev);
   };
 
+  React.useEffect(() => {
+    if (existingRooms) {
+      setRooms(existingRooms);
+    }
+  }, [existingRooms]);
+
+  const handleSaveRoom = (event: React.FormEvent<HTMLFormElement>) => {
+    event.preventDefault();
+    event.stopPropagation();
+    const formData = new FormData(event.target as HTMLFormElement);
+
+    // Get the new uploaded files
+    const newImages = formData.getAll("images");
+    console.log("newImages in handleSaveRoom", newImages);
+    // If editing, combine existing images with new uploads (if any)
+    let finalImages: string[] = [];
+    if (
+      newImages.length > 0 &&
+      (newImages[0] instanceof File ? newImages[0].name !== "" : false)
+    ) {
+      finalImages = Array.from(newImages) as string[];
+    } else if (editingRoomIndex !== null) {
+      finalImages = rooms[editingRoomIndex].images;
+    }
+
+    const newRoom = {
+      category: formData.get("category"),
+      totalRooms: Number(formData.get("totalRooms")),
+      availableRooms: Number(formData.get("totalRooms")),
+      price: Number(formData.get("price")),
+      images: finalImages,
+    };
+
+    if (editingRoomIndex !== null) {
+      const updatedRooms = [...rooms];
+      updatedRooms[editingRoomIndex] = newRoom;
+      setValue("rooms", updatedRooms);
+      setRooms(updatedRooms);
+      setEditingRoomIndex(null);
+    } else {
+      setValue("rooms", [...rooms, newRoom]);
+      setRooms([...rooms, newRoom]);
+    }
+
+    setIsDialogOpen(false);
+  };
+
+  const handleEditRoom = (index: number | null) => {
+    setEditingRoomIndex(index);
+    setIsDialogOpen(true);
+  };
+
+  const handleDeleteRoom = (index: number) => {
+    setRooms((prevValue) => {
+      const updatedRooms = prevValue.filter((_, i) => i !== index);
+      setValue("rooms", updatedRooms);
+      return updatedRooms;
+    });
+  };
+
   return (
     <div className="mb-8">
       <h2 className="text-2xl font-semibold mb-4">Guests</h2>
-<div className="grid grid-cols-1 sm:grid-cols-2 gap-6 bg-gray-100 p-6 rounded-lg">
-          <label className="text-gray-700 text-sm font-semibold">
-            Rooms
-            <input
-              className="border rounded w-full py-2 px-3 mt-2"
-              type="number"
-              min={1}
-              {...register("roomCount", {
-                required: "This field is required",
-              })}
-            />
-            {errors.roomCount?.message && (
-              <span className="text-red-500 text-sm font-medium mt-2 inline-block">
-                {errors.roomCount?.message}
-              </span>
-            )}
-          </label>
-        </div>
-        <div className="flex items-center mt-4">
+      <div className="flex items-center mt-4">
         <span className="mr-2 text-gray-700">Show Rooms</span>
         <button
           onClick={toggleRoomsVisibility}
@@ -88,11 +119,172 @@ const GuestsSection = () => {
           ></div>
         </button>
       </div>
-      
+      <button
+        onClick={(e) => {
+          e.preventDefault();
+          e.stopPropagation();
+          setIsDialogOpen(true);
+        }}
+        className="mt-4 bg-blue-500 text-white py-2 px-4 rounded-lg"
+      >
+        Add Rooms
+      </button>
+      <div className="mt-6">
+        {rooms.map(
+          (
+            room: {
+              category: string;
+              totalRooms: number;
+              price: number;
+              images: string[] | File[];
+            },
+            index
+          ) => (
+            <div key={index} className="p-4 border rounded-lg mb-4">
+              <h3 className="font-semibold">
+                Category: {categoriesTitles[room.category]}
+              </h3>
+              <p>Total Rooms: {room.totalRooms}</p>
+              <p>Price: {room.price}</p>
+              <div className="flex gap-2 mt-2">
+                {room.images &&
+                  room.images.map((image: string | File, i: number) =>
+                    image &&
+                    (typeof image === "string" || image instanceof File) ? (
+                      <img
+                        key={i}
+                        src={
+                          image instanceof File
+                            ? URL.createObjectURL(image)
+                            : image
+                        }
+                        alt="Room"
+                        className="w-16 h-16 rounded object-cover"
+                      />
+                    ) : null
+                  )}
+              </div>
+              <div className="mt-2 flex gap-2">
+                <button
+                  onClick={(e) => {
+                    e.preventDefault();
+                    e.stopPropagation();
+                    handleEditRoom(index);
+                  }}
+                  className="bg-yellow-500 text-white py-1 px-3 rounded-lg"
+                >
+                  Edit
+                </button>
+                <button
+                  onClick={(e) => {
+                    e.preventDefault();
+                    e.stopPropagation();
+                    handleDeleteRoom(index);
+                  }}
+                  className="bg-red-500 text-white py-1 px-3 rounded-lg"
+                >
+                  Delete
+                </button>
+              </div>
+            </div>
+          )
+        )}
+      </div>
+      {/* Room Dialog */}
+      <Dialog open={isDialogOpen} onClose={() => setIsDialogOpen(false)}>
+        <div className="fixed inset-0 bg-black bg-opacity-30 flex justify-center items-center">
+          <div className="bg-white p-6 rounded-lg w-96">
+            <h3 className="text-lg font-semibold mb-4">
+              {editingRoomIndex !== null
+                ? "Edit Room Category"
+                : "Add Room Category"}
+            </h3>
+            <form onSubmit={handleSaveRoom}>
+              <label className="block mb-2">Category</label>
+              <select
+                name="category"
+                className="border w-full p-2 rounded"
+                defaultValue={
+                  editingRoomIndex !== null
+                    ? rooms[editingRoomIndex].category
+                    : ""
+                }
+              >
+                {categories.map((category) => (
+                  <option key={category.value} value={category.value}>
+                    {category.label}
+                  </option>
+                ))}
+              </select>
+              <label className="block mt-4">Number of Rooms</label>
+              <input
+                name="totalRooms"
+                type="number"
+                className="border w-full p-2 rounded"
+                defaultValue={
+                  editingRoomIndex !== null
+                    ? rooms[editingRoomIndex].totalRooms
+                    : ""
+                }
+              />
+              <label className="block mt-4">Room Price</label>
+              <input
+                name="price"
+                type="number"
+                className="border w-full p-2 rounded"
+                defaultValue={
+                  editingRoomIndex !== null ? rooms[editingRoomIndex].price : ""
+                }
+              />
+              <label className="block mt-4">Upload Images</label>
+              <input
+                name="images"
+                type="file"
+                multiple
+                className="border w-full p-2 rounded"
+              />
+              {editingRoomIndex !== null && rooms[editingRoomIndex].images && (
+                <div className="mt-2 flex gap-2">
+                  {rooms[editingRoomIndex].images.map(
+                    (image: string | File, i: number) =>
+                      image &&
+                      (typeof image === "string" || image instanceof File) ? (
+                        <img
+                          key={i}
+                          src={
+                            image instanceof File
+                              ? URL.createObjectURL(image)
+                              : image
+                          }
+                          alt="Room"
+                          className="w-16 h-16 rounded object-cover"
+                        />
+                      ) : null
+                  )}
+                </div>
+              )}
+              <div className="mt-4 flex justify-end">
+                <button
+                  type="button"
+                  onClick={() => setIsDialogOpen(false)}
+                  className="bg-gray-500 text-white py-2 px-4 rounded-lg mr-2"
+                >
+                  Cancel
+                </button>
+                <button
+                  type="submit"
+                  onClick={(e) => e.stopPropagation()}
+                  className="bg-green-500 text-white py-2 px-4 rounded-lg"
+                >
+                  Save
+                </button>
+              </div>
+            </form>
+          </div>
+        </div>
+      </Dialog>
     </div>
-    
   );
 };
 
 export default GuestsSection;
-

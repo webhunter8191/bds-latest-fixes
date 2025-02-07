@@ -37,7 +37,7 @@ router.post("/", auth_1.default, [
         .notEmpty()
         .isArray()
         .withMessage("Facilities are required"),
-    (0, express_validator_1.body)("nearByTemple")
+    (0, express_validator_1.body)("nearbyTemple")
         .notEmpty()
         .isArray()
         .withMessage("Nearest temples are required"),
@@ -45,8 +45,8 @@ router.post("/", auth_1.default, [
     try {
         console.log("req body for hotel is", req.body);
         // Normalize the nearbyTemple entries
-        if (req.body.nearByTemple) {
-            req.body.nearByTemple = req.body.nearByTemple.map((temple) => temple.trim().replace(/\s+/g, " ").toLowerCase());
+        if (req.body.nearbyTemple) {
+            req.body.nearbyTemple = req.body.nearbyTemple.map((temple) => temple.trim().replace(/\s+/g, " ").toLowerCase());
         }
         const imageFiles = req.files;
         const newHotel = req.body;

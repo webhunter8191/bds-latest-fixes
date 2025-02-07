@@ -4,14 +4,15 @@ type SearchContext = {
   destination: string;
   checkIn: Date;
   checkOut: Date;
- roomCount:number,
+  roomCount: number;
   hotelId: string;
+  totalCost: number;
   saveSearchValues: (
     destination: string,
     checkIn: Date,
     checkOut: Date,
     roomCount: number,
-   
+    totalCost: number
   ) => void;
 };
 
@@ -38,7 +39,11 @@ export const SearchContextProvider = ({
   const [roomCount, setRoomCount] = useState<number>(() =>
     parseInt(sessionStorage.getItem("roomCount") || "1")
   );
- 
+
+  const [totalCost, setTotalCost] = useState<number>(() =>
+    parseInt(sessionStorage.getItem("totalCost") || "0")
+  );
+
   const [hotelId, setHotelId] = useState<string>(
     () => sessionStorage.getItem("hotelID") || ""
   );
@@ -47,22 +52,34 @@ export const SearchContextProvider = ({
     destination: string,
     checkIn: Date,
     checkOut: Date,
-    roomCount:number,
+    roomCount: number,
+    totalCost: number,
     hotelId?: string
   ) => {
+    console.log(
+      "in search context",
+      totalCost,
+      destination,
+      checkIn,
+      checkOut,
+      roomCount,
+      hotelId
+    );
+
     setDestination(destination);
     setCheckIn(checkIn);
     setCheckOut(checkOut);
     setRoomCount(roomCount);
+    setTotalCost(totalCost);
     if (hotelId) {
       setHotelId(hotelId);
     }
 
     sessionStorage.setItem("destination", destination);
-    sessionStorage.setItem("checkIn", checkIn.toISOString());
-    sessionStorage.setItem("checkOut", checkOut.toISOString());
-    sessionStorage.setItem("roomCount", roomCount.toString());
-
+    sessionStorage.setItem("checkIn", checkIn?.toISOString());
+    sessionStorage.setItem("checkOut", checkOut?.toISOString());
+    sessionStorage.setItem("roomCount", roomCount?.toString());
+    sessionStorage.setItem("totalCost", totalCost?.toString());
 
     if (hotelId) {
       sessionStorage.setItem("hotelId", hotelId);
@@ -75,7 +92,8 @@ export const SearchContextProvider = ({
         destination,
         checkIn,
         checkOut,
-       roomCount,
+        roomCount,
+        totalCost,
         hotelId,
         saveSearchValues,
       }}
