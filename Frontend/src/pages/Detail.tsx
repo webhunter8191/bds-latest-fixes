@@ -3,7 +3,19 @@ import { useQuery } from "react-query";
 import { useParams } from "react-router-dom";
 import * as apiClient from "./../api-client";
 import { AiFillStar } from "react-icons/ai";
-import { FaArrowLeft, FaArrowRight, FaWifi, FaSwimmingPool, FaConciergeBell, FaParking, FaDumbbell, FaCoffee, FaUtensils, FaSpa, FaHotel } from "react-icons/fa";
+import {
+  FaArrowLeft,
+  FaArrowRight,
+  FaWifi,
+  FaSwimmingPool,
+  FaConciergeBell,
+  FaParking,
+  FaDumbbell,
+  FaCoffee,
+  FaUtensils,
+  FaSpa,
+  FaHotel,
+} from "react-icons/fa";
 import { MdLocalLaundryService, MdOutlineRoomService } from "react-icons/md";
 import { GiBathtub } from "react-icons/gi";
 import GuestInfoForm from "../forms/GuestInfoForm/GuestInfoForm";
