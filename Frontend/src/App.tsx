@@ -22,8 +22,7 @@ import Footer from "./components/Footer";
 import AdminBookingspage from "./pages/AdminBookingspage";
 
 const App = () => {
-  const { isLoggedIn, isAdmin } = useAppContext();
-  console.log(typeof isAdmin);
+  const { isLoggedIn, isAdmin } = useAppContext();  
   return (
     <Router>
       <Routes>
@@ -81,15 +80,6 @@ const App = () => {
               }
             />
             <Route
-              path="/my-hotels"
-              element={
-                <Layout>
-                  <MyHotels />
-                </Layout>
-              }
-            />
-
-            <Route
               path="/my-bookings"
               element={
                 <Layout>
@@ -97,27 +87,20 @@ const App = () => {
                 </Layout>
               }
             />
-            <Route
+            </>)}
+           
+
+
+             {isLoggedIn && isAdmin && <>
+             <Route
               path="/admin-bookings"
               element={
                 <Layout>
                   <AdminBookingspage />
                 </Layout>
-              }
-            />
-            {/* <Route
-              path={!isLoading && isAdmin ? "/admin-bookings" : "/"}
-              element={
-                <Layout>
-                  <AdminBookingspage />
-                </Layout>
-              }
-            /> */}
+              }>
 
-            {/* Admin Routes */}
-
-            {isAdmin && (
-              <>
+              </Route>
                 <Route
                   path="/add-hotel"
                   element={
@@ -127,6 +110,14 @@ const App = () => {
                   }
                 />
                 <Route
+              path="/my-hotels"
+              element={
+                <Layout>
+                  <MyHotels />
+                </Layout>
+              }
+            />
+                <Route
                   path="/edit-hotel/:hotelId"
                   element={
                     <Layout>
@@ -134,18 +125,8 @@ const App = () => {
                     </Layout>
                   }
                 />
-                <Route
-                  path="/admin-bookings"
-                  element={
-                    <Layout>
-                      <AdminBookingspage />
-                    </Layout>
-                  }
-                />
               </>
-            )}
-          </>
-        )}
+}
         <Route path="*" element={<Navigate to="/" />} />
       </Routes>
     </Router>
