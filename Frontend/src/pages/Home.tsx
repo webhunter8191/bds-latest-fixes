@@ -4,7 +4,10 @@ import * as apiClient from "../api-client";
 import LatestDestinationCard from "../components/LastestDestinationCard";
 import Hero from "../components/Hero";
 import SearchBar from "../components/SearchBar";
-import Features from "../components/Features";
+import room1img from "../assets/room1.jpg";
+import room2img from "../assets/room2.jpg";
+import room3img from "../assets/room3.jpg";
+// import Features from "../components/Features";
 
 const Home = () => {
   const { data: hotels } = useQuery("fetchHotels", apiClient.fetchHotels);
@@ -39,7 +42,7 @@ const Home = () => {
       </div>
 
       {/* Latest Destinations Section */}
-      <section className="container mx-auto px-4 py-8 space-y-6 mt-[80px] w-[100%] md:w-[80%] lg:w-[85%] relative">
+      <section className="container mx-auto px-4 py-8 space-y-6 mt-[80px] w-[100%] md:w-[80%] lg:w-[80%] relative">
         <h2 className="text-4xl font-bold text-gray-800 text-center">
           Latest Hotels
         </h2>
@@ -49,7 +52,7 @@ const Home = () => {
 
         {/* Loader Overlay (Covers Latest Destinations Section Only) */}
         {loading && (
-          <div className="absolute inset-0 flex items-center justify-center bg-white/70 z-10">
+          <div className="absolute  inset-0 flex items-center justify-center bg-white/70 z-10">
             <div className="w-12 h-12 border-4 border-blue-500 border-t-transparent rounded-full animate-spin"></div>
           </div>
         )}
@@ -58,9 +61,9 @@ const Home = () => {
         <div
           className={`${
             loading ? "opacity-0" : "opacity-100"
-          } transition-opacity duration-500 space-y-8`}
+          } transition-opacity duration-500 space-y-4`}
         >
-          <div className="grid md:grid-cols-2 grid-cols-1 gap-8">
+          <div className="grid md:grid-cols-2 grid-cols-2 md:gap-8 gap-3">
             {topRowHotels.map((hotel) => (
               <LatestDestinationCard
                 key={hotel._id}
@@ -69,7 +72,7 @@ const Home = () => {
               />
             ))}
           </div>
-          <div className="grid md:grid-cols-3 grid-cols-1 gap-4">
+          <div className="grid md:grid-cols-3 grid-cols-3 gap-2">
             {bottomRowHotels.map((hotel) => (
               <LatestDestinationCard
                 key={hotel._id}
@@ -80,7 +83,66 @@ const Home = () => {
           </div>
         </div>
       </section>
-      <Features />
+      {/* <Features /> */}
+      <section className="relative py-12 px-6 md:px-12">
+        {/* Background and Overlay */}
+        <div className="absolute inset-0 bg-gray-100"></div>
+        <div className="absolute inset-0 bg-[#6A5631] opacity-20"></div>
+
+        {/* Content Container */}
+        <div className="relative text-center mb-8 z-10">
+          <h2 className="text-3xl font-semibold text-white">Luxurious Rooms</h2>
+          <p className="text-gray-300">
+            All rooms are designed for your comfort
+          </p>
+        </div>
+
+        {/* Rooms */}
+        <div className="relative flex flex-wrap justify-center gap-6 z-10">
+          <div className="bg-white p-4 rounded-lg shadow-lg w-80 relative">
+            <a href="http://localhost:5174/detail/678a397018c17388cf8a6760">
+              <img
+                src={room1img}
+                alt="Room 1"
+                className="w-full h-48 object-cover rounded-lg"
+              />
+            </a>
+            <span className="absolute top-3 right-3 bg-green-500 text-white text-xs px-2 py-1 rounded">
+              3 Rooms available
+            </span>
+            <p className="mt-3 text-gray-700">
+              Television set, Extra sheets and Breakfast
+            </p>
+          </div>
+          <div className="bg-white p-4 rounded-lg shadow-lg w-80 relative">
+            <img
+              src={room2img}
+              alt="Room 2"
+              className="w-full h-48 object-cover rounded-lg"
+            />
+            <span className="absolute top-3 right-3 bg-green-500 text-white text-xs px-2 py-1 rounded">
+              4 Rooms available
+            </span>
+            <p className="mt-3 text-gray-700">
+              Television set, Extra sheets, Breakfast, and Fireplace
+            </p>
+          </div>
+          <div className="bg-white p-4 rounded-lg shadow-lg w-80 relative">
+            <img
+              src={room3img}
+              alt="Room 3"
+              className="w-full h-48 object-cover rounded-lg"
+            />
+            <span className="absolute top-3 right-3 bg-green-500 text-white text-xs px-2 py-1 rounded">
+              6 Rooms available
+            </span>
+            <p className="mt-3 text-gray-700">
+              Television set, Extra sheets, Breakfast, and Fireplace, Console
+              and bed rest
+            </p>
+          </div>
+        </div>
+      </section>
     </div>
   );
 };

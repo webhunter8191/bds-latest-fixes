@@ -28,19 +28,19 @@ const facilityIcons = {
   "Free WiFi": FaWifi,
   "Swimming Pool": FaSwimmingPool,
   "Concierge Service": FaConciergeBell,
-  "Parking": FaParking,
-  "Gym": FaDumbbell,
+  Parking: FaParking,
+  Gym: FaDumbbell,
   "Breakfast Included": FaCoffee,
-  "Restaurant": FaUtensils,
-  "Spa": FaSpa,
+  Restaurant: FaUtensils,
+  Spa: FaSpa,
   "Laundry Service": MdLocalLaundryService,
   "Room Service": MdOutlineRoomService,
-  "Bathtub": GiBathtub,
-  "Hotel": FaHotel,
+  Bathtub: GiBathtub,
+  Hotel: FaHotel,
 };
 
 // Custom Next Arrow Component
-const NextArrow = (props: { onClick: any; }) => {
+const NextArrow = (props: { onClick: any }) => {
   const { onClick } = props;
   return (
     <button
@@ -54,7 +54,7 @@ const NextArrow = (props: { onClick: any; }) => {
 };
 
 // Custom Prev Arrow Component
-const PrevArrow = (props: { onClick: any; }) => {
+const PrevArrow = (props: { onClick: any }) => {
   const { onClick } = props;
   return (
     <button
@@ -77,21 +77,26 @@ const Detail = () => {
       enabled: !!hotelId,
     }
   );
-  const categories={
-   1: "2 Bed AC",
-   2: "2 Bed Non AC",
-   3: "4 Bed AC",
-   4: "4 Bed Non AC",
-  }
+  const categories = {
+    1: "2 Bed AC",
+    2: "2 Bed Non AC",
+    3: "4 Bed AC",
+    4: "4 Bed Non AC",
+  };
 
-  
-
-  const [selectedRooms, setSelectedRooms] = useState<{[key: string]: boolean}>({});
+  const [selectedRooms, setSelectedRooms] = useState<{
+    [key: string]: boolean;
+  }>({});
   const [selectedRoomPrice, setSelectedRoomPrice] = useState<number>(0);
-  const [availableRooms,setAvailableRooms]=useState<number>(0);
-  const [selectedRoomId,setSelectedRoomId]=useState<string>("");
+  const [availableRooms, setAvailableRooms] = useState<number>(0);
+  const [selectedRoomId, setSelectedRoomId] = useState<string>("");
 
-  const handleRoomSelection = (availableRooms: number, category: string, price: number, roomId: string) => {
+  const handleRoomSelection = (
+    availableRooms: number,
+    category: string,
+    price: number,
+    roomId: string
+  ) => {
     setSelectedRooms((prev) => {
       // If clicking the same room that's already selected, unselect it
       if (prev[category]) {
@@ -99,10 +104,10 @@ const Detail = () => {
       }
       // Otherwise, clear all selections and select the new room
       return {
-        [category]: true
+        [category]: true,
       };
     });
-    
+
     // If we're selecting a new room
     if (!selectedRooms[category]) {
       setAvailableRooms(availableRooms);
@@ -154,11 +159,14 @@ const Detail = () => {
       <div className="relative mx-auto shadow-xl rounded-lg overflow-hidden">
         <Slider {...sliderSettings}>
           {hotel.imageUrls.map((image, index) => (
-            <div key={index} className="h-[300px] sm:h-[400px] md:h-[400px] lg:h-[600px]">
+            <div
+              key={index}
+              className="h-[250px] sm:h-[250px] md:h-[200px] lg:h-[600px]"
+            >
               <img
                 src={image}
                 alt={hotel.name}
-                className="rounded-md w-full h-full object-cover object-center transition-transform duration-300 hover:scale-105"
+                className="rounded-md w-full h-full object-cover object-center transition-transform duration-300 hover:scale-105  "
               />
             </div>
           ))}
@@ -177,7 +185,11 @@ const Detail = () => {
               {hotel.description}
             </p>
             <p className="text-gray-700 leading-relaxed whitespace-pre-line">
-              <a href={hotel.location} target="_blank" className="text-blue-500 hover:underline">
+              <a
+                href={hotel.location}
+                target="_blank"
+                className="text-blue-500 hover:underline"
+              >
                 View on Map
               </a>
             </p>
@@ -190,50 +202,68 @@ const Detail = () => {
             </h2>
             <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-2 gap-2 sm:gap-6">
               {hotel.facilities.map((facility, index) => {
-                const Icon = facilityIcons[facility as keyof typeof facilityIcons] || FaHotel; // Default to FaHotel if no match
+                const Icon =
+                  facilityIcons[facility as keyof typeof facilityIcons] ||
+                  FaHotel; // Default to FaHotel if no match
                 return (
                   <div
                     key={index}
                     className="flex items-center gap-3 p-3  rounded-md transition duration-200"
                   >
-                    <Icon className="text-blue-500 text-xl sm:text-xl lg:text-2xl" /> {/* Smaller icons on small screens */}
+                    <Icon className="text-blue-500 text-xl sm:text-xl lg:text-2xl" />{" "}
+                    {/* Smaller icons on small screens */}
                     <span className="text-black-600 font-medium text-sm sm:text-base lg:text-md">
                       {facility}
-                    </span> {/* Smaller text on small screens */}
+                    </span>{" "}
+                    {/* Smaller text on small screens */}
                   </div>
                 );
               })}
             </div>
           </div>
           <div className="grid grid-rows-1 md:grid-cols-2 gap-6">
-        {hotel.rooms.map((room:any, index) => (
-          <div key={index} className="bg-white p-6 rounded-lg shadow-md grid grid-cols-1 md:grid-cols-1 gap-4">
-            {/* Room image on the left */}
-            <div className="flex justify-center items-center">
-              <img
-                src={room.images[0]} 
-                alt={`${room.type} Room`}
-                className="rounded-md w-full h-auto object-cover"
-              />
-            </div>
-
-            {/* Room selection buttons and info on the right */}
-            <div className="flex flex-col justify-start gap-4">
-              <h3 className="text-lg font-semibold mb-4">{categories[room.category as keyof typeof categories]}</h3>
-              <div className="text-gray-600">
-                <p>Price: ₹ {room.price}/night</p>
-                <p>Available Rooms: {room.availableRooms}</p>
-              </div>
-              <button 
-                onClick={() => handleRoomSelection(room.availableRooms, room.category, room.price, room._id)}
-                className="w-full bg-blue-600 text-white py-2 rounded-lg hover:bg-blue-700"
+            {hotel.rooms.map((room: any, index) => (
+              <div
+                key={index}
+                className="bg-white p-6 rounded-lg shadow-md grid grid-cols-1 md:grid-cols-1 gap-4"
               >
-                {selectedRooms[room.category] ? "Unselect Room" : "Select Room"}
-              </button>
-            </div>
+                {/* Room image on the left */}
+                <div className="flex justify-center items-center">
+                  <img
+                    src={room.images[0]}
+                    alt={`${room.type} Room`}
+                    className="rounded-md w-full h-auto object-cover"
+                  />
+                </div>
+
+                {/* Room selection buttons and info on the right */}
+                <div className="flex flex-col justify-start gap-4">
+                  <h3 className="text-lg font-semibold mb-4">
+                    {categories[room.category as keyof typeof categories]}
+                  </h3>
+                  <div className="text-gray-600">
+                    <p>Price: ₹ {room.price}/night</p>
+                    <p>Available Rooms: {room.availableRooms}</p>
+                  </div>
+                  <button
+                    onClick={() =>
+                      handleRoomSelection(
+                        room.availableRooms,
+                        room.category,
+                        room.price,
+                        room._id
+                      )
+                    }
+                    className="w-full bg-blue-600 text-white py-2 rounded-lg hover:bg-blue-700"
+                  >
+                    {selectedRooms[room.category]
+                      ? "Unselect Room"
+                      : "Select Room"}
+                  </button>
+                </div>
+              </div>
+            ))}
           </div>
-        ))}
-      </div>
           {/* Location Section */}
           <div className="bg-white shadow-md rounded-lg p-4 sm:p-6">
             <h2 className="text-xl sm:text-2xl font-semibold text-gray-800 border-b pb-2 mb-4">
@@ -260,7 +290,9 @@ const Detail = () => {
             {hotel.location && (
               <div className="w-full h-80 sm:h-96">
                 <iframe
-                  src={`https://www.google.com/maps/embed/v1/place?q=${encodeURIComponent(hotel.location)}&key=YOUR_GOOGLE_MAPS_API_KEY`}
+                  src={`https://www.google.com/maps/embed/v1/place?q=${encodeURIComponent(
+                    hotel.location
+                  )}&key=YOUR_GOOGLE_MAPS_API_KEY`}
                   className="w-full h-full border-none"
                   allowFullScreen
                 />

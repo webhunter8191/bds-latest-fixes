@@ -16,7 +16,7 @@ const LatestDestinationCard = ({ hotel, onImageLoad }: Props) => {
       className="relative cursor-pointer overflow-hidden rounded-lg shadow-lg transform transition-transform hover:scale-105"
     >
       {/* Image Container */}
-      <div className="relative w-full h-48 sm:h-56 md:h-55 lg:h-72 xl:h-70 overflow-hidden rounded-t-lg">
+      <div className="relative w-full h-40 sm:h-56 md:h-55 lg:h-72 xl:h-70 overflow-hidden rounded-t-lg">
         {isLoading && (
           <div className="absolute inset-0 flex items-center justify-center bg-gray-300 animate-pulse">
             <span className="text-gray-500 text-sm">Loading...</span>
