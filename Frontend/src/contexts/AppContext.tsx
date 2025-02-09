@@ -32,25 +32,27 @@ export const AppContextProvider = ({
   );
 
   return (
-    <AppContext.Provider
-      value={{
-        showToast: (toastMessage) => {
-          setToast(toastMessage);
-        },
-        isAdmin: data?.isAdmin ?? false,
-        isLoggedIn: !isError,
-        isLoading,
-      }}
-    >
-      {toast && (
-        <Toast
-          message={toast.message}
-          type={toast.type}
-          onClose={() => setToast(undefined)}
-        />
-      )}
-      {children}
-    </AppContext.Provider>
+    !isLoading && (
+      <AppContext.Provider
+        value={{
+          showToast: (toastMessage) => {
+            setToast(toastMessage);
+          },
+          isAdmin: data?.isAdmin ?? false,
+          isLoggedIn: !isError,
+          isLoading,
+        }}
+      >
+        {toast && (
+          <Toast
+            message={toast.message}
+            type={toast.type}
+            onClose={() => setToast(undefined)}
+          />
+        )}
+        {children}
+      </AppContext.Provider>
+    )
   );
 };
 
