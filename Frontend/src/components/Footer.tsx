@@ -1,80 +1,33 @@
-// import { FaFacebookF, FaTwitter, FaInstagram } from "react-icons/fa";
-
-// const Footer = () => {
-//   return (
-//     <div className="bg-[#7C6A46] py-8 shadow-md transition duration-500">
-//       <div className="container mx-auto flex flex-col md:flex-row justify-between items-center animate__animated animate__fadeInUp">
-//         {/* Logo and Title */}
-//         <span className="text-2xl text-white font-bold tracking-tight">
-//           <a href="/" className="hover:text-gray-300 transition duration-300">
-//             Brij Divine Stay
-//           </a>
-//         </span>
-
-//         {/* Social Media Links */}
-//         <div className="flex space-x-6 mt-4 md:mt-0">
-//           <a
-//             href="#"
-//             className="text-white text-xl hover:text-gray-300 transition duration-300"
-//           >
-//             <FaFacebookF />
-//           </a>
-//           <a
-//             href="#"
-//             className="text-white text-xl hover:text-gray-300 transition duration-300"
-//           >
-//             <FaTwitter />
-//           </a>
-//           <a
-//             href="#"
-//             className="text-white text-xl hover:text-gray-300 transition duration-300"
-//           >
-//             <FaInstagram />
-//           </a>
-//         </div>
-
-//         {/* Footer Links */}
-//         <div className="text-white flex gap-6 mt-4 md:mt-0">
-//           <p className="cursor-pointer hover:text-gray-300 transition duration-300">
-//             Privacy Policy
-//           </p>
-//           <p className="cursor-pointer hover:text-gray-300 transition duration-300">
-//             Terms of Service
-//           </p>
-//         </div>
-//       </div>
-//     </div>
-//   );
-// };
-
-// export default Footer;
-
-import React from "react";
+import { Link } from "react-router-dom";
 
 const Footer: React.FC = () => {
   return (
-    <footer className="bg-[#6A5631] text-white py-5 px-6">
-      <div className="max-w-6xl mx-auto grid grid-cols-1 md:grid-cols-5 gap-8">
+    <footer className="bg-[#6A5631] text-white py-8 px-6">
+      <div className="max-w-6xl mx-auto grid grid-cols-2 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-5 gap-8">
         {/* Testimonial Section */}
-        <div>
-          <h2 className="text-xl font-semibold italic">Brij Divine Stay</h2>
-          <p className="mt-2 text-sm">
-            The service at the Hotel Monteleone was exceptional. There was
-            absolutely no issue that was not addressed timely and with
-            satisfactory results. We were particularly impressed with how the
-            hotel staff anticipated our needs (periodically coming by the Board
-            Room to check with us).
-          </p>
+        <div className="col-span-1 lg:col-span-2">
+          <h2 className="text-xl font-semibold italic">
+            Brij Divine Stay-
+            <span className="font-normal">
+              {" "}
+              "Live the Divine, Love the Stay"
+            </span>
+          </h2>
+          {/* <p className="mt-2">
+            "Find your perfect stay in the divine lands of Vrindavan & Mathura.
+            Book comfortable hotels with ease and experience the spiritual
+            essence of Brij. Safe, secure, and hassle-free bookings – your
+            journey begins here!"
+          </p> */}
         </div>
 
         {/* Quick Links */}
         <div>
           <h3 className="font-semibold text-lg">Quick links</h3>
           <ul className="mt-2 space-y-1 text-sm">
-            <li>Room booking</li>
-            <li>Rooms</li>
-            <li>Contact</li>
-            <li>Explore</li>
+            <li className="cursor-pointer hover:underline">Room booking</li>
+            <li className="cursor-pointer hover:underline">Rooms</li>
+            <li className="cursor-pointer hover:underline">F.A.Q</li>
           </ul>
         </div>
 
@@ -82,42 +35,51 @@ const Footer: React.FC = () => {
         <div>
           <h3 className="font-semibold text-lg">Company</h3>
           <ul className="mt-2 space-y-1 text-sm">
-            <li>Privacy policy</li>
-            <li>Refund policy</li>
-            <li>F.A.Q</li>
-            <li>About</li>
+            <li className="cursor-pointer hover:underline">Privacy policy</li>
+            <li className="cursor-pointer hover:underline">Refund policy</li>
+            <li className="cursor-pointer hover:underline">Contact</li>
+            <li className="cursor-pointer hover:underline">
+              <Link to="/about" className=" hover:underline">
+                About
+              </Link>
+            </li>
           </ul>
         </div>
 
-        {/* Social Media & Newsletter */}
+        {/* Social Media */}
         <div>
-          <h3 className="font-semibold text-lg">Social media</h3>
+          <h3 className="font-semibold text-lg">Follow us</h3>
           <ul className="mt-2 space-y-1 text-sm">
-            <li>Facebook</li>
-            <li>Twitter</li>
-            <li>Instagram</li>
-            <li>LinkedIn</li>
+            <li className="cursor-pointer hover:underline">Facebook</li>
+            <li className="cursor-pointer hover:underline">Twitter</li>
+            <li className="cursor-pointer hover:underline">Instagram</li>
+            <li className="cursor-pointer hover:underline">LinkedIn</li>
           </ul>
         </div>
-        <div>
-          <h3 className="font-semibold text-lg mt-6">Newsletter</h3>
+
+        {/* Newsletter */}
+        {/* <div className="col-span-1 md:col-span-2 lg:col-span-1">
+          <h3 className="font-semibold text-lg">Newsletter</h3>
           <p className="text-sm mt-2">
-            Kindly subscribe to our newsletter to get latest deals on our rooms
-            and vacation discount.
+            Subscribe to our newsletter for the latest deals and discounts.
           </p>
-          <div className="mt-3 flex">
+          <div className="mt-3 flex flex-col sm:flex-row">
             <input
               type="email"
               placeholder="Enter your email"
-              className="p-2 rounded-l-md text-black flex-1"
+              className="p-2 rounded-md text-black flex-1 mb-2 sm:mb-0 sm:mr-2"
             />
-            <button className="bg-[#5C432B] px-4 py-2 rounded-r-md text-white">
+            <button className="bg-[#5C432B] px-4 py-2 rounded-md text-white w-full sm:w-auto">
               Subscribe
             </button>
           </div>
-        </div>
+        </div> */}
       </div>
-      <div className="text-center text-sm mt-6">Paradise view 2023</div>
+
+      {/* Copyright */}
+      <div className="text-center text-sm mt-6">
+        © {new Date().getFullYear()} Brij Divine Stay. All rights reserved.
+      </div>
     </footer>
   );
 };

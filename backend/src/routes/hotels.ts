@@ -26,7 +26,7 @@ router.get("/search", async (req: Request, res: Response) => {
         break;
     }
 
-    const pageSize = 5;
+    const pageSize = 10;
     const pageNumber = parseInt(req.query.page ? req.query.page.toString() : "1");
     const skip = (pageNumber - 1) * pageSize;    
     const hotels = await Hotel.aggregate([
@@ -162,22 +162,6 @@ router.get("/:id", [param("id").notEmpty().withMessage("Hotel ID is required")],
   }
 });
 
-// Handle booking creation without Stripe
-// router.post("/:hotelId/bookings", verifyToken, async (req: Request, res: Response) => {
-//   try {
-//     const bookingDetails = req.body;
-//     const hotelId = req.params.hotelId;
-//     const hotel = await Hotel.findById(hotelId);
-//     if(!hotel){
-//       return res.status(400).json({message:"Hotel not found"});
-//     }
-//     await BookingModel.create(bookingDetails);
-//     return res.status(200).json({"message":"Hotel Booked Successfully"});
-//   } catch (error) {
-//     console.log(error);
-//     res.status(500).json({ message: "something went wrong" });
-//   }
-// });
 
 // Construct search query for filtering hotels
 const constructSearchQuery = (queryParams: any) => {

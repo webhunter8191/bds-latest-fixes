@@ -114,7 +114,7 @@ const BookingForm = ({ currentUser, totalCost, roomsId }: Props) => {
       key: RAZORPAY_KEY_ID,
       amount: orderData.amount * 100,
       currency: orderData.currency,
-      name: "Paradise View Hotel",
+      name: "Brij Divine Stay",
       description: "Complete your booking",
       order_id: orderData.id,
       handler: async (response: any) => {

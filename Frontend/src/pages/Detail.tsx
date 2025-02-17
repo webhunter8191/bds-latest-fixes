@@ -16,6 +16,7 @@ import {
   FaSpa,
   FaHotel,
 } from "react-icons/fa";
+
 import { MdLocalLaundryService, MdOutlineRoomService } from "react-icons/md";
 import { GiBathtub } from "react-icons/gi";
 import GuestInfoForm from "../forms/GuestInfoForm/GuestInfoForm";
@@ -59,7 +60,7 @@ const PrevArrow = (props: { onClick: any }) => {
   return (
     <button
       onClick={onClick}
-      className="absolute top-1/2 left-4 transform -translate-y-1/2  p-3 rounded-full text-xl text-white bg-black hover:bg-blue-700 transition duration-200 shadow-lg"
+      className="absolute top-1/2 left-4 transform -translate-y-1/2  p-3 rounded-full text-xl text-white bg-black hover:bg-[#6A5631]-700 transition duration-200 shadow-lg"
       style={{ zIndex: 1 }}
     >
       <FaArrowLeft />
@@ -78,8 +79,8 @@ const Detail = () => {
     }
   );
   const categories = {
-    1: "2 Bed AC",
-    2: "2 Bed Non AC",
+    1: "Double Bed AC",
+    2: "Double Bed Non AC",
     3: "4 Bed AC",
     4: "4 Bed Non AC",
   };
@@ -139,22 +140,6 @@ const Detail = () => {
 
   return (
     <div className="space-y-5 p-4 sm:p-6 mx-auto min-h-screen">
-      {/* Hotel Header */}
-      <div className="flex flex-col items-start gap-4">
-        <div className="flex items-center gap-1">
-          {Array.from({ length: hotel.starRating }).map((_, index) => (
-            <AiFillStar
-              key={index}
-              className="fill-yellow-400 text-xl transition transform hover:scale-125"
-            />
-          ))}
-          <span className="text-gray-500 text-sm">{hotel.type}</span>
-        </div>
-        <h1 className="text-2xl sm:text-3xl lg:text-4xl font-bold text-blue-800 animate-fadeIn">
-          {hotel.name}
-        </h1>
-      </div>
-
       {/* Image Slider */}
       <div className="relative mx-auto shadow-xl rounded-lg overflow-hidden">
         <Slider {...sliderSettings}>
@@ -173,6 +158,22 @@ const Detail = () => {
         </Slider>
       </div>
 
+      {/* Hotel Header */}
+      <div className="flex flex-col items-start gap-4">
+        <div className="flex items-center gap-1">
+          {Array.from({ length: hotel.starRating }).map((_, index) => (
+            <AiFillStar
+              key={index}
+              className="fill-yellow-400 text-xl transition transform hover:scale-125"
+            />
+          ))}
+          <span className="text-gray-500 text-sm">{hotel.type}</span>
+        </div>
+        <h1 className="text-2xl sm:text-3xl lg:text-4xl font-semibold text-black animate-fadeIn">
+          {hotel.name} near {hotel.nearbyTemple[0]}
+        </h1>
+      </div>
+
       {/* Content Section */}
       <div className="grid grid-cols-1 lg:grid-cols-[2fr_1fr] gap-8 items-start">
         <div className="space-y-8">
@@ -183,15 +184,6 @@ const Detail = () => {
             </h2>
             <p className="text-gray-700 leading-relaxed whitespace-pre-line">
               {hotel.description}
-            </p>
-            <p className="text-gray-700 leading-relaxed whitespace-pre-line">
-              <a
-                href={hotel.location}
-                target="_blank"
-                className="text-blue-500 hover:underline"
-              >
-                View on Map
-              </a>
             </p>
           </div>
 
@@ -210,7 +202,7 @@ const Detail = () => {
                     key={index}
                     className="flex items-center gap-3 p-3  rounded-md transition duration-200"
                   >
-                    <Icon className="text-blue-500 text-xl sm:text-xl lg:text-2xl" />{" "}
+                    <Icon className="text-[#6A5631] text-xl sm:text-xl lg:text-2xl" />{" "}
                     {/* Smaller icons on small screens */}
                     <span className="text-black-600 font-medium text-sm sm:text-base lg:text-md">
                       {facility}
@@ -228,14 +220,14 @@ const Detail = () => {
                 className="bg-white p-6 rounded-lg shadow-md grid grid-cols-1 md:grid-cols-1 gap-4"
               >
                 {/* Room image on the left */}
-                <div className="flex justify-center items-center">
+                <div className="flex justify-center ">
                   <img
                     src={room.images[0]}
                     alt={`${room.type} Room`}
-                    className="rounded-md w-full h-auto object-cover"
+                    className="rounded-md w-full h-fit object-cover"
                   />
                 </div>
-
+                <div></div>
                 {/* Room selection buttons and info on the right */}
                 <div className="flex flex-col justify-start gap-4">
                   <h3 className="text-lg font-semibold mb-4">
@@ -245,6 +237,7 @@ const Detail = () => {
                     <p>Price: ₹ {room.price}/night</p>
                     <p>Available Rooms: {room.availableRooms}</p>
                   </div>
+
                   <button
                     onClick={() =>
                       handleRoomSelection(
@@ -254,7 +247,7 @@ const Detail = () => {
                         room._id
                       )
                     }
-                    className="w-full bg-blue-600 text-white py-2 rounded-lg hover:bg-blue-700"
+                    className="w-full bg-[#6A5631] text-white py-2 rounded-lg hover:bg-[#6A5631]"
                   >
                     {selectedRooms[room.category]
                       ? "Unselect Room"
@@ -276,7 +269,7 @@ const Detail = () => {
                     <a
                       href={hotel.location}
                       target="_blank"
-                      className="text-blue-500 hover:underline"
+                      className="text-[#6A5631] hover:underline"
                     >
                       View the hotel on Google Maps
                     </a>

@@ -7,8 +7,8 @@ import { useLocation, useNavigate } from "react-router-dom";
 type Props = {
   hotelId: string;
   pricePerNight: number;
-  availableRooms:number;
-  roomsId:string;
+  availableRooms: number;
+  roomsId: string;
 };
 
 type GuestInfoFormData = {
@@ -18,7 +18,12 @@ type GuestInfoFormData = {
   totalCost: number;
 };
 
-const GuestInfoForm = ({ hotelId, pricePerNight, availableRooms, roomsId }: Props) => {
+const GuestInfoForm = ({
+  hotelId,
+  pricePerNight,
+  availableRooms,
+  roomsId,
+}: Props) => {
   const search = useSearchContext();
   const { isLoggedIn } = useAppContext();
   const navigate = useNavigate();
@@ -47,13 +52,7 @@ const GuestInfoForm = ({ hotelId, pricePerNight, availableRooms, roomsId }: Prop
   maxDate.setFullYear(maxDate.getFullYear() + 1);
 
   const onSignInClick = (data: GuestInfoFormData) => {
-    search.saveSearchValues(
-      "",
-      data.checkIn,
-      data.checkOut,
-      data.roomCount,
-      0,
-    );
+    search.saveSearchValues("", data.checkIn, data.checkOut, data.roomCount, 0);
     navigate("/sign-in", { state: { from: location } });
   };
 
@@ -66,16 +65,17 @@ const GuestInfoForm = ({ hotelId, pricePerNight, availableRooms, roomsId }: Prop
     const numberOfNights =
       checkInDate.getTime() === checkOutDate.getTime()
         ? 1 // Single day stay
-        : Math.abs(checkOutDate.getTime() - checkInDate.getTime()) / (1000 * 60 * 60 * 24); // Normal difference in days
+        : Math.abs(checkOutDate.getTime() - checkInDate.getTime()) /
+          (1000 * 60 * 60 * 24); // Normal difference in days
     // Calculate the total cost
-    const totalCost =  numberOfNights * pricePerNight * data.roomCount;        
+    const totalCost = numberOfNights * pricePerNight * data.roomCount;
 
     search.saveSearchValues(
       "",
       data.checkIn,
       data.checkOut,
       data.roomCount,
-      totalCost,
+      totalCost
     );
 
     // Navigate with the total cost state
@@ -86,7 +86,9 @@ const GuestInfoForm = ({ hotelId, pricePerNight, availableRooms, roomsId }: Prop
     <div className="flex flex-col p-4 bg-blue-50 gap-4">
       <h3 className="text-md font-bold">₹{pricePerNight} per night</h3>
       <form
-        onSubmit={isLoggedIn ? handleSubmit(onSubmit) : handleSubmit(onSignInClick)}
+        onSubmit={
+          isLoggedIn ? handleSubmit(onSubmit) : handleSubmit(onSignInClick)
+        }
       >
         <div className="grid grid-cols-1 gap-4 items-center">
           <div>
@@ -133,9 +135,9 @@ const GuestInfoForm = ({ hotelId, pricePerNight, availableRooms, roomsId }: Prop
                     value: 1,
                     message: "There must be at least one room",
                   },
-                  max:{
-                    value:availableRooms,
-                    message:`Maximum ${availableRooms} rooms available`,
+                  max: {
+                    value: availableRooms,
+                    message: `Maximum ${availableRooms} rooms available`,
                   },
                   valueAsNumber: true,
                 })}
@@ -152,28 +154,28 @@ const GuestInfoForm = ({ hotelId, pricePerNight, availableRooms, roomsId }: Prop
           <div className="bg-white px-2 py-1">
             <div className="font-semibold">Total Price</div>
             <div className="font-bold text-xl">
-              ₹{
-                (pricePerNight *
-                  watch("roomCount") *
-                  (checkIn.getTime() === checkOut.getTime()
-                    ? 1
-                    : Math.abs(checkOut.getTime() - checkIn.getTime()) /
-                      (1000 * 60 * 60 * 24))
-                ).toFixed(2)
-              }
+              ₹
+              {(
+                pricePerNight *
+                watch("roomCount") *
+                (checkIn.getTime() === checkOut.getTime()
+                  ? 1
+                  : Math.abs(checkOut.getTime() - checkIn.getTime()) /
+                    (1000 * 60 * 60 * 24))
+              ).toFixed(2)}
             </div>
           </div>
 
           {isLoggedIn ? (
-            <button 
-              className="bg-blue-600 text-white h-full p-2 font-bold hover:bg-blue-500 text-xl disabled:bg-gray-400 disabled:cursor-not-allowed"
+            <button
+              className="bg-[#6A5631] text-white h-full p-2 font-bold hover:bg-[#6A5631] text-xl disabled:bg-gray-400 disabled:cursor-not-allowed"
               disabled={!pricePerNight || pricePerNight === 0}
             >
               Book Now
             </button>
           ) : (
-            <button 
-              className="bg-blue-600 text-white h-full p-2 font-bold hover:bg-blue-500 text-xl disabled:bg-gray-400 disabled:cursor-not-allowed"
+            <button
+              className="bg-[#6A5631] text-white h-full p-2 font-bold hover:bg-[#6A5631] text-xl disabled:bg-gray-400 disabled:cursor-not-allowed"
               disabled={!pricePerNight || pricePerNight === 0}
             >
               Sign in to Book

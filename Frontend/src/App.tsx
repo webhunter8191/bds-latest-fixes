@@ -20,9 +20,11 @@ import Header from "./components/Header";
 import Footer from "./components/Footer";
 // import AdminBookings from "./components/AdminBookings";
 import AdminBookingspage from "./pages/AdminBookingspage";
+import SuperAdminPanel from "./pages/SuperAdminPanel";
+import AboutUs from "./components/AboutUs";
 
 const App = () => {
-  const { isLoggedIn, isAdmin } = useAppContext();  
+  const { isLoggedIn, isAdmin } = useAppContext();
   return (
     <Router>
       <Routes>
@@ -68,6 +70,7 @@ const App = () => {
             </Layout>
           }
         />
+        <Route path="/about" element={<AboutUs />} />
 
         {isLoggedIn && (
           <>
@@ -87,29 +90,36 @@ const App = () => {
                 </Layout>
               }
             />
-            </>)}
-           
+          </>
+        )}
 
-
-             {isLoggedIn && isAdmin && <>
-             <Route
+        {isLoggedIn && isAdmin && (
+          <>
+            <Route
               path="/admin-bookings"
               element={
                 <Layout>
                   <AdminBookingspage />
                 </Layout>
-              }>
-
-              </Route>
-                <Route
-                  path="/add-hotel"
-                  element={
-                    <Layout>
-                      <AddHotel />
-                    </Layout>
-                  }
-                />
-                <Route
+              }
+            />
+            <Route
+              path="/super-admin-panel"
+              element={
+                <Layout>
+                  <SuperAdminPanel />
+                </Layout>
+              }
+            />
+            <Route
+              path="/add-hotel"
+              element={
+                <Layout>
+                  <AddHotel />
+                </Layout>
+              }
+            />
+            <Route
               path="/my-hotels"
               element={
                 <Layout>
@@ -117,16 +127,16 @@ const App = () => {
                 </Layout>
               }
             />
-                <Route
-                  path="/edit-hotel/:hotelId"
-                  element={
-                    <Layout>
-                      <EditHotel />
-                    </Layout>
-                  }
-                />
-              </>
-}
+            <Route
+              path="/edit-hotel/:hotelId"
+              element={
+                <Layout>
+                  <EditHotel />
+                </Layout>
+              }
+            />
+          </>
+        )}
         <Route path="*" element={<Navigate to="/" />} />
       </Routes>
     </Router>
