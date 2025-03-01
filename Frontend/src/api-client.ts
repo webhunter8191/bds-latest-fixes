@@ -54,16 +54,38 @@ export const signIn = async (formData: SignInFormData) => {
   return body;
 };
 
+// export const validateToken = async () => {
+//   const response = await fetch(`${API_BASE_URL}/api/auth/validate-token`, {
+//     credentials: "include",
+//   });
+
+//   if (!response.ok) {
+//     throw new Error("Token invalid");
+//   }
+
+//   return response.json();
+// };
+
+
 export const validateToken = async () => {
-  const response = await fetch(`${API_BASE_URL}/api/auth/validate-token`, {
-    credentials: "include",
-  });
+  try {
+    const response = await fetch(`${API_BASE_URL}/api/auth/validate-token`, {
+      credentials: "include",
+    });
 
-  if (!response.ok) {
-    throw new Error("Token invalid");
+    const data = await response.json();
+    console.log("Token validation response:", data);
+
+    if (!response.ok) {
+      console.warn("Invalid token:", data);
+      return null;
+    }
+
+    return data;
+  } catch (error) {
+    console.error("Error validating token:", error);
+    return null;
   }
-
-  return response.json();
 };
 
 export const signOut = async () => {

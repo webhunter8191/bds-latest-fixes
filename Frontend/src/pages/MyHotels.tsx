@@ -25,6 +25,12 @@ const MyHotels = () => {
           >
             Add Hotel
           </Link>
+          <Link
+            to="/admin-bookings"
+            className="flex items-center bg-blue-600 text-white text-xl font-semibold py-2 px-4 rounded-md shadow-md hover:bg-blue-500 transition duration-300"
+          >
+            Add Hotel
+          </Link>
         </span>
 
         {/* Check if hotels data exists */}
@@ -55,14 +61,12 @@ const MyHotels = () => {
                   <div className="border border-slate-300 rounded-sm p-3 flex items-center space-x-2">
                     <BiMoney className="text-xl text-blue-600" />
                     <span className="text-sm">
-                    ₹{hotel.pricePerNight} per night
+                      ₹{hotel.pricePerNight} per night
                     </span>
                   </div>
                   <div className="border border-slate-300 rounded-sm p-3 flex items-center space-x-2">
                     <BiHotel className="text-xl text-blue-600" />
-                    <span className="text-sm">
-                      {hotel.roomCount} rooms
-                    </span>
+                    <span className="text-sm">{hotel.roomCount} rooms</span>
                   </div>
                   <div className="border border-slate-300 rounded-sm p-3 flex items-center space-x-2">
                     <BiStar className="text-xl text-yellow-500" />
@@ -91,8 +95,6 @@ const MyHotels = () => {
           </div>
         )}
       </div>
-
-     
     </div>
   );
 };

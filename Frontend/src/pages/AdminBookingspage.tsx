@@ -1,6 +1,6 @@
 import { useEffect, useState } from "react";
 
-const API_URL = import.meta.env.VITE_API_BASE_URL || '';
+const API_URL = import.meta.env.VITE_API_BASE_URL || "";
 
 const AdminBookingspage = () => {
   const [bookings, setBookings] = useState([]);
@@ -15,15 +15,13 @@ const AdminBookingspage = () => {
 
   useEffect(() => {
     const fetchBookings = async () => {
-      const response = await fetch(`${API_URL}/api/my-hotels/my-bookings/12`,
-        {
-          method: "GET",
-          credentials: "include",
-        }
-      );
+      const response = await fetch(`${API_URL}/api/my-hotels/my-bookings/12`, {
+        method: "GET",
+        credentials: "include",
+      });
       const data = await response.json();
       setBookings(data);
-    }
+    };
     fetchBookings();
   }, []);
 
@@ -38,12 +36,10 @@ const AdminBookingspage = () => {
         credentials: "include",
       });
       // Refetch bookings after checkout
-      const response = await fetch(`${API_URL}/api/my-hotels/my-bookings/12`,
-        {
-          method: "GET",
-          credentials: "include",
-        }
-      );
+      const response = await fetch(`${API_URL}/api/my-hotels/my-bookings/12`, {
+        method: "GET",
+        credentials: "include",
+      });
       const data = await response.json();
       setBookings(data);
     } catch (error) {
@@ -112,7 +108,13 @@ const AdminBookingspage = () => {
                         <td className="p-3">
                           {new Date(booking.checkOut).toLocaleDateString()}
                         </td>
-                        <td className="p-3">{categories[booking.category as keyof typeof categories]}</td>
+                        <td className="p-3">
+                          {
+                            categories[
+                              booking.category as keyof typeof categories
+                            ]
+                          }
+                        </td>
                         <td className="p-3">{booking.roomsCount}</td>
                         <td className="p-3 font-bold">
                           ₹{Math.round(booking.totalCost)}
@@ -123,7 +125,9 @@ const AdminBookingspage = () => {
                             disabled={checkingOut === booking.bookingId}
                             className="bg-blue-600 text-white font-semibold px-4 py-2 rounded-lg shadow-md hover:bg-blue-700 transition disabled:bg-blue-400"
                           >
-                            {checkingOut === booking.bookingId ? "Processing..." : "Checkout"}
+                            {checkingOut === booking.bookingId
+                              ? "Processing..."
+                              : "Checkout"}
                           </button>
                         </td>
                       </tr>
@@ -146,10 +150,12 @@ const AdminBookingspage = () => {
                       Check-In: {new Date(booking.checkIn).toLocaleDateString()}
                     </p>
                     <p className="text-gray-700">
-                      Check-Out: {new Date(booking.checkOut).toLocaleDateString()}
+                      Check-Out:{" "}
+                      {new Date(booking.checkOut).toLocaleDateString()}
                     </p>
                     <p className="text-gray-700">
-                      Category: {categories[booking.category as keyof typeof categories]}
+                      Category:{" "}
+                      {categories[booking.category as keyof typeof categories]}
                     </p>
                     <p className="text-gray-700">
                       Rooms: {booking.roomsCount} room(s)
@@ -162,7 +168,9 @@ const AdminBookingspage = () => {
                       disabled={checkingOut === booking.bookingId}
                       className="mt-4 bg-blue-600 text-white font-semibold px-4 py-2 rounded-lg shadow-md hover:bg-blue-700 transition w-full disabled:bg-blue-400"
                     >
-                      {checkingOut === booking.bookingId ? "Processing..." : "Checkout"}
+                      {checkingOut === booking.bookingId
+                        ? "Processing..."
+                        : "Checkout"}
                     </button>
                   </div>
                 ))}
@@ -173,6 +181,6 @@ const AdminBookingspage = () => {
       </div>
     </div>
   );
-}
+};
 
-export default AdminBookingspage
+export default AdminBookingspage;
