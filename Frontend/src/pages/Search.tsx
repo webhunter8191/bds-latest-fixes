@@ -102,7 +102,7 @@ const Search = () => {
           {/* Filters Content */}
           <div
             className={`${
-              isFiltersVisible ? "block animate-fade-in" : "hidden"
+              isFiltersVisible ? "block animate-slide-in" : "hidden"
             } lg:block rounded-lg border border-slate-300 p-4 sm:p-6 sticky top-10 h-fit bg-white shadow-md`}
           >
             <div className="space-y-2">
@@ -168,6 +168,41 @@ const Search = () => {
           />
         </div>
       </div>
+
+      {/* Filters Modal for Small Screens */}
+      {isFiltersVisible && (
+        <div className="fixed inset-0 z-50 flex items-start justify-center bg-black bg-opacity-50 overflow-y-auto">
+          <div className="bg-white rounded-lg p-4 sm:p-6 w-11/12 max-w-md mx-auto mt-20 animate-slide-in">
+            <button
+              className="bg-indigo-600 text-white px-3 py-1 rounded-md font-medium hover:bg-indigo-500 transition-transform duration-300 transform hover:scale-105 mb-4"
+              onClick={() => setFiltersVisible(false)}
+            >
+              Close Filters
+            </button>
+            <div className="space-y-2">
+              <h3 className="text-xl sm:text-2xl md:text- font-semibold text-gray-800 border-b pb-4">
+                Filter by:
+              </h3>
+              <StarRatingFilter
+                selectedStars={selectedStars}
+                onChange={handleStarsChange}
+              />
+              <HotelTypesFilter
+                selectedHotelTypes={selectedHotelTypes}
+                onChange={handleHotelTypeChange}
+              />
+              <FacilitiesFilter
+                selectedFacilities={selectedFacilities}
+                onChange={handleFacilityChange}
+              />
+              <PriceFilter
+                selectedPrice={selectedPrice}
+                onChange={(value?: number) => setSelectedPrice(value)}
+              />
+            </div>
+          </div>
+        </div>
+      )}
     </div>
   );
 };
