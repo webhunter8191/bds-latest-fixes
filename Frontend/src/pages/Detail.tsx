@@ -285,7 +285,7 @@ const Detail = () => {
                 <iframe
                   src={`https://www.google.com/maps/embed/v1/place?q=${encodeURIComponent(
                     hotel.location
-                  )}&key=YOUR_GOOGLE_MAPS_API_KEY`}
+                  )}&key=AIzaSyBFoJNp6RW84aL_Apk3j2CufrcS967Oy1o`}
                   className="w-full h-full border-none"
                   allowFullScreen
                 />
