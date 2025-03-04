@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { useQuery } from "react-query";
 import { useParams } from "react-router-dom";
 import * as apiClient from "./../api-client";
@@ -70,14 +70,21 @@ const PrevArrow = (props: { onClick: any }) => {
 
 const Detail = () => {
   const { hotelId } = useParams();
+  const [isLoading, setIsLoading] = useState(true);
 
-  const { data: hotel } = useQuery(
+  const { data: hotel, isFetching } = useQuery(
     ["fetchHotelById", hotelId],
     () => apiClient.fetchHotelById(hotelId || ""),
     {
       enabled: !!hotelId,
+      onSuccess: () => setIsLoading(false),
     }
   );
+
+  useEffect(() => {
+    setIsLoading(true);
+  }, [hotelId]);
+
   const categories = {
     1: "Double Bed AC",
     2: "Double Bed Non AC",
@@ -122,6 +129,14 @@ const Detail = () => {
     }
   };
 
+  if (isLoading || isFetching) {
+    return (
+      <div className="flex justify-center items-center min-h-screen">
+        <div className="loader"></div>
+      </div>
+    );
+  }
+
   if (!hotel) {
     return <></>;
   }
@@ -151,7 +166,7 @@ const Detail = () => {
               <img
                 src={image}
                 alt={hotel.name}
-                className="rounded-md w-full h-full object-cover object-center transition-transform duration-300 hover:scale-105  "
+                className="rounded-md w-full h-full object-cover object-center transition-transform duration-300 hover:scale-105"
               />
             </div>
           ))}
@@ -285,7 +300,7 @@ const Detail = () => {
                 <iframe
                   src={`https://www.google.com/maps/embed/v1/place?q=${encodeURIComponent(
                     hotel.location
-                  )}&key=AIzaSyBFoJNp6RW84aL_Apk3j2CufrcS967Oy1o`}
+                  )}&key=YOUR_GOOGLE_MAPS_API_KEY`}
                   className="w-full h-full border-none"
                   allowFullScreen
                 />
