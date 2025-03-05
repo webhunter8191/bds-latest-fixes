@@ -5,13 +5,13 @@ import { useSearchContext } from "../contexts/SearchContext";
 import { useParams, useLocation } from "react-router-dom";
 import { useEffect, useState } from "react";
 import BookingDetailsSummary from "../components/BookingDetailsSummary";
-
+import ClipLoader from "react-spinners/ClipLoader"; // Import a loader from react-spinners
 
 const Booking = () => {
   const { hotelId } = useParams();
   const { roomsId } = useLocation().state as { roomsId: string };
   console.log("roomsId", roomsId);
-  
+
   const search = useSearchContext();
   const [numberOfNights, setNumberOfNights] = useState<number>(0);
 
@@ -25,9 +25,7 @@ const Booking = () => {
     }
   }, [search.checkIn, search.checkOut]);
 
- 
-
-  const { data: hotel } = useQuery(
+  const { data: hotel, isLoading: isHotelLoading } = useQuery(
     "fetchHotelByID",
     () => apiClient.fetchHotelById(hotelId as string),
     {
@@ -35,10 +33,18 @@ const Booking = () => {
     }
   );
 
-  const { data: currentUser } = useQuery(
+  const { data: currentUser, isLoading: isUserLoading } = useQuery(
     "fetchCurrentUser",
     apiClient.fetchCurrentUser
   );
+
+  if (isHotelLoading || isUserLoading) {
+    return (
+      <div className="flex justify-center items-center min-h-screen">
+        <ClipLoader size={50} color={"#123abc"} loading={true} />
+      </div>
+    );
+  }
 
   if (!hotel) {
     return <></>;
@@ -53,7 +59,7 @@ const Booking = () => {
         numberOfNights={numberOfNights}
         hotel={hotel}
       />
-      {currentUser &&  (
+      {currentUser && (
         <BookingForm
           currentUser={currentUser}
           totalCost={search.totalCost}
