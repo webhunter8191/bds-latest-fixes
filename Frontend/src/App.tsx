@@ -22,6 +22,8 @@ import Footer from "./components/Footer";
 import AdminBookingspage from "./pages/AdminBookingspage";
 import SuperAdminPanel from "./pages/SuperAdminPanel";
 import AboutUs from "./components/AboutUs";
+import RequestResetPassword from "./pages/RequestResetPassword";
+import ResetPassword from "./pages/ResetPassword"; // Ensure the file exists at this path
 
 const App = () => {
   const { isLoggedIn, isAdmin } = useAppContext();
@@ -70,6 +72,11 @@ const App = () => {
             </Layout>
           }
         />
+        <Route
+          path="/request-reset-password"
+          element={<RequestResetPassword />}
+        />
+        <Route path="/reset-password/:token" element={<ResetPassword />} />
         <Route path="/about" element={<AboutUs />} />
 
         {isLoggedIn && (

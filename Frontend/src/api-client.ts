@@ -4,11 +4,10 @@ import {
   HotelSearchResponse,
   HotelType,
   PaymentIntentResponse,
-  
   UserType,
 } from "../../backend/src/shared/types";
 import { BookingFormData } from "./forms/BookingForm/BookingForm";
-const API_BASE_URL = import.meta.env.VITE_API_BASE_URL || "";
+const API_BASE_URL = import.meta.env.VITE_API_BASE_URL || "http://localhost:7000";
 
 export const fetchCurrentUser = async (): Promise<UserType> => {
   const response = await fetch(`${API_BASE_URL}/api/users/me`, {
@@ -247,7 +246,35 @@ export const fetchMyBookings = async (): Promise<HotelType[]> => {
   return response.json();
 };
 
-// apiClient.ts
+export const requestPasswordReset = async (email: string) => {
+  const response = await fetch(`${API_BASE_URL}/api/request-reset-password`, {
+    method: "POST",
+    headers: {
+      "Content-Type": "application/json",
+    },
+    body: JSON.stringify({ email }),
+  });
+
+  if (!response.ok) {
+    const responseBody = await response.json();
+    throw new Error(responseBody.message);
+  }
+};
+
+export const resetPassword = async (token: string, password: string) => {
+  const response = await fetch(`${API_BASE_URL}/api/reset-password/${token}`, {
+    method: "POST",
+    headers: {
+      "Content-Type": "application/json",
+    },
+    body: JSON.stringify({ password }),
+  });
+
+  if (!response.ok) {
+    const responseBody = await response.json();
+    throw new Error(responseBody.message);
+  }
+};
 
 export const createPaymentOrder = async (
   hotelId: string,
