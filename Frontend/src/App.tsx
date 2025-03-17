@@ -70,7 +70,14 @@ const App = () => {
             </Layout>
           }
         />
-        <Route path="/about" element={<AboutUs />} />
+        <Route
+          path="/about"
+          element={
+            <Layout>
+              <AboutUs />
+            </Layout>
+          }
+        />
 
         {isLoggedIn && (
           <>
