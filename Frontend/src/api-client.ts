@@ -268,3 +268,46 @@ export const createPaymentOrder = async (
 
   return response.json();
 };
+
+export const requestPasswordReset = async (email: string) => {
+  const response = await fetch(`${API_BASE_URL}/api/auth/request-reset`, {
+    method: "POST",
+    headers: { "Content-Type": "application/json" },
+    body: JSON.stringify({ email }),
+  });
+
+  if (!response.ok) {
+    const contentType = response.headers.get("content-type");
+    if (contentType && contentType.includes("application/json")) {
+      const errorData = await response.json();
+      throw new Error(errorData.message || "Something went wrong");
+    } else {
+      throw new Error("Unexpected response from server");
+    }
+  }
+
+  return response.json();
+};
+
+
+export const resetPassword = async (token: string, password: string) => {
+  const response = await fetch(
+    `${API_BASE_URL}/api/auth/reset-password`, // ✅ Check this path
+    {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ token, password }),
+    }
+  );
+
+  if (!response.ok) {
+    const text = await response.text(); // Get error details
+    throw new Error(`Unexpected response: ${text}`);
+  }
+
+  return response.json();
+};
+
+
+
+

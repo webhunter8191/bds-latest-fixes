@@ -4,7 +4,10 @@ import jwt from "jsonwebtoken";
 import { check, validationResult } from "express-validator";
 import verifyToken from "../middleware/auth";
 
+
+import dotenv from "dotenv";
 const router = express.Router();
+dotenv.config();
 
 router.get("/me", verifyToken, async (req: Request, res: Response) => {
   const userId = req.userId;
@@ -80,5 +83,7 @@ router.post(
     }
   }
 );
+
+
 
 export default router;

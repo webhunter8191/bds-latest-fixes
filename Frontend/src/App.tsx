@@ -22,6 +22,8 @@ import Footer from "./components/Footer";
 import AdminBookingspage from "./pages/AdminBookingspage";
 import SuperAdminPanel from "./pages/SuperAdminPanel";
 import AboutUs from "./components/AboutUs";
+import ForgotPassword from "./pages/ForgotPassword";
+import ResetPassword from "./pages/ResetPassword";
 
 const App = () => {
   const { isLoggedIn, isAdmin } = useAppContext();
@@ -38,12 +40,17 @@ const App = () => {
             </div>
           }
         />
+
         <Route
           path="/search"
           element={
-            <Layout>
-              <Search />
-            </Layout>
+            <div className="">
+              <Header />
+              <div className="my-8">
+                <Search />
+              </div>
+              <Footer />
+            </div>
           }
         />
         <Route
@@ -71,6 +78,8 @@ const App = () => {
           }
         />
         <Route path="/about" element={<AboutUs />} />
+        <Route path="/forgot-password" element={<ForgotPassword />} />
+        <Route path="/reset-password/:token" element={<ResetPassword />} />
 
         {isLoggedIn && (
           <>
