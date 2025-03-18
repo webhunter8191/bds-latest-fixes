@@ -58,12 +58,11 @@ export const validateToken = async () => {
   const response = await fetch(`${API_BASE_URL}/api/auth/validate-token`, {
     credentials: "include",
   });
-
-  if (!response.ok) {
-    throw new Error("Token invalid");
-  }
-
-  return response.json();
+  const data = await response.json();
+if(data?.message){
+  return null;
+}
+  return data;
 };
 
 export const signOut = async () => {

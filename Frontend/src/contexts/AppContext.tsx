@@ -23,7 +23,7 @@ export const AppContextProvider = ({
   children: React.ReactNode;
 }) => {
   const [toast, setToast] = useState<ToastMessage | undefined>(undefined);
-  const { isError, data, isLoading } = useQuery(
+  const { data, isLoading } = useQuery(
     "validateToken",
     apiClient.validateToken,
     {
@@ -39,7 +39,7 @@ export const AppContextProvider = ({
             setToast(toastMessage);
           },
           isAdmin: data?.isAdmin ?? false,
-          isLoggedIn: !isError,
+          isLoggedIn: data?.userId,
           isLoading,
         }}
       >
