@@ -182,11 +182,17 @@ router.post("/reset-password", async (req: Request, res: Response) => {
     const newHashedPassword = await bcrypt.hash(password, 10);
     console.log("🔍 New Hashed Password:", newHashedPassword); // Log new hash
 
-    user.password = newHashedPassword;
-    user.resetToken = undefined;
-    user.resetTokenExpiry = undefined;
+    // user.password = newHashedPassword;
+    // user.resetToken = undefined;
+    // user.resetTokenExpiry = undefined;
 
-    await user.save();
+    await User.updateOne({
+      email: user.email,          
+    }, {
+      password: newHashedPassword,
+      resetToken: undefined,
+      resetTokenExpiry: undefined,
+    });
     console.log(user);
 
     res.json({ message: "Password successfully reset" });
