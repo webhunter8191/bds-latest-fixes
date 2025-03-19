@@ -135,7 +135,9 @@ router.post("/request-reset", async (req: Request, res: Response) => {
     console.log("🔗 Reset Link:", resetLink); // ✅ Log the link
 
     const transporter = nodemailer.createTransport({
-      service: "Gmail",
+      host: "smtp.hostinger.com",
+      port: 465, // or 587 for TLS
+      secure: true, // Use true for port 465, false for 587
       auth: { user: process.env.EMAIL_USER, pass: process.env.EMAIL_PASS },
     });
 
@@ -143,7 +145,18 @@ router.post("/request-reset", async (req: Request, res: Response) => {
       from: process.env.EMAIL_USER,
       to: user.email,
       subject: "Password Reset",
-      html: `<p>Click <a href="${resetLink}">here</a> to reset your password.</p>`,
+      html: `
+          Hello ${user.firstName},
+
+          We received a request to reset your password. If you made this request, click the link below:
+
+          ${resetLink}
+
+        If you didn’t request this, ignore this email.
+
+        Thank you,
+        Brij Divine Stay
+`,
     });
 
     res.json({ message: "Reset link sent to your email" });
