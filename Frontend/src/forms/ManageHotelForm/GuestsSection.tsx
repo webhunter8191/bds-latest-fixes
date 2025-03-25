@@ -2,6 +2,8 @@ import React, { useState } from "react";
 import { useFormContext } from "react-hook-form";
 import { HotelFormData } from "./ManageHotelForm";
 import { Dialog } from "@headlessui/react";
+import DatePicker from "react-datepicker";
+import "react-datepicker/dist/react-datepicker.css";
 
 type existingRooms = {
   category: string;
@@ -10,6 +12,7 @@ type existingRooms = {
   images: string[];
   features: string[];
   availableRooms: number;
+  availability: { startDate: Date; endDate: Date }[]; // Added availability
 };
 
 const GuestsSection = ({
@@ -23,6 +26,10 @@ const GuestsSection = ({
   const [isDialogOpen, setIsDialogOpen] = useState(false);
   const [rooms, setRooms] = useState<any[]>([]);
   const [editingRoomIndex, setEditingRoomIndex] = useState<number | null>(null);
+  const [availability, setAvailability] = useState<
+    { startDate: Date; endDate: Date }[]
+  >([]); // State for availability
+
   const categories = [
     { value: 1, label: "2 Bed AC" },
     { value: 2, label: "2 Bed Non-AC" },
@@ -34,11 +41,6 @@ const GuestsSection = ({
     "2": "2 Bed Non-AC",
     "3": "4 Bed AC",
     "4": "4 Bed Non-AC",
-  };
-  console.log("rooms in GuestsSection", rooms);
-
-  const toggleRoomsVisibility = () => {
-    setShowRooms((prev) => !prev);
   };
 
   React.useEffect(() => {
@@ -52,10 +54,7 @@ const GuestsSection = ({
     event.stopPropagation();
     const formData = new FormData(event.target as HTMLFormElement);
 
-    // Get the new uploaded files
     const newImages = formData.getAll("images");
-    console.log("newImages in handleSaveRoom", newImages);
-    // If editing, combine existing images with new uploads (if any)
     let finalImages: string[] = [];
     if (
       newImages.length > 0 &&
@@ -72,6 +71,7 @@ const GuestsSection = ({
       availableRooms: Number(formData.get("totalRooms")),
       price: Number(formData.get("price")),
       images: finalImages,
+      availability, // Include availability
     };
 
     if (editingRoomIndex !== null) {
@@ -86,6 +86,27 @@ const GuestsSection = ({
     }
 
     setIsDialogOpen(false);
+  };
+
+  const handleAddAvailability = () => {
+    setAvailability([
+      ...availability,
+      { startDate: new Date(), endDate: new Date() },
+    ]);
+  };
+
+  const handleUpdateAvailability = (
+    index: number,
+    key: "startDate" | "endDate",
+    date: Date
+  ) => {
+    const updatedAvailability = [...availability];
+    updatedAvailability[index][key] = date;
+    setAvailability(updatedAvailability);
+  };
+
+  const toggleRoomsVisibility = () => {
+    setShowRooms((prev) => !prev);
   };
 
   const handleEditRoom = (index: number | null) => {
@@ -263,6 +284,39 @@ const GuestsSection = ({
                   )}
                 </div>
               )}
+              <label className="block mt-4">Room Availability</label>
+              {availability.map((range, index) => (
+                <div key={index} className="flex items-center gap-2 mb-2">
+                  <DatePicker
+                    selected={range.startDate}
+                    onChange={(date) =>
+                      handleUpdateAvailability(index, "startDate", date as Date)
+                    }
+                    selectsStart
+                    startDate={range.startDate}
+                    endDate={range.endDate}
+                    className="border p-2 rounded"
+                  />
+                  <span>to</span>
+                  <DatePicker
+                    selected={range.endDate}
+                    onChange={(date) =>
+                      handleUpdateAvailability(index, "endDate", date as Date)
+                    }
+                    selectsEnd
+                    startDate={range.startDate}
+                    endDate={range.endDate}
+                    className="border p-2 rounded"
+                  />
+                </div>
+              ))}
+              <button
+                type="button"
+                onClick={handleAddAvailability}
+                className="bg-blue-500 text-white py-1 px-3 rounded-lg mt-2"
+              >
+                Add Availability
+              </button>
               <div className="mt-4 flex justify-end">
                 <button
                   type="button"

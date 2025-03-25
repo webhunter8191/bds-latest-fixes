@@ -5,8 +5,10 @@ import FacilitiesSection from "./FacilitiesSection";
 import GuestsSection from "./GuestsSection";
 import ImagesSection from "./ImagesSection";
 import { HotelType } from "../../../../backend/src/shared/types";
-import { useEffect } from "react";
+import { useEffect,  } from "react";
 import { useNavigate } from "react-router-dom";
+
+import "react-datepicker/dist/react-datepicker.css";
 
 export type HotelFormData = {
   name: string;
@@ -24,6 +26,7 @@ export type HotelFormData = {
     totalRooms: number;
     price: number;
     images: File[];
+    // Added availability field
   }[];
 };
 
@@ -35,7 +38,7 @@ type Props = {
 
 const ManageHotelForm = ({ onSave, isLoading, hotel }: Props) => {
   const formMethods = useForm<HotelFormData>();
-  const { handleSubmit, reset } = formMethods;
+  const { handleSubmit, reset, watch, setValue } = formMethods;
   const navigate = useNavigate();
 
   useEffect(() => {
@@ -43,8 +46,6 @@ const ManageHotelForm = ({ onSave, isLoading, hotel }: Props) => {
   }, [hotel, reset]);
 
   const onSubmit = handleSubmit((formDataJson: HotelFormData) => {
-    console.log("in handle submit", formDataJson);
-
     const formData = new FormData();
     if (hotel) {
       formData.append("hotelId", hotel._id);
@@ -54,7 +55,7 @@ const ManageHotelForm = ({ onSave, isLoading, hotel }: Props) => {
     formData.append("description", formDataJson.description);
     formData.append("location", formDataJson.location);
     formDataJson.nearbyTemple.forEach((temple) => {
-      formData.append("nearbyTemple[]", temple); // Allow multiple entries
+      formData.append("nearbyTemple[]", temple);
     });
 
     formData.append("rooms", JSON.stringify(formDataJson.rooms));
@@ -84,6 +85,19 @@ const ManageHotelForm = ({ onSave, isLoading, hotel }: Props) => {
     onSave(formData);
   });
 
+  // const handleDateClick = (date: Date) => {
+  //   if (selectedRoomIndex !== null) {
+  //     const price = prompt("Enter price for the selected date:");
+  //     if (price) {
+  //       const rooms = watch("rooms");
+  //       const roomAvailability = rooms[selectedRoomIndex].availability || [];
+  //       roomAvailability.push({ date, price: Number(price) });
+  //       rooms[selectedRoomIndex].availability = roomAvailability;
+  //       setValue("rooms", rooms);
+  //     }
+  //   }
+  // };
+
   return (
     <FormProvider {...formMethods}>
       <form
@@ -98,6 +112,54 @@ const ManageHotelForm = ({ onSave, isLoading, hotel }: Props) => {
         <FacilitiesSection />
         <GuestsSection existingRooms={hotel?.rooms as []} />
         <ImagesSection />
+
+        {/* Calendar Section */}
+        {/* <div className="mt-6">
+          <h2 className="text-xl font-semibold mb-4">Set Room Availability</h2>
+          <div className="mb-4">
+            <label className="block text-sm font-medium mb-2">
+              Select Room
+            </label>
+            <select
+              className="border rounded-md p-2 w-full"
+              onChange={(e) => setSelectedRoomIndex(Number(e.target.value))}
+            >
+              <option value="">Select a room</option>
+              {watch("rooms")?.map((room, index) => (
+                <option key={index} value={index}>
+                  {room.category}
+                </option>
+              ))}
+            </select>
+          </div>
+          {selectedRoomIndex !== null && (
+            <div>
+              <label className="block text-sm font-medium mb-2">
+                Select Dates
+              </label>
+              <DatePicker
+                inline
+                onChange={(date) => handleDateClick(date as Date)}
+                highlightDates={watch("rooms")[
+                  selectedRoomIndex
+                ]?.availability?.map((item) => item.date)}
+              />
+              <div className="mt-4">
+                <h3 className="text-lg font-medium">Availability:</h3>
+                <ul className="list-disc pl-5">
+                  {watch("rooms")[selectedRoomIndex]?.availability?.map(
+                    (item, index) => (
+                      <li key={index}>
+                        {item.date.toDateString()} - ${item.price}
+                      </li>
+                    )
+                  )}
+                </ul>
+              </div>
+            </div>
+          )}
+        </div> */}
+
         <div className="flex justify-end mt-6 space-x-4">
           <button
             type="button"

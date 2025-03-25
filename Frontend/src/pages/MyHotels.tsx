@@ -25,12 +25,6 @@ const MyHotels = () => {
           >
             Add Hotel
           </Link>
-          <Link
-            to="/admin-bookings"
-            className="flex items-center bg-blue-600 text-white text-xl font-semibold py-2 px-4 rounded-md shadow-md hover:bg-blue-500 transition duration-300"
-          >
-            Add Hotel
-          </Link>
         </span>
 
         {/* Check if hotels data exists */}
