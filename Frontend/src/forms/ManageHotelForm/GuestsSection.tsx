@@ -10,6 +10,8 @@ type existingRooms = {
   images: string[];
   features: string[];
   availableRooms: number;
+  adultCount: number;
+  childCount: number;
 };
 
 const GuestsSection = ({
@@ -26,14 +28,20 @@ const GuestsSection = ({
   const categories = [
     { value: 1, label: "2 Bed AC" },
     { value: 2, label: "2 Bed Non-AC" },
-    { value: 3, label: "4 Bed AC" },
-    { value: 4, label: "4 Bed Non-AC" },
+    { value: 3, label: "3 Bed AC" },
+    { value: 4, label: "3 Bed Non-AC" },
+    { value: 5, label: "4 Bed AC" },
+    { value: 6, label: "4 Bed Non-AC" },
+    { value: 7, label: "Community Hall" },
   ];
   const categoriesTitles: Record<string, string> = {
     "1": "2 Bed AC",
     "2": "2 Bed Non-AC",
-    "3": "4 Bed AC",
-    "4": "4 Bed Non-AC",
+    "3": "3 Bed AC",
+    "4": "3 Bed Non-AC",
+    "5": "4 Bed AC",
+    "6": "4 Bed Non-AC",
+    "7": "Community Hall",
   };
   console.log("rooms in GuestsSection", rooms);
 
@@ -72,6 +80,8 @@ const GuestsSection = ({
       availableRooms: Number(formData.get("totalRooms")),
       price: Number(formData.get("price")),
       images: finalImages,
+      adultCount: Number(formData.get("adultCount")),
+      childCount: Number(formData.get("childCount")),
     };
 
     if (editingRoomIndex !== null) {
@@ -137,6 +147,8 @@ const GuestsSection = ({
               totalRooms: number;
               price: number;
               images: string[] | File[];
+              adultCount: number;
+              childCount: number;
             },
             index
           ) => (
@@ -146,6 +158,8 @@ const GuestsSection = ({
               </h3>
               <p>Total Rooms: {room.totalRooms}</p>
               <p>Price: {room.price}</p>
+              <p>Adult Count: {room.adultCount}</p>
+              <p>Child Count: {room.childCount}</p>
               <div className="flex gap-2 mt-2">
                 {room.images &&
                   room.images.map((image: string | File, i: number) =>
@@ -234,6 +248,28 @@ const GuestsSection = ({
                 className="border w-full p-2 rounded"
                 defaultValue={
                   editingRoomIndex !== null ? rooms[editingRoomIndex].price : ""
+                }
+              />
+              <label className="block mt-4">Adult Count</label>
+              <input
+                name="adultCount"
+                type="number"
+                className="border w-full p-2 rounded"
+                defaultValue={
+                  editingRoomIndex !== null
+                    ? rooms[editingRoomIndex].adultCount
+                    : ""
+                }
+              />
+              <label className="block mt-4">Child Count</label>
+              <input
+                name="childCount"
+                type="number"
+                className="border w-full p-2 rounded"
+                defaultValue={
+                  editingRoomIndex !== null
+                    ? rooms[editingRoomIndex].childCount
+                    : ""
                 }
               />
               <label className="block mt-4">Upload Images</label>

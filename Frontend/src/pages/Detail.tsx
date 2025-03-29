@@ -88,8 +88,10 @@ const Detail = () => {
   const categories = {
     1: "Double Bed AC",
     2: "Double Bed Non AC",
-    3: "4 Bed AC",
-    4: "4 Bed Non AC",
+    3: "3 Bed AC",
+    4: "3 Bed Non AC",
+    5: "4 Bed AC",
+    6: "4 Bed Non AC",
   };
 
   const [selectedRooms, setSelectedRooms] = useState<{
@@ -235,7 +237,7 @@ const Detail = () => {
                 className="bg-white p-6 rounded-lg shadow-md grid grid-cols-1 md:grid-cols-1 gap-4"
               >
                 {/* Room image on the left */}
-                <div className="flex justify-center ">
+                <div className="flex justify-center">
                   <img
                     src={room.images[0]}
                     alt={`${room.type} Room`}
@@ -251,6 +253,10 @@ const Detail = () => {
                   <div className="text-gray-600">
                     <p>Price: ₹ {room.price}/night</p>
                     <p>Available Rooms: {room.availableRooms}</p>
+                    <p>Adults Allowed: {room.adultCount}</p>{" "}
+                    {/* Added adult count */}
+                    <p>Children Allowed: {room.childCount}</p>{" "}
+                    {/* Added child count */}
                   </div>
 
                   <button
