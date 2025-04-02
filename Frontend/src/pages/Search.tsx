@@ -67,12 +67,12 @@ const Search = () => {
   };
 
   return (
-    <div className="py-0 max-w-screen-xl lg:px-0 mx-0 px-3 sm:px-6 lg:px-0">
-      <div className="mb-6 ">
+    <div className="container mx-auto max-w-screen-xl mt-5 mb-5 py-0  lg:px-5 md:px-5 mx-0 px-3 sm:px-0 ">
+      <div className="mx-auto mb-6 ">
         <SearchBar />
       </div>
 
-      <div className="grid grid-cols-1 lg:grid-cols-[250px_1fr] gap-4">
+      <div className="grid grid-cols-1 lg:grid-cols-[250px_1fr] gap-1">
         {/* Filters Sidebar */}
         <div className="lg:block ">
           {/* Show/Hide Filters and Sort By Buttons */}
@@ -130,7 +130,7 @@ const Search = () => {
         </div>
 
         {/* Search Results */}
-        <div className="flex flex-col gap-6">
+        <div className="flex flex-col gap-2">
           {/* Results Header and Sorting Dropdown */}
           <div className="hidden lg:flex justify-between items-center">
             <span className="lg:text-xl md:p-0 sm:text-2xl font-bold text-gray-800">
@@ -154,7 +154,7 @@ const Search = () => {
           </div>
 
           {/* Search Results Cards */}
-          <div className="grid grid-rows-1 sm:grid-cols-2 lg:grid-cols-1 lg:m-5 md:grid-cols-1 xl:grid-cols-2 gap-6">
+          <div className="grid grid-rows-1 sm:grid-cols-2 lg:grid-cols-2 lg:m-5 md:grid-cols-2 xl:grid-cols-3 gap-6">
             {hotelData?.data.map((hotel) => (
               <SearchResultsCard key={hotel._id} hotel={hotel} />
             ))}
