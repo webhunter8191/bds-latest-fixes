@@ -16,9 +16,16 @@ import room3img from "../assets/room3.jpg";
 const Home = () => {
   const { data: hotels } = useQuery("fetchHotels", apiClient.fetchHotels);
 
-  // Limit the number of hotels displayed
   const MAX_HOTELS = 5;
-  const limitedHotels = hotels?.slice(0, MAX_HOTELS) || [];
+  const sortedHotels = hotels
+    ? [...hotels].sort(
+        (a, b) =>
+          new Date(b.createdAt || 0).getTime() -
+          new Date(a.createdAt || 0).getTime()
+      )
+    : [];
+
+  const limitedHotels = sortedHotels.slice(0, MAX_HOTELS);
 
   const topRowHotels = limitedHotels.slice(0, 2);
   const bottomRowHotels = limitedHotels.slice(2);

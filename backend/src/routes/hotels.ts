@@ -82,51 +82,74 @@ router.get("/search", async (req: Request, res: Response) => {
 });
 
 // Fetch all hotels
+// router.get("/", async (req: Request, res: Response) => {
+//   try {
+//     const aggregation = [
+//       { $match: { status: "active" } },
+//       {
+//         $addFields: {
+//           status: {
+//             $cond: {
+//               if: {
+//                 $gt: [
+//                   {
+//                     $size: {
+//                       $filter: {
+//                         input: "$rooms",
+//                         as: "room",
+//                         cond: {
+//                           $and: [
+//                             { $lte: ["$$room.availableRooms", "$$room.totalRooms"] },
+//                             { $ne: ["$$room.availableRooms", 0] },
+//                           ]
+//                         }
+//                       }
+//                     }
+//                   },
+//                   0
+//                 ]
+//               },
+//               then: "active",
+//               else: "booked"
+//             }
+//           }
+//         }
+//       },
+//       {
+//         $project: {
+//           name: 1,
+//           status: 1,
+//           imageUrls: 1,
+//         }
+//       }
+//     ];
+//     const hotels = await Hotel.aggregate(aggregation);
+//     return res.status(200).json(hotels);
+//   } catch (error) {
+//     console.log("error", error);
+//     res.status(500).json({ message: "Error fetching hotels" });
+//   }
+// });
+
 router.get("/", async (req: Request, res: Response) => {
   try {
-    const aggregation = [
+    const hotels = await Hotel.aggregate([
       { $match: { status: "active" } },
-      {
-        $addFields: {
-          status: {
-            $cond: {
-              if: {
-                $gt: [
-                  {
-                    $size: {
-                      $filter: {
-                        input: "$rooms",
-                        as: "room",
-                        cond: {
-                          $and: [
-                            { $lte: ["$$room.availableRooms", "$$room.totalRooms"] },
-                            { $ne: ["$$room.availableRooms", 0] },
-                          ]
-                        }
-                      }
-                    }
-                  },
-                  0
-                ]
-              },
-              then: "active",
-              else: "booked"
-            }
-          }
-        }
-      },
+      { $sort: { createdAt: -1 } }, // Sort by latest created hotels
+      { $limit: 5 }, // Get only the last 5 added hotels
       {
         $project: {
           name: 1,
           status: 1,
           imageUrls: 1,
-        }
-      }
-    ];
-    const hotels = await Hotel.aggregate(aggregation);
+          createdAt: 1, // Ensure this field is returned for debugging
+        },
+      },
+    ]);
+
     return res.status(200).json(hotels);
   } catch (error) {
-    console.log("error", error);
+    console.log("Error fetching hotels:", error);
     res.status(500).json({ message: "Error fetching hotels" });
   }
 });
