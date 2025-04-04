@@ -18,23 +18,6 @@ const upload = multer({
 router.post(
   "/",
   verifyToken,
-  // [
-  //   body("name").notEmpty().withMessage("Name is required"),
-  //   body("type").notEmpty().withMessage("Hotel type is required"),
-  //   body("description").notEmpty().withMessage("Description is required"),
-  //   body("pricePerNight")
-  //     .notEmpty()
-  //     .isNumeric()
-  //     .withMessage("Price per night is required and must be a number"),
-  //   body("facilities")
-  //     .notEmpty()
-  //     .isArray()
-  //     .withMessage("Facilities are required"),
-  //   body("nearbyTemple")
-  //     .notEmpty()
-  //     .isArray()
-  //     .withMessage("Nearest temples are required"),
-  // ],
   upload,
   async (req: Request, res: Response) => {
     try {
@@ -43,35 +26,55 @@ router.post(
         req.body.nearbyTemple = req.body.nearbyTemple.map((temple: string) =>
           temple.trim().replace(/\s+/g, " ").toLowerCase()
         );
-      }      
+      }
+
       const files = req.files as Express.Multer.File[];
-      const hotelImages = files.filter((file: Express.Multer.File) => file.fieldname.startsWith("imageFiles"));
-      const roomImages = files.filter((file: Express.Multer.File) => file.fieldname.startsWith("roomImages"));  
+      const hotelImages = files.filter((file: Express.Multer.File) =>
+        file.fieldname.startsWith("imageFiles")
+      );
+      const roomImages = files.filter((file: Express.Multer.File) =>
+        file.fieldname.startsWith("roomImages")
+      );
+
       const newHotel = req.body;
       const imageUrls = await uploadImages(hotelImages);
-      const roomImageUrls = await Promise.all(roomImages.map(async (file) => {
-        const roomImage = await uploadImages([file]);
-        return {
-          category: file.fieldname.split("roomImages")[1],
-          images: roomImage
-        }
-      }));    
+      const roomImageUrls = await Promise.all(
+        roomImages.map(async (file) => {
+          const roomImage = await uploadImages([file]);
+          return {
+            category: file.fieldname.split("roomImages")[1],
+            images: roomImage,
+          };
+        })
+      );
+
       newHotel.imageUrls = imageUrls;
       newHotel.rooms = JSON.parse(newHotel.rooms);
+
       const rooms = newHotel.rooms.map((room: any) => {
-        room.images = roomImageUrls.find((roomImage: any) =>
-          {
-            room.availableRooms = room.totalRooms;
-            return roomImage.category == room.category}
-        )?.images || [];
+        room.images =
+          roomImageUrls.find(
+            (roomImage: any) => roomImage.category == room.category
+          )?.images || [];
+        room.availableRooms = room.totalRooms;
+
+        // Ensure adultCount and childCount are included
+        room.adultCount = Number(room.adultCount) || 0;
+        room.childCount = Number(room.childCount) || 0;
+
         return room;
       });
+
       newHotel.rooms = rooms;
       newHotel.lastUpdated = new Date();
       newHotel.userId = req.userId;
+
       const hotel = new Hotel(newHotel);
       await hotel.save();
-      res.status(201).json({"message":"Hotel created successfully","data":hotel});
+
+      res
+        .status(201)
+        .json({ message: "Hotel created successfully", data: hotel });
     } catch (e) {
       console.log(e);
       res.status(500).json({ message: "Something went wrong" });
@@ -110,27 +113,48 @@ router.put(
       const updatedHotel = req.body;
       updatedHotel.rooms = JSON.parse(updatedHotel.rooms);
       updatedHotel.lastUpdated = new Date();
+
       const files = req.files as Express.Multer.File[];
-      const hotelImages = files.filter((file: Express.Multer.File) => file.fieldname.startsWith("imageFiles"));
-      const roomImages = files.filter((file: Express.Multer.File) => file.fieldname.startsWith("roomImages"));        
+      const hotelImages = files.filter((file: Express.Multer.File) =>
+        file.fieldname.startsWith("imageFiles")
+      );
+      const roomImages = files.filter((file: Express.Multer.File) =>
+        file.fieldname.startsWith("roomImages")
+      );
+
       const updatedImageUrls = await uploadImages(hotelImages);
       updatedHotel.imageUrls = [
         ...updatedImageUrls,
         ...(updatedHotel.imageUrls || []),
       ];
-      const roomImageUrls = await Promise.all(roomImages.map(async (file) => {
-        const roomImage = await uploadImages([file]);
-        return {
-          category: file.fieldname.split("roomImages")[1],
-          images: roomImage
-        }
-      }));    
+
+      const roomImageUrls = await Promise.all(
+        roomImages.map(async (file) => {
+          const roomImage = await uploadImages([file]);
+          return {
+            category: file.fieldname.split("roomImages")[1],
+            images: roomImage,
+          };
+        })
+      );
+
       updatedHotel.rooms = updatedHotel.rooms.map((room: any) => {
-        room.images = roomImageUrls.find((roomImage: any) =>
-          roomImage.category == room.category
-        )?.images || updatedHotel.rooms.find((existingRoom: any) => existingRoom.category == room.category)?.images || [];
+        room.images =
+          roomImageUrls.find(
+            (roomImage: any) => roomImage.category == room.category
+          )?.images ||
+          updatedHotel.rooms.find(
+            (existingRoom: any) => existingRoom.category == room.category
+          )?.images ||
+          [];
+
+        // Ensure adultCount and childCount are included
+        room.adultCount = Number(room.adultCount) || 0;
+        room.childCount = Number(room.childCount) || 0;
+
         return room;
       });
+
       const hotel = await Hotel.findOneAndUpdate(
         {
           _id: req.params.hotelId,
@@ -138,14 +162,16 @@ router.put(
         },
         updatedHotel,
         { new: true }
-      );      
+      );
+
       if (!hotel) {
         return res.status(404).json({ message: "Hotel not found" });
       }
+
       return res.status(201).json(hotel);
     } catch (error) {
       console.log("error is", error);
-      res.status(500).json({ message: "Something went throw" });
+      res.status(500).json({ message: "Something went wrong" });
     }
   }
 );
