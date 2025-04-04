@@ -230,33 +230,31 @@ const Detail = () => {
               })}
             </div>
           </div>
-          <div className="grid grid-rows-1 md:grid-cols-2 gap-6">
+          <div className="grid grid-rows-1 sm:grid-cols-2 gap-4 sm:gap-6">
             {hotel.rooms.map((room: any, index) => (
               <div
                 key={index}
-                className="bg-white p-6 rounded-lg shadow-md grid grid-cols-1 md:grid-cols-1 gap-4"
+                className="bg-white p-4 sm:p-6 rounded-lg shadow-md grid grid-cols-1 gap-4"
               >
-                {/* Room image on the left */}
+                {/* Room image */}
                 <div className="flex justify-center">
                   <img
                     src={room.images[0]}
                     alt={`${room.type} Room`}
-                    className="rounded-md w-full h-fit object-cover"
+                    className="rounded-md w-full h-60 sm:h-40 md:h-25 lg:h-50 object-cover"
                   />
                 </div>
-                <div></div>
-                {/* Room selection buttons and info on the right */}
+
+                {/* Room details */}
                 <div className="flex flex-col justify-start gap-4">
-                  <h3 className="text-lg font-semibold mb-4">
+                  <h3 className="text-base sm:text-lg md:text-xl font-semibold mb-2 sm:mb-4">
                     {categories[room.category as keyof typeof categories]}
                   </h3>
-                  <div className="text-gray-600">
+                  <div className="text-gray-600 text-sm sm:text-base">
                     <p>Price: ₹ {room.price}/night</p>
                     <p>Available Rooms: {room.availableRooms}</p>
-                    <p>Adults Allowed: {room.adultCount}</p>{" "}
-                    {/* Added adult count */}
-                    <p>Children Allowed: {room.childCount}</p>{" "}
-                    {/* Added child count */}
+                    <p>Adults Allowed: {room.adultCount}</p>
+                    <p>Children Allowed: {room.childCount}</p>
                   </div>
 
                   <button
@@ -268,7 +266,7 @@ const Detail = () => {
                         room._id
                       )
                     }
-                    className="w-full bg-[#6A5631] text-white py-2 rounded-lg hover:bg-[#6A5631]"
+                    className="w-full bg-[#6A5631] text-white py-2 rounded-lg hover:bg-[#5A4728] transition duration-200"
                   >
                     {selectedRooms[room.category]
                       ? "Unselect Room"

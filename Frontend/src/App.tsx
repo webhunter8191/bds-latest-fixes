@@ -41,9 +41,11 @@ const App = () => {
         <Route
           path="/search"
           element={
-            <Layout>
+            <div className="mx-auto">
+              <Header />
               <Search />
-            </Layout>
+              <Footer />
+            </div>
           }
         />
         <Route
