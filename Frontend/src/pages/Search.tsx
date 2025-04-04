@@ -67,8 +67,8 @@ const Search = () => {
   };
 
   return (
-    <div className="mx-auto max-w-screen-xxl mt-5 mb-5 py-0  lg:px-10 md:px-5 mx-5 px-3 sm:px-0 ">
-      <div className="mx-auto mb-6 ">
+    <div className="py-0 max-w-screen-xl lg:px-0 mx-0 px-3 sm:px-6 lg:px-0">
+      <div className="mb-6 ">
         <SearchBar />
       </div>
 
