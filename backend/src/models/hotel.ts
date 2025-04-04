@@ -12,21 +12,23 @@ const roomSchema = new mongoose.Schema({
   childCount: { type: Number, required: true, default: 0 }, // Added field
 });
 
-const hotelSchema = new mongoose.Schema({
-  userId: { type: String, required: true },
-  name: { type: String, required: true },
-  description: { type: String, required: true },
-  location: { type: String, required: true },
-  city: { type: String, default: "Mathura" },
-  country: { type: String, default: "India" },
-  type: { type: String, required: true },
-  facilities: [{ type: String, required: true }],
-  nearbyTemple: [{ type: String, required: true }],
-  imageUrls: [{ type: String, required: true }],
-  lastUpdated: { type: Date, required: true },
-  rooms: [roomSchema],
-  status: { type: String, enum: ["active", "archive"], default: "active" },
-});
+const hotelSchema = new mongoose.Schema(
+  {
+    userId: { type: String, required: true },
+    name: { type: String, required: true },
+    description: { type: String, required: true },
+    location: { type: String, required: true },
+    city: { type: String, default: "Mathura" },
+    country: { type: String, default: "India" },
+    type: { type: String, required: true },
+    facilities: [{ type: String, required: true }],
+    nearbyTemple: [{ type: String, required: true }],
+    imageUrls: [{ type: String, required: true }],
+    rooms: [roomSchema],
+    status: { type: String, enum: ["active", "archive"], default: "active" },
+  },
+  { timestamps: true } // ✅ Automatically adds createdAt & updatedAt
+);
 
 const Hotel = mongoose.model<HotelType>("Hotel", hotelSchema);
 export default Hotel;

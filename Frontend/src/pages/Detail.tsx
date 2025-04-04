@@ -92,6 +92,7 @@ const Detail = () => {
     4: "3 Bed Non AC",
     5: "4 Bed AC",
     6: "4 Bed Non AC",
+    7: "Community Hall",
   };
 
   const [selectedRooms, setSelectedRooms] = useState<{
