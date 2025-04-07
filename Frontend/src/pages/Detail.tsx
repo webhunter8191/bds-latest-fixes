@@ -277,6 +277,19 @@ const Detail = () => {
               </div>
             ))}
           </div>
+
+          {hotel.policies && hotel.policies.length > 0 && (
+            <div className="bg-white shadow-md rounded-lg p-4 sm:p-6">
+              <h2 className="text-xl sm:text-2xl font-semibold text-gray-800 border-b pb-2 mb-4">
+                Hotel Policies
+              </h2>
+              <ul className="list-disc list-inside text-gray-700 space-y-2">
+                {hotel.policies.map((policy: string, index: number) => (
+                  <li key={index}>{policy}</li>
+                ))}
+              </ul>
+            </div>
+          )}
           {/* Location Section */}
           <div className="bg-white shadow-md rounded-lg p-4 sm:p-6">
             <h2 className="text-xl sm:text-2xl font-semibold text-gray-800 border-b pb-2 mb-4">

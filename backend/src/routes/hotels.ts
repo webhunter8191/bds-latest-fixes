@@ -209,6 +209,7 @@ const constructSearchQuery = (queryParams: any) => {
       }
     };
   }
+  
 
   if (queryParams.facilities) {
     constructedQuery.facilities = {

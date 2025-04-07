@@ -25,6 +25,8 @@ export type HotelFormData = {
     price: number;
     images: File[];
   }[];
+
+  policies: string[]; // Added policies field
 };
 
 type Props = {
@@ -38,10 +40,17 @@ const ManageHotelForm = ({ onSave, isLoading, hotel }: Props) => {
   const { handleSubmit, reset } = formMethods;
   const navigate = useNavigate();
 
+  // useEffect(() => {
+  //   reset(hotel);
+  // }, [hotel, reset]);
   useEffect(() => {
-    reset(hotel);
+    if (hotel) {
+      reset({
+        ...hotel,
+        policies: hotel.policies || [], // ✅ Set existing policies
+      });
+    }
   }, [hotel, reset]);
-
   const onSubmit = handleSubmit((formDataJson: HotelFormData) => {
     console.log("in handle submit", formDataJson);
 
@@ -78,9 +87,17 @@ const ManageHotelForm = ({ onSave, isLoading, hotel }: Props) => {
       });
     }
 
+    (Array.isArray(formDataJson.policies)
+      ? formDataJson.policies
+      : [formDataJson.policies]
+    ).forEach((policy) => {
+      formData.append("policies[]", policy);
+    });
+
     Array.from(formDataJson.imageFiles).forEach((imageFile) => {
       formData.append(`imageFiles`, imageFile);
     });
+
     onSave(formData);
   });
 

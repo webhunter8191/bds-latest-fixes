@@ -26,6 +26,7 @@ const hotelSchema = new mongoose.Schema(
     imageUrls: [{ type: String, required: true }],
     rooms: [roomSchema],
     status: { type: String, enum: ["active", "archive"], default: "active" },
+    policies: { type: [String], required: true }, // Added policies field
   },
   { timestamps: true } // ✅ Automatically adds createdAt & updatedAt
 );

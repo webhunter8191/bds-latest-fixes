@@ -37,6 +37,21 @@ router.post(
       );
 
       const newHotel = req.body;
+
+      // ✅ Handle policies
+      if (newHotel.policies) {
+        if (typeof newHotel.policies === "string") {
+          try {
+            const parsed = JSON.parse(newHotel.policies);
+            newHotel.policies = Array.isArray(parsed) ? parsed : [parsed];
+          } catch {
+            newHotel.policies = [newHotel.policies];
+          }
+        } else if (Array.isArray(newHotel.policies)) {
+          newHotel.policies = newHotel.policies;
+        }
+      }
+    
       const imageUrls = await uploadImages(hotelImages);
       const roomImageUrls = await Promise.all(
         roomImages.map(async (file) => {
@@ -128,6 +143,28 @@ router.put(
         ...(updatedHotel.imageUrls || []),
       ];
 
+      
+
+      if (updatedHotel.policies) {
+        if (typeof updatedHotel.policies === "string") {
+          try {
+            const parsed = JSON.parse(updatedHotel.policies);
+            updatedHotel.policies = Array.isArray(parsed) ? parsed : [parsed];
+          } catch {
+            updatedHotel.policies = [updatedHotel.policies];
+          }
+        } else if (!Array.isArray(updatedHotel.policies)) {
+          updatedHotel.policies = [updatedHotel.policies];
+        }
+      
+        // Fetch existing hotel to preserve existing policies
+        const existingHotel = await Hotel.findOne({ _id: req.params.hotelId, userId: req.userId });
+        if (existingHotel) {
+          // Don't merge, just replace
+updatedHotel.policies = updatedHotel.policies;
+
+        }
+      }
       const roomImageUrls = await Promise.all(
         roomImages.map(async (file) => {
           const roomImage = await uploadImages([file]);
