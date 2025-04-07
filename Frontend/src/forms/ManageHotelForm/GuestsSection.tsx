@@ -708,7 +708,7 @@ const GuestsSection = ({
 }: {
   existingRooms: existingRooms[];
 }) => {
-  const { setValue, control, watch } = useFormContext<HotelFormData>();
+  const { setValue, control } = useFormContext<HotelFormData>();
 
   const [showRooms, setShowRooms] = useState(true);
   const [isDialogOpen, setIsDialogOpen] = useState(false);
