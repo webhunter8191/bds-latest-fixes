@@ -132,6 +132,10 @@ const Detail = () => {
     }
   };
 
+  const handleSignIn = () => {
+    // Logic for sign-in action
+  };
+
   if (isLoading || isFetching) {
     return (
       <div className="flex justify-center items-center min-h-screen">
@@ -259,6 +263,7 @@ const Detail = () => {
                   </div>
 
                   <button
+                    type="button" // Add this to prevent default form submission behavior
                     onClick={() =>
                       handleRoomSelection(
                         room.availableRooms,
