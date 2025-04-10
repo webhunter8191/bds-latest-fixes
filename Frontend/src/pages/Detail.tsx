@@ -132,10 +132,6 @@ const Detail = () => {
     }
   };
 
-  const handleSignIn = () => {
-    // Logic for sign-in action
-  };
-
   if (isLoading || isFetching) {
     return (
       <div className="flex justify-center items-center min-h-screen">
