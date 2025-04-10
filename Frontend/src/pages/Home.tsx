@@ -80,7 +80,7 @@ const Home = () => {
               />
             ))}
           </div>
-          <div className="grid md:grid-cols-3 grid-cols-3 gap-2">
+          <div className="grid md:grid-cols-3 grid-cols-3 gap-5">
             {bottomRowHotels.map((hotel) => (
               <LatestDestinationCard
                 key={hotel._id}
@@ -128,9 +128,9 @@ const Home = () => {
                   className="w-full h-48 object-cover rounded-lg"
                 />
               </a>
-              <span className="absolute top-3 right-3 bg-green-500 text-white text-xs px-2 py-1 rounded">
+              {/* <span className="absolute top-3 right-3 bg-green-500 text-white text-xs px-2 py-1 rounded">
                 3 Rooms available
-              </span>
+              </span> */}
               <p className="mt-3 text-gray-700">
                 Television set, Extra sheets and Breakfast
               </p>
@@ -144,9 +144,9 @@ const Home = () => {
                 alt="Room 2"
                 className="w-full h-48 object-cover rounded-lg"
               />
-              <span className="absolute top-3 right-3 bg-green-500 text-white text-xs px-2 py-1 rounded">
+              {/* <span className="absolute top-3 right-3 bg-green-500 text-white text-xs px-2 py-1 rounded">
                 4 Rooms available
-              </span>
+              </span> */}
               <p className="mt-3 text-gray-700">
                 Television set, Extra sheets, Breakfast, and Fireplace
               </p>
@@ -160,9 +160,9 @@ const Home = () => {
                 alt="Room 3"
                 className="w-full h-48 object-cover rounded-lg"
               />
-              <span className="absolute top-3 right-3 bg-green-500 text-white text-xs px-2 py-1 rounded">
+              {/* <span className="absolute top-3 right-3 bg-green-500 text-white text-xs px-2 py-1 rounded">
                 6 Rooms available
-              </span>
+              </span> */}
               <p className="mt-3 text-gray-700">
                 Television set, Extra sheets, Breakfast, Fireplace, Console, and
                 bed rest
