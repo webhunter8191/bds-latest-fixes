@@ -72,7 +72,7 @@ const Hero = () => {
           Hotel for Every Moment Rich in Emotion
         </h1>
         <p className="text-sm sm:text-base md:text-lg text-white mt-4">
-          Book a Divine stay with Brij Divine.
+          Book a Divine stay with Brij Divine Stay
         </p>
         <div className="mt-4 space-x-4">
           <button className="bg-gray-100 rounded-lg border-black border-2 text-black px-5 py-2 text-sm sm:text-lg hover:bg-opacity-90 transition-all duration-300 shadow-lg">
