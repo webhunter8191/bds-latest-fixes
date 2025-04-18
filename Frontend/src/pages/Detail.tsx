@@ -82,7 +82,6 @@ const PrevArrow = (props: { onClick: any }) => {
 const Detail = () => {
   const { hotelId } = useParams();
   const [isLoading, setIsLoading] = useState(true);
-  const [isDialogOpen, setIsDialogOpen] = useState(false);
 
   const { data: hotel, isFetching } = useQuery(
     ["fetchHotelById", hotelId],
@@ -133,13 +132,10 @@ const Detail = () => {
       setAvailableRooms(availableRooms);
       setSelectedRoomPrice(price);
       setSelectedRoomId(roomId);
-      setIsDialogOpen(true); // Open the dialog when a room is selected
-      console.log("Dialog Opened:", true); // Debugging
     } else {
       setAvailableRooms(0);
       setSelectedRoomPrice(0);
       setSelectedRoomId("");
-      setIsDialogOpen(false); // Close the dialog when unselecting
       console.log("Dialog Opened:", false); // Debugging
     }
   };
