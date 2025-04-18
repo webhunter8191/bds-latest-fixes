@@ -3,7 +3,7 @@ import nodemailer from "nodemailer";
 import crypto from "crypto"; 
 import OTPModel from "../models/otp";
 
-const { GMAIL_USER, GMAIL_PASS } = process.env;
+const { EMAIL_USER, EMAIL_PASS } = process.env;
 
 const router = express.Router();
 
@@ -22,16 +22,18 @@ router.post("/send", async (req: Request, res: Response) => {
   otp = storedOtp?.otp;
   }
   const transporter = nodemailer.createTransport({
-    service: "Gmail", 
+    host: "smtp.hostinger.com", // Hostinger's SMTP server
+    port: 465, // Port for secure connection
+    secure: true, // Use SSL
     auth: {
-      user: GMAIL_USER, 
-      pass: GMAIL_PASS, 
+      user: EMAIL_USER, // Replace with your Hostinger email address
+      pass: EMAIL_PASS, // Replace with your Hostinger email password
     },
   });
 
   // Send OTP email
   const mailOptions = {
-    from: GMAIL_USER,
+    from: `"Brij Divine Stay" <${EMAIL_USER}>`,
     to: email,
     subject: "Your OTP Code",
     html: `<h1>Your OTP code is ${otp}</h1>`,
@@ -47,18 +49,20 @@ router.post("/send", async (req: Request, res: Response) => {
 
 // Verify OTP
 router.post("/verify", async (req: Request, res: Response) => {
-  try{
-  const { email, otp } = req.body;
-  const storedOtp = await OTPModel.findOne({ email }).sort({ createdAt: -1 }).limit(1);
-  if (storedOtp && storedOtp.otp === otp) {
-    res.status(200).json({ message: "OTP verified successfully" });
-  } else {
-    res.status(400).json({ message: "Invalid OTP" });
+  try {
+    const { email, otp } = req.body;
+
+    // Fetch the latest OTP for the given email
+    const storedOtp = await OTPModel.findOne({ email }).sort({ createdAt: -1 });
+
+    if (storedOtp && storedOtp.otp === otp) {
+      res.status(200).json({ message: "OTP verified successfully" });
+    } else {
+      res.status(400).json({ message: "Invalid OTP" });
+    }
+  } catch (error) {
+    res.status(500).json({ message: "Error verifying OTP", error });
   }
-}
-catch(error){
-  res.status(500).json({ message: "Error verifying OTP", error });
-}
 });
 
-export default router; 
+export default router;

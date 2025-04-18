@@ -44,14 +44,14 @@ const Register = () => {
 
   const mutation = useMutation(apiClient.register, {
     onSuccess: () => {
-      navigate("/"),
-      Swal.fire({
-        title: "Registration Success!",
-        text: "Please verify OTP sent to your email.",
-        icon: "success",
-        confirmButtonText: "OK",
-        confirmButtonColor: "#8B5DFF",
-      });
+      navigate("/login"),
+        Swal.fire({
+          title: "Registration Success!",
+          // text: "Please verify OTP sent to your email.",
+          icon: "success",
+          confirmButtonText: "OK",
+          confirmButtonColor: "#8B5DFF",
+        });
     },
     onError: (error: Error) => {
       Swal.fire({
@@ -64,22 +64,20 @@ const Register = () => {
     },
   });
 
-  
-
   const handleResendOtp = async () => {
     setIsLoading(true);
     try {
       setOtp("");
       setTimer(300);
       setShowResendButton(false);
-      await fetch(`${baseUrl}/api/otp/send`,{
-        method:"POST",
+      await fetch(`${baseUrl}/api/otp/send`, {
+        method: "POST",
         headers: {
           "Content-Type": "application/json",
         },
-        credentials:"include",
-        body:JSON.stringify({email: watch("email")}),
-      })
+        credentials: "include",
+        body: JSON.stringify({ email: watch("email") }),
+      });
       Swal.fire("OTP Sent!", "Check your email.", "info").then(() => {
         setTimeout(() => {
           Swal.close();
@@ -91,22 +89,41 @@ const Register = () => {
     }
   };
 
-  const handleOtpValidation = async(data:any,otp: string)=>{
-    try{
-      await fetch(`${baseUrl}/api/otp/verify`,{
-        method:"POST",
-        headers:{
-          'Content-Type':"application/json",
+  const handleOtpValidation = async (data: any, otp: string) => {
+    try {
+      const response = await fetch(`${baseUrl}/api/otp/verify`, {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
         },
-        credentials:"include",
-        body: JSON.stringify({otp,email:data?.email})
+        credentials: "include",
+        body: JSON.stringify({ otp, email: data?.email }),
       });
-      mutation.mutate(data);
-    }catch(error){
-      console.log("Error in handle Otp Validation");
-      
+
+      const result = await response.json();
+
+      if (response.ok && result.message === "OTP verified successfully") {
+        mutation.mutate(data); // Proceed with account creation
+      } else {
+        Swal.fire({
+          title: "Invalid OTP",
+          text: "Please enter the correct OTP.",
+          icon: "error",
+          confirmButtonText: "OK",
+          confirmButtonColor: "#8B5DFF",
+        });
+      }
+    } catch (error) {
+      console.error("Error in handleOtpValidation:", error);
+      Swal.fire({
+        title: "Error",
+        text: "An error occurred while validating the OTP. Please try again.",
+        icon: "error",
+        confirmButtonText: "OK",
+        confirmButtonColor: "#8B5DFF",
+      });
     }
-  }
+  };
 
   useEffect(() => {
     if (isOtpModalOpen) {
@@ -127,32 +144,31 @@ const Register = () => {
     return `${minutes}:${secs < 10 ? "0" : ""}${secs}`;
   };
 
-  const sendOtp = async({email}:{email:any})=>{
-    try{
-      const response = await fetch(`${baseUrl}/api/otp/send`,{
-        method:"POST",
+  const sendOtp = async ({ email }: { email: any }) => {
+    try {
+      const response = await fetch(`${baseUrl}/api/otp/send`, {
+        method: "POST",
         headers: {
           "Content-Type": "application/json",
         },
-        credentials:"include",
-        body:JSON.stringify({email}),
-      })
+        credentials: "include",
+        body: JSON.stringify({ email }),
+      });
       const data = await response.json();
       return data;
-    }catch(error){
+    } catch (error) {
       console.log("Error in sending otp", error);
-      
     }
-  }
+  };
 
-  const onSubmit = handleSubmit(async(data, event) => {
+  const onSubmit = handleSubmit(async (data, event) => {
     event?.preventDefault();
     event?.stopPropagation();
     setIsLoading(true);
     try {
       await sendOtp(data);
       setIsOtpModalOpen(true);
-    } catch(error) {
+    } catch (error) {
       setIsOtpModalOpen(false);
       console.log("Error in registering user");
     } finally {
@@ -316,7 +332,7 @@ const Register = () => {
         <div className="flex gap-6 justify-center">
           <button
             onClick={async () => {
-              const formData = watch();              
+              const formData = watch();
               await handleOtpValidation(formData, otp);
               setIsOtpModalOpen(false);
             }}

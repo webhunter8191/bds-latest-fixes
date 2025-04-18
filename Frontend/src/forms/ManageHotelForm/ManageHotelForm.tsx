@@ -19,6 +19,7 @@ export type HotelFormData = {
   roomCount: number;
   nearbyTemple: string[];
   location: string;
+  temples: { name: string; distance: number }[];
   rooms: {
     category: string;
     totalRooms: number;
@@ -96,6 +97,14 @@ const ManageHotelForm = ({ onSave, isLoading, hotel }: Props) => {
 
     Array.from(formDataJson.imageFiles).forEach((imageFile) => {
       formData.append(`imageFiles`, imageFile);
+    });
+
+    formDataJson.temples.forEach((temple, index) => {
+      formData.append(`temples[${index}][name]`, temple.name);
+      formData.append(
+        `temples[${index}][distance]`,
+        temple.distance.toString()
+      );
     });
 
     onSave(formData);
