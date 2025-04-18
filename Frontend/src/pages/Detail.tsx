@@ -1,4 +1,12 @@
-import { useState, useEffect } from "react";
+import {
+  useState,
+  useEffect,
+  JSXElementConstructor,
+  Key,
+  ReactElement,
+  ReactNode,
+  ReactPortal,
+} from "react";
 import { useQuery } from "react-query";
 import { useParams } from "react-router-dom";
 import * as apiClient from "./../api-client";
@@ -21,8 +29,11 @@ import { MdLocalLaundryService, MdOutlineRoomService } from "react-icons/md";
 import { GiBathtub } from "react-icons/gi";
 import GuestInfoForm from "../forms/GuestInfoForm/GuestInfoForm";
 import Slider from "react-slick";
+import Modal from "react-modal"; // Install react-modal if not already installed
 import "slick-carousel/slick/slick.css";
 import "slick-carousel/slick/slick-theme.css";
+
+Modal.setAppElement("#root"); // Replace "#root" with the ID of your app's root element
 
 // Facility to icon mapping
 const facilityIcons = {
@@ -71,6 +82,7 @@ const PrevArrow = (props: { onClick: any }) => {
 const Detail = () => {
   const { hotelId } = useParams();
   const [isLoading, setIsLoading] = useState(true);
+  const [isDialogOpen, setIsDialogOpen] = useState(false);
 
   const { data: hotel, isFetching } = useQuery(
     ["fetchHotelById", hotelId],
@@ -109,26 +121,26 @@ const Detail = () => {
     roomId: string
   ) => {
     setSelectedRooms((prev) => {
-      // If clicking the same room that's already selected, unselect it
       if (prev[category]) {
         return {};
       }
-      // Otherwise, clear all selections and select the new room
       return {
         [category]: true,
       };
     });
 
-    // If we're selecting a new room
     if (!selectedRooms[category]) {
       setAvailableRooms(availableRooms);
       setSelectedRoomPrice(price);
       setSelectedRoomId(roomId);
+      setIsDialogOpen(true); // Open the dialog when a room is selected
+      console.log("Dialog Opened:", true); // Debugging
     } else {
-      // If we're unselecting the current room
       setAvailableRooms(0);
       setSelectedRoomPrice(0);
       setSelectedRoomId("");
+      setIsDialogOpen(false); // Close the dialog when unselecting
+      console.log("Dialog Opened:", false); // Debugging
     }
   };
 
@@ -291,6 +303,45 @@ const Detail = () => {
               </ul>
             </div>
           )}
+
+          {hotel?.temples?.length > 0 && (
+            <div className="my-4">
+              <h2 className="text-xl font-semibold mb-2">
+                Distance from Temples
+              </h2>
+              <ul className="list-disc list-inside space-y-1">
+                {hotel.temples.map(
+                  (
+                    temple: {
+                      name:
+                        | string
+                        | number
+                        | boolean
+                        | ReactElement<any, string | JSXElementConstructor<any>>
+                        | Iterable<ReactNode>
+                        | ReactPortal
+                        | null
+                        | undefined;
+                      distance:
+                        | string
+                        | number
+                        | boolean
+                        | ReactElement<any, string | JSXElementConstructor<any>>
+                        | Iterable<ReactNode>
+                        | ReactPortal
+                        | null
+                        | undefined;
+                    },
+                    index: Key | null | undefined
+                  ) => (
+                    <li key={index}>
+                      {temple.name} – {temple.distance} km
+                    </li>
+                  )
+                )}
+              </ul>
+            </div>
+          )}
           {/* Location Section */}
           <div className="bg-white shadow-md rounded-lg p-4 sm:p-6">
             <h2 className="text-xl sm:text-2xl font-semibold text-gray-800 border-b pb-2 mb-4">
@@ -328,16 +379,16 @@ const Detail = () => {
           </div>
         </div>
 
-        {/* Guest Info Form */}
-        <div className="sticky top-4">
-          <div className="p-4 sm:p-6 border border-slate-200 rounded-lg shadow-lg bg-white">
-            <GuestInfoForm
-              pricePerNight={selectedRoomPrice}
-              availableRooms={availableRooms}
-              roomsId={selectedRoomId}
-              hotelId={hotel._id}
-            />
-          </div>
+        {/* Guest Info Form Dialog */}
+
+        {/* Debugging: Modal state can be logged here if needed */}
+        <div className="p-4 sm:p-6 border border-slate-200 rounded-lg shadow-lg bg-white">
+          <GuestInfoForm
+            pricePerNight={selectedRoomPrice}
+            availableRooms={availableRooms}
+            roomsId={selectedRoomId}
+            hotelId={hotel._id}
+          />
         </div>
       </div>
     </div>

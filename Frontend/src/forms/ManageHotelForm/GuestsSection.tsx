@@ -817,7 +817,6 @@ const GuestsSection = ({
           ></div>
         </button>
       </div>
-
       <button
         onClick={(e) => {
           e.preventDefault();
@@ -828,7 +827,6 @@ const GuestsSection = ({
       >
         Add Rooms
       </button>
-
       <div className="mt-6">
         {rooms.map((room, index) => (
           <div key={index} className="p-4 border rounded-lg mb-4">
@@ -882,7 +880,6 @@ const GuestsSection = ({
           </div>
         ))}
       </div>
-
       {/* Hotel Policies Section */}
       <div className="mt-10">
         <h3 className="text-xl font-semibold mb-2">Hotel Policies</h3>
@@ -961,6 +958,83 @@ const GuestsSection = ({
         />
       </div>
 
+      <div className="mt-10">
+        <h3 className="text-xl font-semibold mb-2">Nearby Temples</h3>
+        <Controller
+          name="temples"
+          control={control}
+          render={({ field }) => {
+            const temples = Array.isArray(field.value) ? field.value : [];
+
+            const handleTempleChange = (
+              index: number,
+              key: "name" | "distance",
+              value: string
+            ) => {
+              const updated = [...temples];
+              updated[index] = {
+                ...updated[index],
+                [key]: key === "distance" ? Number(value) : value,
+              };
+              field.onChange(updated);
+            };
+
+            const handleAddTemple = () => {
+              field.onChange([...temples, { name: "", distance: 0 }]);
+            };
+
+            const handleRemoveTemple = (index: number) => {
+              const updated = temples.filter((_, i) => i !== index);
+              field.onChange(updated);
+            };
+
+            return (
+              <div className="space-y-4">
+                {temples.map((temple, index) => (
+                  <div
+                    key={index}
+                    className="flex gap-2 items-center border rounded p-2"
+                  >
+                    <input
+                      type="text"
+                      placeholder="Temple name"
+                      className="flex-grow border p-2 rounded"
+                      value={temple.name}
+                      onChange={(e) =>
+                        handleTempleChange(index, "name", e.target.value)
+                      }
+                    />
+                    <input
+                      type="number"
+                      step="0.1"
+                      placeholder="Distance (km)"
+                      className="w-32 border p-2 rounded"
+                      value={temple.distance}
+                      onChange={(e) =>
+                        handleTempleChange(index, "distance", e.target.value)
+                      }
+                    />
+                    <button
+                      type="button"
+                      onClick={() => handleRemoveTemple(index)}
+                      className="bg-red-500 text-white px-3 py-1 rounded-lg"
+                    >
+                      Delete
+                    </button>
+                  </div>
+                ))}
+                <button
+                  type="button"
+                  onClick={handleAddTemple}
+                  className="bg-blue-500 text-white px-4 py-2 rounded-lg"
+                >
+                  Add Temple
+                </button>
+              </div>
+            );
+          }}
+        />
+      </div>
       {/* Room Dialog */}
       <Dialog open={isDialogOpen} onClose={() => setIsDialogOpen(false)}>
         <div className="fixed inset-0 bg-black bg-opacity-30 flex justify-center items-center">
