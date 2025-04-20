@@ -37,6 +37,7 @@
 // export default Hero;
 
 import { useEffect, useState } from "react";
+import { useNavigate } from "react-router-dom";
 import img1 from "../assets/bg1.jpg";
 import img2 from "../assets/bg2.jpg";
 // import img3 from "../assets/bg3.jpg"; // Add more images as needed
@@ -45,6 +46,7 @@ const images = [img1, img2, img1, img2]; // Add more images to this array
 
 const Hero = () => {
   const [currentImageIndex, setCurrentImageIndex] = useState(0);
+  const navigate = useNavigate(); // Initialize the useNavigate hook
 
   useEffect(() => {
     const interval = setInterval(() => {
@@ -75,7 +77,10 @@ const Hero = () => {
           Book a Divine stay with Brij Divine Stay
         </p>
         <div className="mt-4 space-x-4">
-          <button className="bg-gray-100 rounded-lg border-black border-2 text-black px-5 py-2 text-sm sm:text-lg hover:bg-opacity-90 transition-all duration-300 shadow-lg">
+          <button
+            className="bg-gray-100 rounded-lg  border-2 text-black px-5 py-2 text-sm sm:text-lg hover:bg-opacity-90 transition-all duration-300 shadow-lg"
+            onClick={() => navigate("/search")}
+          >
             Book Now
           </button>
         </div>
