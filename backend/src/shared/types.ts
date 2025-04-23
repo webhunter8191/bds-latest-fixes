@@ -18,13 +18,13 @@ export type HotelType = {
   userId: string;
   name: string;
   type: string;
-  roomCount:number,
+  roomCount: number;
   facilities: string[];
   pricePerNight: number;
   imageUrls: string[];
   lastUpdated: Date;
   nearbyTemple: string[];
-  rooms:object[];
+  rooms: RoomType[];
 };
 
 export type BookingType = {
@@ -53,4 +53,23 @@ export type PaymentIntentResponse = {
   paymentIntentId: string;
   clientSecret: string;
   totalCost: number;
+};
+
+export type RoomAvailability = {
+  date: Date;
+  price: number;
+  totalRooms: number;
+  availableRooms: number;
+};
+
+export type RoomType = {
+  totalRooms: number;
+  price: number;
+  availableRooms: number;
+  category: string;
+  features: string[];
+  images: string[];
+  adultCount: number;
+  childCount: number;
+  availability: RoomAvailability[];
 };

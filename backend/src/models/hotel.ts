@@ -2,15 +2,23 @@ import mongoose from "mongoose";
 import { HotelType } from "../shared/types";
 
 const roomSchema = new mongoose.Schema({
-  price: { type: Number, required: true },
   category: { type: Number, required: true },
-  totalRooms: { type: Number, required: true },
-  availableRooms: { type: Number, required: true },
   features: [{ type: String }],
   images: [{ type: String }],
-  adultCount: { type: Number, required: true, default: 0 }, // Added field
-  childCount: { type: Number, required: true, default: 0 }, // Added field
-});
+  adultCount: { type: Number, required: true, default: 0 },
+  childCount: { type: Number, required: true, default: 0 },
+
+  // New field to track date-specific pricing and availability
+  availability: [
+    {
+      date: { type: Date, required: true },
+      price: { type: Number, required: true, min: 0 },
+      totalRooms: { type: Number, required: true, min: 0 },
+      availableRooms: { type: Number, required: true, min: 0 },
+    }
+  ]
+}, { timestamps: true });
+
 
   const hotelSchema = new mongoose.Schema(
     {
