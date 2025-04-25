@@ -44,7 +44,7 @@ const Register = () => {
 
   const mutation = useMutation(apiClient.register, {
     onSuccess: () => {
-      navigate("/login"),
+      navigate("/sign-in"),
         Swal.fire({
           title: "Registration Success!",
           // text: "Please verify OTP sent to your email.",

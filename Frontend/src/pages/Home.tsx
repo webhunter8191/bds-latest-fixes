@@ -60,8 +60,8 @@ const Home = () => {
         </p>
 
         {loading && (
-          <div className="absolute inset-0 flex items-center justify-center bg-white/70 z-10">
-            <div className="w-12 h-12 border-4 border-blue-500 border-t-transparent rounded-full animate-spin"></div>
+          <div className="absolute inset-0 flex items-center justify-center ">
+            <div className="w-12 h-12 border-4 border-blue-500 border-t-transparent rounded-full animate-spin mt-20"></div>
           </div>
         )}
 
@@ -71,7 +71,7 @@ const Home = () => {
             loading ? "opacity-0" : "opacity-100"
           } transition-opacity duration-500 space-y-4`}
         >
-          <div className="grid md:grid-cols-2 grid-cols-2 md:gap-8 gap-3">
+          <div className="grid md:grid-cols-2 grid-cols-2 md:gap-6 gap-3">
             {topRowHotels.map((hotel) => (
               <LatestDestinationCard
                 key={hotel._id}
@@ -80,7 +80,7 @@ const Home = () => {
               />
             ))}
           </div>
-          <div className="grid md:grid-cols-3 grid-cols-3 gap-5">
+          <div className="grid md:grid-cols-3 grid-cols-3 lg:gap-5 gap-3">
             {bottomRowHotels.map((hotel) => (
               <LatestDestinationCard
                 key={hotel._id}
