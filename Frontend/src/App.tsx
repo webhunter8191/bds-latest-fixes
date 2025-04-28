@@ -22,6 +22,8 @@ import Footer from "./components/Footer";
 import AdminBookingspage from "./pages/AdminBookingspage";
 import SuperAdminPanel from "./pages/SuperAdminPanel";
 import AboutUs from "./components/AboutUs";
+import PrivacyPolicy from "./components/PrivacyPolicy";
+import ContactUs from "./components/Contact";
 
 const App = () => {
   const { isLoggedIn, isAdmin } = useAppContext();
@@ -77,6 +79,22 @@ const App = () => {
           element={
             <Layout>
               <AboutUs />
+            </Layout>
+          }
+        />
+        <Route
+          path="/contact"
+          element={
+            <Layout>
+              <ContactUs />
+            </Layout>
+          }
+        />
+        <Route
+          path="/privacy-policy"
+          element={
+            <Layout>
+              <PrivacyPolicy />
             </Layout>
           }
         />
