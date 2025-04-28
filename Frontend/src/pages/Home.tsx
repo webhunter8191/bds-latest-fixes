@@ -14,7 +14,15 @@ import room2img from "../assets/room2.jpg";
 import room3img from "../assets/room3.jpg";
 
 const Home = () => {
-  const { data: hotels } = useQuery("fetchHotels", apiClient.fetchHotels);
+  const { data: hotels, error } = useQuery(
+    "fetchHotels",
+    apiClient.fetchHotels
+  );
+
+  useEffect(() => {
+    console.log("Hotels data:", hotels);
+    console.log("Error:", error);
+  }, [hotels, error]);
 
   const MAX_HOTELS = 5;
   const sortedHotels = hotels
@@ -39,6 +47,14 @@ const Home = () => {
       setLoading(false);
     }
   }, [loadedImages, limitedHotels.length]);
+
+  useEffect(() => {
+    const timeout = setTimeout(() => {
+      setLoading(false);
+    }, 2000); // Fallback after 5 seconds
+
+    return () => clearTimeout(timeout);
+  }, [limitedHotels.length]);
 
   return (
     <div className="bg-[#f0efed]">
@@ -76,7 +92,10 @@ const Home = () => {
               <LatestDestinationCard
                 key={hotel._id}
                 hotel={hotel}
-                onImageLoad={() => setLoadedImages((prev) => prev + 1)}
+                onImageLoad={() => {
+                  console.log(`Image loaded for hotel: ${hotel._id}`);
+                  setLoadedImages((prev) => prev + 1);
+                }}
               />
             ))}
           </div>
@@ -85,7 +104,10 @@ const Home = () => {
               <LatestDestinationCard
                 key={hotel._id}
                 hotel={hotel}
-                onImageLoad={() => setLoadedImages((prev) => prev + 1)}
+                onImageLoad={() => {
+                  console.log(`Image loaded for hotel: ${hotel._id}`);
+                  setLoadedImages((prev) => prev + 1);
+                }}
               />
             ))}
           </div>

@@ -27,7 +27,7 @@ export type HotelFormData = {
     images: File[];
   }[];
 
-  policies: string[]; // Added policies field
+  policies: string[];
 };
 
 type Props = {
