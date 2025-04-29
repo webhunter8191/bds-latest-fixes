@@ -14,9 +14,21 @@ import room2img from "../assets/room2.jpg";
 import room3img from "../assets/room3.jpg";
 
 const Home = () => {
+<<<<<<< HEAD
   const { data: hotels } = useQuery("fetchHotels", apiClient.fetchHotels);
 
   console.log("Hotels data:", hotels);
+=======
+  const { data: hotels, error } = useQuery(
+    "fetchHotels",
+    apiClient.fetchHotels
+  );
+
+  useEffect(() => {
+    console.log("Hotels data:", hotels);
+    console.log("Error:", error);
+  }, [hotels, error]);
+>>>>>>> cc9fc0a300a2e4e730cf4d3eb6def5b96a06fd6c
 
   const MAX_HOTELS = 5;
   const sortedHotels = hotels
@@ -42,6 +54,17 @@ const Home = () => {
     }
   }, [loadedImages, limitedHotels.length]);
 
+<<<<<<< HEAD
+=======
+  useEffect(() => {
+    const timeout = setTimeout(() => {
+      setLoading(false);
+    }, 2000); // Fallback after 5 seconds
+
+    return () => clearTimeout(timeout);
+  }, [limitedHotels.length]);
+
+>>>>>>> cc9fc0a300a2e4e730cf4d3eb6def5b96a06fd6c
   return (
     <div className="bg-[#f0efed]">
       {/* Hero Section */}
@@ -78,7 +101,14 @@ const Home = () => {
               <LatestDestinationCard
                 key={hotel._id}
                 hotel={hotel}
+<<<<<<< HEAD
                 onImageLoad={() => setLoadedImages((prev) => prev + 1)}
+=======
+                onImageLoad={() => {
+                  console.log(`Image loaded for hotel: ${hotel._id}`);
+                  setLoadedImages((prev) => prev + 1);
+                }}
+>>>>>>> cc9fc0a300a2e4e730cf4d3eb6def5b96a06fd6c
               />
             ))}
           </div>
@@ -87,7 +117,14 @@ const Home = () => {
               <LatestDestinationCard
                 key={hotel._id}
                 hotel={hotel}
+<<<<<<< HEAD
                 onImageLoad={() => setLoadedImages((prev) => prev + 1)}
+=======
+                onImageLoad={() => {
+                  console.log(`Image loaded for hotel: ${hotel._id}`);
+                  setLoadedImages((prev) => prev + 1);
+                }}
+>>>>>>> cc9fc0a300a2e4e730cf4d3eb6def5b96a06fd6c
               />
             ))}
           </div>

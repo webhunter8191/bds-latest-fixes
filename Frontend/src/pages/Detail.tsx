@@ -92,8 +92,11 @@ const Detail = () => {
     }
   );
 
+<<<<<<< HEAD
   console.log("Hotel Data:", JSON.stringify(hotel)); // Debugging
 
+=======
+>>>>>>> cc9fc0a300a2e4e730cf4d3eb6def5b96a06fd6c
   useEffect(() => {
     setIsLoading(true);
   }, [hotelId]);
@@ -262,7 +265,11 @@ const Detail = () => {
                     {categories[room.category as keyof typeof categories]}
                   </h3>
                   <div className="text-gray-600 text-sm sm:text-base">
+<<<<<<< HEAD
                     <p>Price: ₹ {room.defaultPrice}/night</p>
+=======
+                    <p>Price: ₹ {room.price}/night</p>
+>>>>>>> cc9fc0a300a2e4e730cf4d3eb6def5b96a06fd6c
                     <p>Available Rooms: {room.availableRooms}</p>
                     <p>Adults Allowed: {room.adultCount}</p>
                     <p>Children Allowed: {room.childCount}</p>
@@ -381,6 +388,7 @@ const Detail = () => {
 
         {/* Debugging: Modal state can be logged here if needed */}
         <div className="p-4 sm:p-6 border border-slate-200 rounded-lg shadow-lg bg-white">
+<<<<<<< HEAD
         <GuestInfoForm
   pricePerNight={selectedRoomPrice}
   availableRooms={availableRooms}
@@ -393,6 +401,14 @@ const Detail = () => {
     hotel.rooms.find((room) => room._id === selectedRoomId)?.defaultPrice || 0
   }
 />
+=======
+          <GuestInfoForm
+            pricePerNight={selectedRoomPrice}
+            availableRooms={availableRooms}
+            roomsId={selectedRoomId}
+            hotelId={hotel._id}
+          />
+>>>>>>> cc9fc0a300a2e4e730cf4d3eb6def5b96a06fd6c
         </div>
       </div>
     </div>

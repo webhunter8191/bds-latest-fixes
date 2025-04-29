@@ -16,7 +16,26 @@ const DetailsSection = ({ hotel }: any) => {
     "Prem Mandir",
     "Banke Bihari",
     "Dwarikadish",
+<<<<<<< HEAD
     "ISKON",
+=======
+    "Iskcon Temple",
+    "Radha Raman Temple",
+    "Radha Damodar Temple",
+    "Radha Vallabh Temple",
+    "Gauri Gopal Ashram",
+    "Harinikunj Chauraha",
+    "Govind Dev Ji Temple",
+    "Bus Stand Vrindavan",
+    "100 feet road vrindavan",
+    "Multilevel Car Parking",
+    "Shri Radha Ras Bihari Ashta Sakhi Temple",
+    "Attalla Chungi",
+    "Vidhyapeeth Chauraha",
+    "Pagal Baba Temple",
+    "Baba Neem Karori Ashram Vrindavan",
+    "Mayavati Hospital Vrindavan",
+>>>>>>> cc9fc0a300a2e4e730cf4d3eb6def5b96a06fd6c
     "Nidhi Van",
     "Krishna Janmbhoomi",
     "Mathura",
@@ -29,7 +48,13 @@ const DetailsSection = ({ hotel }: any) => {
   React.useEffect(() => {
     if (hotel) {
       // Convert to lowercase when setting initial values
+<<<<<<< HEAD
       const lowerCaseTemples = hotel.nearbyTemple.map((temple: string) => temple.toLowerCase());
+=======
+      const lowerCaseTemples = hotel.nearbyTemple.map((temple: string) =>
+        temple.toLowerCase()
+      );
+>>>>>>> cc9fc0a300a2e4e730cf4d3eb6def5b96a06fd6c
       setNearbyTempleValues(lowerCaseTemples);
       setValue("nearbyTemple", lowerCaseTemples);
     }

@@ -21,7 +21,11 @@ router.post(
   upload,
   async (req: Request, res: Response) => {
     try {
+<<<<<<< HEAD
       // Normalize nearbyTemple entries
+=======
+      // Normalize the nearbyTemple entries
+>>>>>>> cc9fc0a300a2e4e730cf4d3eb6def5b96a06fd6c
       if (req.body.nearbyTemple) {
         req.body.nearbyTemple = req.body.nearbyTemple.map((temple: string) =>
           temple.trim().replace(/\s+/g, " ").toLowerCase()
@@ -47,6 +51,7 @@ router.post(
           } catch {
             newHotel.policies = [newHotel.policies];
           }
+<<<<<<< HEAD
         } else if (!Array.isArray(newHotel.policies)) {
           newHotel.policies = [newHotel.policies];
         }
@@ -68,6 +73,14 @@ router.post(
       const imageUrls = await uploadImages(hotelImages);
 
       // Upload room images
+=======
+        } else if (Array.isArray(newHotel.policies)) {
+          newHotel.policies = newHotel.policies;
+        }
+      }
+    
+      const imageUrls = await uploadImages(hotelImages);
+>>>>>>> cc9fc0a300a2e4e730cf4d3eb6def5b96a06fd6c
       const roomImageUrls = await Promise.all(
         roomImages.map(async (file) => {
           const roomImage = await uploadImages([file]);
@@ -78,16 +91,24 @@ router.post(
         })
       );
 
+<<<<<<< HEAD
       // Parse rooms data
       newHotel.rooms = JSON.parse(newHotel.rooms);
 
       // Process rooms
       const rooms = newHotel.rooms.map((room: any) => {
         // Assign room images
+=======
+      newHotel.imageUrls = imageUrls;
+      newHotel.rooms = JSON.parse(newHotel.rooms);
+
+      const rooms = newHotel.rooms.map((room: any) => {
+>>>>>>> cc9fc0a300a2e4e730cf4d3eb6def5b96a06fd6c
         room.images =
           roomImageUrls.find(
             (roomImage: any) => roomImage.category == room.category
           )?.images || [];
+<<<<<<< HEAD
 
         // Set availableRooms to totalRooms
         room.availableRooms = room.totalRooms;
@@ -143,6 +164,29 @@ router.post(
       });
     } catch (e) {
       console.error(e);
+=======
+        room.availableRooms = room.totalRooms;
+
+        // Ensure adultCount and childCount are included
+        room.adultCount = Number(room.adultCount) || 0;
+        room.childCount = Number(room.childCount) || 0;
+
+        return room;
+      });
+
+      newHotel.rooms = rooms;
+      newHotel.lastUpdated = new Date();
+      newHotel.userId = req.userId;
+
+      const hotel = new Hotel(newHotel);
+      await hotel.save();
+
+      res
+        .status(201)
+        .json({ message: "Hotel created successfully", data: hotel });
+    } catch (e) {
+      console.log(e);
+>>>>>>> cc9fc0a300a2e4e730cf4d3eb6def5b96a06fd6c
       res.status(500).json({ message: "Something went wrong" });
     }
   }
@@ -376,7 +420,11 @@ router.get("/admin/bookings",
 
 async function uploadImages(imageFiles: Express.Multer.File[]) {
   const uploadPromises = imageFiles.map(async (image) => {
+<<<<<<< HEAD
     const b64 = image.buffer.toString("base64");
+=======
+    const b64 = Buffer.from(image.buffer).toString("base64");
+>>>>>>> cc9fc0a300a2e4e730cf4d3eb6def5b96a06fd6c
     let dataURI = "data:" + image.mimetype + ";base64," + b64;
     const res = await cloudinary.v2.uploader.upload(dataURI);
     return res.url;

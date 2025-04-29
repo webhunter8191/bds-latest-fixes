@@ -45,6 +45,7 @@
   .animate-slide-in {
     animation: slide-in 0.3s ease-out forwards;
   }
+<<<<<<< HEAD
   .react-datepicker {
     font-family: inherit;
     border-radius: 0.5rem;
@@ -101,3 +102,5 @@
     0% { transform: rotate(0deg); }
     100% { transform: rotate(360deg); }
   }
+=======
+>>>>>>> cc9fc0a300a2e4e730cf4d3eb6def5b96a06fd6c

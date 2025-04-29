@@ -23,12 +23,20 @@ export type HotelFormData = {
   rooms: {
     category: string;
     totalRooms: number;
+<<<<<<< HEAD
     defaultPrice: number; // Default price for unspecified dates
     priceCalendar: { date: Date; price: number }[]; // Dynamic pricing
     images: File[];
   }[];
 
   policies: string[]; // Policies field
+=======
+    price: number;
+    images: File[];
+  }[];
+
+  policies: string[];
+>>>>>>> cc9fc0a300a2e4e730cf4d3eb6def5b96a06fd6c
 };
 
 type Props = {
@@ -38,6 +46,7 @@ type Props = {
 };
 
 const ManageHotelForm = ({ onSave, isLoading, hotel }: Props) => {
+<<<<<<< HEAD
   const formMethods = useForm<HotelFormData>({
     defaultValues: {
       name: "",
@@ -59,10 +68,20 @@ const ManageHotelForm = ({ onSave, isLoading, hotel }: Props) => {
   const { handleSubmit, reset } = formMethods;
   const navigate = useNavigate();
 
+=======
+  const formMethods = useForm<HotelFormData>();
+  const { handleSubmit, reset } = formMethods;
+  const navigate = useNavigate();
+
+  // useEffect(() => {
+  //   reset(hotel);
+  // }, [hotel, reset]);
+>>>>>>> cc9fc0a300a2e4e730cf4d3eb6def5b96a06fd6c
   useEffect(() => {
     if (hotel) {
       reset({
         ...hotel,
+<<<<<<< HEAD
         policies: hotel.policies || [], // Set existing policies
         rooms: hotel.rooms.map((room) => ({
           ...room,
@@ -73,6 +92,12 @@ const ManageHotelForm = ({ onSave, isLoading, hotel }: Props) => {
     }
   }, [hotel, reset]);
 
+=======
+        policies: hotel.policies || [], // ✅ Set existing policies
+      });
+    }
+  }, [hotel, reset]);
+>>>>>>> cc9fc0a300a2e4e730cf4d3eb6def5b96a06fd6c
   const onSubmit = handleSubmit((formDataJson: HotelFormData) => {
     console.log("in handle submit", formDataJson);
 
@@ -80,12 +105,16 @@ const ManageHotelForm = ({ onSave, isLoading, hotel }: Props) => {
     if (hotel) {
       formData.append("hotelId", hotel._id);
     }
+<<<<<<< HEAD
 
     // Append basic hotel details
+=======
+>>>>>>> cc9fc0a300a2e4e730cf4d3eb6def5b96a06fd6c
     formData.append("name", formDataJson.name);
     formData.append("type", formDataJson.type);
     formData.append("description", formDataJson.description);
     formData.append("location", formDataJson.location);
+<<<<<<< HEAD
 
     // Append nearby temples
     formDataJson.nearbyTemple.forEach((temple) => {
@@ -93,6 +122,12 @@ const ManageHotelForm = ({ onSave, isLoading, hotel }: Props) => {
     });
 
     // Append rooms
+=======
+    formDataJson.nearbyTemple.forEach((temple) => {
+      formData.append("nearbyTemple[]", temple); // Allow multiple entries
+    });
+
+>>>>>>> cc9fc0a300a2e4e730cf4d3eb6def5b96a06fd6c
     formData.append("rooms", JSON.stringify(formDataJson.rooms));
     formDataJson.rooms.forEach((room) => {
       if (room.images && room.images.length > 0) {
@@ -104,18 +139,25 @@ const ManageHotelForm = ({ onSave, isLoading, hotel }: Props) => {
       }
     });
 
+<<<<<<< HEAD
     // Append facilities
+=======
+>>>>>>> cc9fc0a300a2e4e730cf4d3eb6def5b96a06fd6c
     formDataJson.facilities.forEach((facility, index) => {
       formData.append(`facilities[${index}]`, facility);
     });
 
+<<<<<<< HEAD
     // Append image URLs (if any)
+=======
+>>>>>>> cc9fc0a300a2e4e730cf4d3eb6def5b96a06fd6c
     if (formDataJson.imageUrls) {
       formDataJson.imageUrls.forEach((url, index) => {
         formData.append(`imageUrls[${index}]`, url);
       });
     }
 
+<<<<<<< HEAD
     // Append policies
     (Array.isArray(formDataJson.policies) ? formDataJson.policies : []).forEach(
       (policy) => {
@@ -130,6 +172,26 @@ const ManageHotelForm = ({ onSave, isLoading, hotel }: Props) => {
         formData.append(`temples[${index}][distance]`, temple.distance.toString());
       });
     }
+=======
+    (Array.isArray(formDataJson.policies)
+      ? formDataJson.policies
+      : [formDataJson.policies]
+    ).forEach((policy) => {
+      formData.append("policies[]", policy);
+    });
+
+    Array.from(formDataJson.imageFiles).forEach((imageFile) => {
+      formData.append(`imageFiles`, imageFile);
+    });
+
+    formDataJson.temples.forEach((temple, index) => {
+      formData.append(`temples[${index}][name]`, temple.name);
+      formData.append(
+        `temples[${index}][distance]`,
+        temple.distance.toString()
+      );
+    });
+>>>>>>> cc9fc0a300a2e4e730cf4d3eb6def5b96a06fd6c
 
     onSave(formData);
   });
@@ -146,7 +208,11 @@ const ManageHotelForm = ({ onSave, isLoading, hotel }: Props) => {
         <DetailsSection hotel={hotel} />
         <TypeSection />
         <FacilitiesSection />
+<<<<<<< HEAD
         <GuestsSection existingRooms={hotel?.rooms || []} />
+=======
+        <GuestsSection existingRooms={hotel?.rooms as []} />
+>>>>>>> cc9fc0a300a2e4e730cf4d3eb6def5b96a06fd6c
         <ImagesSection />
         <div className="flex justify-end mt-6 space-x-4">
           <button
@@ -169,4 +235,8 @@ const ManageHotelForm = ({ onSave, isLoading, hotel }: Props) => {
   );
 };
 
+<<<<<<< HEAD
 export default ManageHotelForm;
+=======
+export default ManageHotelForm;
+>>>>>>> cc9fc0a300a2e4e730cf4d3eb6def5b96a06fd6c

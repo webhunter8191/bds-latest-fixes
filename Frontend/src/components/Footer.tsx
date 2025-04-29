@@ -25,9 +25,19 @@ const Footer: React.FC = () => {
         <div>
           <h3 className="font-semibold text-lg">Quick links</h3>
           <ul className="mt-2 space-y-1 text-sm">
+<<<<<<< HEAD
             <li className="cursor-pointer hover:underline">Room booking</li>
             <li className="cursor-pointer hover:underline">Rooms</li>
             <li className="cursor-pointer hover:underline">F.A.Q</li>
+=======
+            <li className="cursor-pointer hover:underline">
+              <Link to="/search" className=" hover:underline">
+                Room booking
+              </Link>
+            </li>
+            {/* <li className="cursor-pointer hover:underline">Rooms</li>
+            <li className="cursor-pointer hover:underline">F.A.Q</li> */}
+>>>>>>> cc9fc0a300a2e4e730cf4d3eb6def5b96a06fd6c
           </ul>
         </div>
 
@@ -35,9 +45,21 @@ const Footer: React.FC = () => {
         <div>
           <h3 className="font-semibold text-lg">Company</h3>
           <ul className="mt-2 space-y-1 text-sm">
+<<<<<<< HEAD
             <li className="cursor-pointer hover:underline">Privacy policy</li>
             <li className="cursor-pointer hover:underline">Refund policy</li>
             <li className="cursor-pointer hover:underline">Contact</li>
+=======
+            <li className="cursor-pointer hover:underline">
+              <Link to="/privacy-policy"> Privacy policy</Link>
+            </li>
+            <li className="cursor-pointer hover:underline">Refund policy</li>
+            <li className="cursor-pointer hover:underline">
+              <Link to="/contact" className=" hover:underline">
+                Contact
+              </Link>
+            </li>
+>>>>>>> cc9fc0a300a2e4e730cf4d3eb6def5b96a06fd6c
             <li className="cursor-pointer hover:underline">
               <Link to="/about" className=" hover:underline">
                 About
@@ -48,6 +70,7 @@ const Footer: React.FC = () => {
 
         {/* Social Media */}
         <div>
+<<<<<<< HEAD
           <h3 className="font-semibold text-lg">Follow us</h3>
           <ul className="mt-2 space-y-1 text-sm">
             <li className="cursor-pointer hover:underline">Facebook</li>
@@ -74,6 +97,17 @@ const Footer: React.FC = () => {
             </button>
           </div>
         </div> */}
+=======
+          <h3 className="font-semibold text-lg">Connect With Us</h3>
+          <ul className="mt-2 space-y-1 text-sm">
+            <li className="cursor-pointer hover:underline">Facebook</li>
+            <li className="cursor-pointer hover:underline">Instagram</li>
+            <li className="cursor-pointer hover:underline">
+              <Link to="https://wa.me/message/HRXXOHRS5OYCC1">WhatsApp </Link>
+            </li>
+          </ul>
+        </div>
+>>>>>>> cc9fc0a300a2e4e730cf4d3eb6def5b96a06fd6c
       </div>
 
       {/* Copyright */}

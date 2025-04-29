@@ -155,48 +155,35 @@ router.get("/", async (req: Request, res: Response) => {
 });
 
 // Fetch specific hotel details by ID
-router.get(
-  "/:id",
-  [param("id").notEmpty().withMessage("Hotel ID is required")],
-  async (req: Request, res: Response) => {
-    try {
-      const errors = validationResult(req);
-      if (!errors.isEmpty()) {
-        return res.status(400).json({ errors: errors.array() });
-      }
-
-      const id = req.params.id.toString();
-      const aggregation = [
-        {
-          $match: { _id: new mongoose.Types.ObjectId(id) },
-        },
-        {
-          $addFields: {
-            rooms: {
-              $filter: {
-                input: "$rooms",
-                as: "room",
-                cond: { $gt: ["$$room.availableRooms", 0] },
-              },
-            },
-          },
-        },
-        {
-          $project: {
-            __v: 0,
-          },
-        },
-      ];
-
-      const [hotel] = await Hotel.aggregate(aggregation);
-
-      return res.status(200).json(hotel);
-    } catch (error) {
-      console.error(error);
-      return res.status(500).json({ message: "Error fetching hotel" });
+router.get("/:id", [param("id").notEmpty().withMessage("Hotel ID is required")], async (req: Request, res: Response) => {
+  try {
+    const errors = validationResult(req);
+    if (!errors.isEmpty()) {
+      return res.status(400).json({ errors: errors.array() });
     }
+
+    const id = req.params.id.toString(); 
+    const aggregation = [
+      { $match: { _id: new mongoose.Types.ObjectId(id) } },
+      {
+        $addFields: {
+          rooms: {
+            $filter: {
+              input: "$rooms",
+              as: "room",
+              cond: { $gt: ["$$room.availableRooms", 0] }
+            }
+          }
+        }
+      }
+    ];
+    const [hotel] = await Hotel.aggregate(aggregation);
+    return res.status(200).json(hotel);
+  } catch (error) {
+    console.log(error);
+    res.status(500).json({ message: "Error fetching hotel" });
   }
-);
+});
 
 
 // Construct search query for filtering hotels

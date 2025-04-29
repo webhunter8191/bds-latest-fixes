@@ -22,6 +22,11 @@ import Footer from "./components/Footer";
 import AdminBookingspage from "./pages/AdminBookingspage";
 import SuperAdminPanel from "./pages/SuperAdminPanel";
 import AboutUs from "./components/AboutUs";
+<<<<<<< HEAD
+=======
+import PrivacyPolicy from "./components/PrivacyPolicy";
+import ContactUs from "./components/Contact";
+>>>>>>> cc9fc0a300a2e4e730cf4d3eb6def5b96a06fd6c
 
 const App = () => {
   const { isLoggedIn, isAdmin } = useAppContext();
@@ -80,6 +85,25 @@ const App = () => {
             </Layout>
           }
         />
+<<<<<<< HEAD
+=======
+        <Route
+          path="/contact"
+          element={
+            <Layout>
+              <ContactUs />
+            </Layout>
+          }
+        />
+        <Route
+          path="/privacy-policy"
+          element={
+            <Layout>
+              <PrivacyPolicy />
+            </Layout>
+          }
+        />
+>>>>>>> cc9fc0a300a2e4e730cf4d3eb6def5b96a06fd6c
 
         {isLoggedIn && (
           <>
