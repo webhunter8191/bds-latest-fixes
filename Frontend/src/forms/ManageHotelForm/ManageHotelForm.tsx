@@ -23,11 +23,12 @@ export type HotelFormData = {
   rooms: {
     category: string;
     totalRooms: number;
-    price: number;
+    defaultPrice: number; // Default price for unspecified dates
+    priceCalendar: { date: Date; price: number }[]; // Dynamic pricing
     images: File[];
   }[];
 
-  policies: string[];
+  policies: string[]; // Policies field
 };
 
 type Props = {
@@ -37,21 +38,41 @@ type Props = {
 };
 
 const ManageHotelForm = ({ onSave, isLoading, hotel }: Props) => {
-  const formMethods = useForm<HotelFormData>();
+  const formMethods = useForm<HotelFormData>({
+    defaultValues: {
+      name: "",
+      description: "",
+      type: "",
+      pricePerNight: 0,
+      facilities: [],
+      imageFiles: undefined,
+      imageUrls: [],
+      roomCount: 0,
+      nearbyTemple: [],
+      location: "",
+      temples: [], // Default value for temples
+      rooms: [],
+      policies: [],
+    },
+  });
+
   const { handleSubmit, reset } = formMethods;
   const navigate = useNavigate();
 
-  // useEffect(() => {
-  //   reset(hotel);
-  // }, [hotel, reset]);
   useEffect(() => {
     if (hotel) {
       reset({
         ...hotel,
-        policies: hotel.policies || [], // ✅ Set existing policies
+        policies: hotel.policies || [], // Set existing policies
+        rooms: hotel.rooms.map((room) => ({
+          ...room,
+          priceCalendar: room.priceCalendar || [], // Ensure priceCalendar exists
+        })),
+        temples: hotel.temples || [], // Ensure temples is initialized
       });
     }
   }, [hotel, reset]);
+
   const onSubmit = handleSubmit((formDataJson: HotelFormData) => {
     console.log("in handle submit", formDataJson);
 
@@ -59,14 +80,19 @@ const ManageHotelForm = ({ onSave, isLoading, hotel }: Props) => {
     if (hotel) {
       formData.append("hotelId", hotel._id);
     }
+
+    // Append basic hotel details
     formData.append("name", formDataJson.name);
     formData.append("type", formDataJson.type);
     formData.append("description", formDataJson.description);
     formData.append("location", formDataJson.location);
+
+    // Append nearby temples
     formDataJson.nearbyTemple.forEach((temple) => {
-      formData.append("nearbyTemple[]", temple); // Allow multiple entries
+      formData.append("nearbyTemple[]", temple.toLowerCase()); // Normalize to lowercase
     });
 
+    // Append rooms
     formData.append("rooms", JSON.stringify(formDataJson.rooms));
     formDataJson.rooms.forEach((room) => {
       if (room.images && room.images.length > 0) {
@@ -78,34 +104,32 @@ const ManageHotelForm = ({ onSave, isLoading, hotel }: Props) => {
       }
     });
 
+    // Append facilities
     formDataJson.facilities.forEach((facility, index) => {
       formData.append(`facilities[${index}]`, facility);
     });
 
+    // Append image URLs (if any)
     if (formDataJson.imageUrls) {
       formDataJson.imageUrls.forEach((url, index) => {
         formData.append(`imageUrls[${index}]`, url);
       });
     }
 
-    (Array.isArray(formDataJson.policies)
-      ? formDataJson.policies
-      : [formDataJson.policies]
-    ).forEach((policy) => {
-      formData.append("policies[]", policy);
-    });
+    // Append policies
+    (Array.isArray(formDataJson.policies) ? formDataJson.policies : []).forEach(
+      (policy) => {
+        formData.append("policies[]", policy);
+      }
+    );
 
-    Array.from(formDataJson.imageFiles).forEach((imageFile) => {
-      formData.append(`imageFiles`, imageFile);
-    });
-
-    formDataJson.temples.forEach((temple, index) => {
-      formData.append(`temples[${index}][name]`, temple.name);
-      formData.append(
-        `temples[${index}][distance]`,
-        temple.distance.toString()
-      );
-    });
+    // Append temples
+    if (formDataJson.temples && Array.isArray(formDataJson.temples)) {
+      formDataJson.temples.forEach((temple, index) => {
+        formData.append(`temples[${index}][name]`, temple.name);
+        formData.append(`temples[${index}][distance]`, temple.distance.toString());
+      });
+    }
 
     onSave(formData);
   });
@@ -122,7 +146,7 @@ const ManageHotelForm = ({ onSave, isLoading, hotel }: Props) => {
         <DetailsSection hotel={hotel} />
         <TypeSection />
         <FacilitiesSection />
-        <GuestsSection existingRooms={hotel?.rooms as []} />
+        <GuestsSection existingRooms={hotel?.rooms || []} />
         <ImagesSection />
         <div className="flex justify-end mt-6 space-x-4">
           <button

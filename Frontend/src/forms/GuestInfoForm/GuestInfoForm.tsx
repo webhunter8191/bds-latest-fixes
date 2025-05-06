@@ -9,6 +9,8 @@ type Props = {
   pricePerNight: number;
   availableRooms: number;
   roomsId: string;
+  priceCalendar?: { date: string; price: number }[]; // Optional price calendar
+  defaultPrice: number; // Default price per night
 };
 
 type GuestInfoFormData = {
@@ -20,9 +22,11 @@ type GuestInfoFormData = {
 
 const GuestInfoForm = ({
   hotelId,
-  pricePerNight,
+  pricePerNight: initialPricePerNight,
   availableRooms,
   roomsId,
+  priceCalendar = [],
+  defaultPrice,
 }: Props) => {
   const search = useSearchContext();
   const { isLoggedIn } = useAppContext();
@@ -47,9 +51,44 @@ const GuestInfoForm = ({
   const checkIn = watch("checkIn");
   const checkOut = watch("checkOut");
 
+  // Minimum and maximum date constraints
   const minDate = new Date();
   const maxDate = new Date();
   maxDate.setFullYear(maxDate.getFullYear() + 1);
+
+  // Function to get the price for a specific date
+  const getPriceForDate = (date: Date) => {
+    const matchingEntry = priceCalendar.find(
+      (entry) => new Date(entry.date).toDateString() === date.toDateString()
+    );
+    return matchingEntry ? matchingEntry.price : defaultPrice;
+  };
+
+  // Calculate the total cost dynamically
+  const calculateTotalCost = () => {
+    if (!checkIn || !checkOut) return 0;
+
+    const checkInDate = new Date(checkIn);
+    const checkOutDate = new Date(checkOut);
+
+    // If check-in and check-out are the same day, treat it as 1 night
+    const numberOfNights =
+      checkInDate.getTime() === checkOutDate.getTime()
+        ? 1
+        : Math.abs(checkOutDate.getTime() - checkInDate.getTime()) /
+          (1000 * 60 * 60 * 24);
+
+    let totalCost = 0;
+    for (
+      let currentDate = new Date(checkInDate);
+      currentDate < checkOutDate;
+      currentDate.setDate(currentDate.getDate() + 1)
+    ) {
+      totalCost += getPriceForDate(currentDate);
+    }
+
+    return totalCost * watch("roomCount");
+  };
 
   const onSignInClick = (data: GuestInfoFormData) => {
     search.saveSearchValues("", data.checkIn, data.checkOut, data.roomCount, 0);
@@ -57,18 +96,7 @@ const GuestInfoForm = ({
   };
 
   const onSubmit = (data: GuestInfoFormData) => {
-    // Calculate the number of nights
-    const checkInDate = new Date(data.checkIn);
-    const checkOutDate = new Date(data.checkOut);
-
-    // If check-in and check-out are the same day, treat it as 1 night
-    const numberOfNights =
-      checkInDate.getTime() === checkOutDate.getTime()
-        ? 1 // Single day stay
-        : Math.abs(checkOutDate.getTime() - checkInDate.getTime()) /
-          (1000 * 60 * 60 * 24); // Normal difference in days
-    // Calculate the total cost
-    const totalCost = numberOfNights * pricePerNight * data.roomCount;
+    const totalCost = calculateTotalCost();
 
     search.saveSearchValues(
       "",
@@ -82,9 +110,22 @@ const GuestInfoForm = ({
     navigate(`/hotel/${hotelId}/booking`, { state: { totalCost, roomsId } });
   };
 
+  // Custom render function for the date picker to show prices
+  const renderDayContents = (day: number, date: Date) => {
+    const price = getPriceForDate(date);
+    return (
+      <div className="flex flex-col items-center">
+        <span>{day}</span>
+        {price !== defaultPrice && (
+          <span className="text-xs text-red-500">₹{price}</span>
+        )}
+      </div>
+    );
+  };
+
   return (
     <div className="flex flex-col p-4 bg-blue-50 gap-4">
-      <h3 className="text-md font-bold">₹{pricePerNight} per night</h3>
+      <h3 className="text-md font-bold">₹{defaultPrice} per night</h3>
       <form
         onSubmit={
           isLoggedIn ? handleSubmit(onSubmit) : handleSubmit(onSignInClick)
@@ -102,6 +143,7 @@ const GuestInfoForm = ({
               minDate={minDate}
               maxDate={maxDate}
               placeholderText="Check-in Date"
+              renderDayContents={renderDayContents}
               className="min-w-full bg-white p-2 focus:outline-none"
               wrapperClassName="min-w-full"
             />
@@ -117,6 +159,7 @@ const GuestInfoForm = ({
               minDate={minDate}
               maxDate={maxDate}
               placeholderText="Check-out Date"
+              renderDayContents={renderDayContents}
               className="min-w-full bg-white p-2 focus:outline-none"
               wrapperClassName="min-w-full"
             />
@@ -128,7 +171,7 @@ const GuestInfoForm = ({
                 className="w-full p-1 focus:outline-none font-bold"
                 type="number"
                 min={1}
-                max={20}
+                max={availableRooms}
                 {...register("roomCount", {
                   required: "This field is required",
                   min: {
@@ -154,29 +197,21 @@ const GuestInfoForm = ({
           <div className="bg-white px-2 py-1">
             <div className="font-semibold">Total Price</div>
             <div className="font-bold text-xl">
-              ₹
-              {(
-                pricePerNight *
-                watch("roomCount") *
-                (checkIn.getTime() === checkOut.getTime()
-                  ? 1
-                  : Math.abs(checkOut.getTime() - checkIn.getTime()) /
-                    (1000 * 60 * 60 * 24))
-              ).toFixed(2)}
+              ₹{calculateTotalCost().toFixed(2)}
             </div>
           </div>
 
           {isLoggedIn ? (
             <button
               className="bg-[#6A5631] text-white h-full p-2 font-bold hover:bg-[#6A5631] text-xl disabled:bg-gray-400 disabled:cursor-not-allowed"
-              disabled={!pricePerNight || pricePerNight === 0}
+              disabled={!defaultPrice || defaultPrice === 0}
             >
               Book Now
             </button>
           ) : (
             <button
               className="bg-[#6A5631] text-white h-full p-2 font-bold hover:bg-[#6A5631] text-xl disabled:bg-gray-400 disabled:cursor-not-allowed"
-              disabled={!pricePerNight || pricePerNight === 0}
+              disabled={!defaultPrice || defaultPrice === 0}
             >
               Sign in to Book
             </button>

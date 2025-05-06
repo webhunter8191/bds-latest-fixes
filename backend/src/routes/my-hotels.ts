@@ -21,7 +21,7 @@ router.post(
   upload,
   async (req: Request, res: Response) => {
     try {
-      // Normalize the nearbyTemple entries
+      // Normalize nearbyTemple entries
       if (req.body.nearbyTemple) {
         req.body.nearbyTemple = req.body.nearbyTemple.map((temple: string) =>
           temple.trim().replace(/\s+/g, " ").toLowerCase()
@@ -47,12 +47,27 @@ router.post(
           } catch {
             newHotel.policies = [newHotel.policies];
           }
-        } else if (Array.isArray(newHotel.policies)) {
-          newHotel.policies = newHotel.policies;
+        } else if (!Array.isArray(newHotel.policies)) {
+          newHotel.policies = [newHotel.policies];
         }
       }
-    
+
+      // ✅ Handle temples (name and distance)
+      if (newHotel.temples) {
+        if (typeof newHotel.temples === "string") {
+          try {
+            const parsed = JSON.parse(newHotel.temples);
+            newHotel.temples = Array.isArray(parsed) ? parsed : [parsed];
+          } catch {
+            return res.status(400).json({ message: "Invalid temples format" });
+          }
+        }
+      }
+
+      // Upload hotel images
       const imageUrls = await uploadImages(hotelImages);
+
+      // Upload room images
       const roomImageUrls = await Promise.all(
         roomImages.map(async (file) => {
           const roomImage = await uploadImages([file]);
@@ -63,35 +78,71 @@ router.post(
         })
       );
 
-      newHotel.imageUrls = imageUrls;
+      // Parse rooms data
       newHotel.rooms = JSON.parse(newHotel.rooms);
 
+      // Process rooms
       const rooms = newHotel.rooms.map((room: any) => {
+        // Assign room images
         room.images =
           roomImageUrls.find(
             (roomImage: any) => roomImage.category == room.category
           )?.images || [];
+
+        // Set availableRooms to totalRooms
         room.availableRooms = room.totalRooms;
 
-        // Ensure adultCount and childCount are included
+        // Ensure adultCount and childCount are numbers
         room.adultCount = Number(room.adultCount) || 0;
         room.childCount = Number(room.childCount) || 0;
+
+        // Handle priceCalendar
+        if (room.priceCalendar) {
+          if (typeof room.priceCalendar === "string") {
+            try {
+              room.priceCalendar = JSON.parse(room.priceCalendar);
+            } catch {
+              return res
+                .status(400)
+                .json({ message: "Invalid priceCalendar format" });
+            }
+          }
+
+          // Validate priceCalendar entries
+          room.priceCalendar = room.priceCalendar.map((entry: any) => ({
+            date: new Date(entry.date), // Convert to Date object
+            price: Number(entry.price), // Ensure price is a number
+          }));
+        } else {
+          room.priceCalendar = []; // Default to empty array
+        }
+
+        // Ensure defaultPrice is present
+        room.defaultPrice = Number(room.defaultPrice) || 0;
 
         return room;
       });
 
+      // Assign processed rooms
       newHotel.rooms = rooms;
+
+      // Assign uploaded hotel images
+      newHotel.imageUrls = imageUrls;
+
+      // Set lastUpdated and userId
       newHotel.lastUpdated = new Date();
       newHotel.userId = req.userId;
 
+      // Create and save the hotel
       const hotel = new Hotel(newHotel);
       await hotel.save();
 
-      res
-        .status(201)
-        .json({ message: "Hotel created successfully", data: hotel });
+      res.status(201).json({
+        message: "Hotel created successfully",
+        data: hotel,
+      });
     } catch (e) {
-      console.log(e);
+      console.error(e);
       res.status(500).json({ message: "Something went wrong" });
     }
   }
@@ -325,7 +376,7 @@ router.get("/admin/bookings",
 
 async function uploadImages(imageFiles: Express.Multer.File[]) {
   const uploadPromises = imageFiles.map(async (image) => {
-    const b64 = Buffer.from(image.buffer).toString("base64");
+    const b64 = image.buffer.toString("base64");
     let dataURI = "data:" + image.mimetype + ";base64," + b64;
     const res = await cloudinary.v2.uploader.upload(dataURI);
     return res.url;

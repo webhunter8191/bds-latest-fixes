@@ -39,6 +39,9 @@ const Footer: React.FC = () => {
         <div>
           <h3 className="font-semibold text-lg">Company</h3>
           <ul className="mt-2 space-y-1 text-sm">
+            <li className="cursor-pointer hover:underline">Privacy policy</li>
+            <li className="cursor-pointer hover:underline">Refund policy</li>
+            <li className="cursor-pointer hover:underline">Contact</li>
             <li className="cursor-pointer hover:underline">
               <Link to="/privacy-policy"> Privacy policy</Link>
             </li>
