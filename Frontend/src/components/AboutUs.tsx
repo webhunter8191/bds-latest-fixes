@@ -1,18 +1,11 @@
-import React from "react";
+import React from 'react';
 
 const AboutUs: React.FC = () => {
   return (
-    <div className="p-8 rounded-2xl  max-w-3xl mx-auto">
-      <h1 className="text-3xl font-bold text-center text-blue-800 mb-6">
-        About Us - Brij Divine Stay
-      </h1>
+    <div className="bg-gray-100 p-8 rounded-2xl shadow-lg max-w-3xl mx-auto">
+      <h1 className="text-3xl font-bold text-center text-blue-800 mb-6">About Us - Brij Divine Stay</h1>
       <p className="text-gray-700 text-lg text-center mb-6">
-        Welcome to <span className="font-semibold">Brij Divine Stay</span>, your
-        trusted partner for comfortable and spiritual stays in the sacred lands
-        of <span className="font-semibold">Brij, Mathura, and Vrindavan</span>.
-        Our mission is to provide pilgrims, tourists, and travelers with the
-        perfect blend of divine serenity and modern comfort while experiencing
-        the holy essence of these sacred destinations.
+        Welcome to <span className="font-semibold">Brij Divine Stay</span>, your trusted partner for comfortable and spiritual stays in the sacred lands of <span className="font-semibold">Brij, Mathura, and Vrindavan</span>. Our mission is to provide pilgrims, tourists, and travelers with the perfect blend of divine serenity and modern comfort while experiencing the holy essence of these sacred destinations.
       </p>
       <section className="mb-6">
         <h2 className="text-2xl font-semibold text-blue-700 mb-4">Our Story</h2>

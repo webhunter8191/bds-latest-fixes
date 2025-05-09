@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from "react";
-import { useFormContext, Controller } from "react-hook-form";
+import { useFormContext } from "react-hook-form";
 import { HotelFormData } from "./ManageHotelForm";
 import { Dialog } from "@headlessui/react";
 import PriceCalendarForm from "./PriceCalendarForm";
@@ -22,12 +22,12 @@ const GuestsSection = ({
 }: {
   existingRooms: existingRooms[];
 }) => {
-  const { setValue, control } = useFormContext<HotelFormData>();
+  const { setValue } = useFormContext<HotelFormData>();
   const [showRooms, setShowRooms] = useState(true);
   const [isDialogOpen, setIsDialogOpen] = useState(false);
   const [rooms, setRooms] = useState<any[]>([]);
   const [editingRoomIndex, setEditingRoomIndex] = useState<number | null>(null);
-  const [newPolicy, setNewPolicy] = useState("");
+  // const [newPolicy, setNewPolicy] = useState("");
   const [priceCalendarEntries, setPriceCalendarEntries] = useState<
     { date: string; price: number }[]
   >([]);
@@ -159,7 +159,35 @@ const GuestsSection = ({
             <p>Dynamic Pricing Calendar:</p>
             <ul className="ml-4 list-disc">
               {room.priceCalendar.map(
-                (entry: { date: string; price: number }, i: number) => (
+                (
+                  entry: {
+                    date:
+                      | string
+                      | number
+                      | boolean
+                      | React.ReactElement<
+                          any,
+                          string | React.JSXElementConstructor<any>
+                        >
+                      | Iterable<React.ReactNode>
+                      | React.ReactPortal
+                      | null
+                      | undefined;
+                    price:
+                      | string
+                      | number
+                      | boolean
+                      | React.ReactElement<
+                          any,
+                          string | React.JSXElementConstructor<any>
+                        >
+                      | Iterable<React.ReactNode>
+                      | React.ReactPortal
+                      | null
+                      | undefined;
+                  },
+                  i: React.Key | null | undefined
+                ) => (
                   <li key={i}>
                     {entry.date} - ₹{entry.price}
                   </li>

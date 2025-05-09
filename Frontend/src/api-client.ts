@@ -144,30 +144,55 @@ export type SearchParams = {
   sortOption?: string;
 };
 
+// export const searchHotels = async (
+//   searchParams: SearchParams
+// ): Promise<HotelSearchResponse> => {
+//   const queryParams = new URLSearchParams();
+
+//   // Append query parameters
+//   if (searchParams.destination) queryParams.append("destination", searchParams.destination);
+//   if (searchParams.checkIn) queryParams.append("date", searchParams.checkIn); // Pass checkIn as 'date'
+//   if (searchParams.checkOut) queryParams.append("checkOut", searchParams.checkOut);
+//   if (searchParams.roomCount) queryParams.append("roomCount", searchParams.roomCount);
+//   if (searchParams.page) queryParams.append("page", searchParams.page);
+//   if (searchParams.maxPrice) queryParams.append("maxPrice", searchParams.maxPrice);
+//   if (searchParams.sortOption) queryParams.append("sortOption", searchParams.sortOption);
+
+//   // Append facilities, types, and stars as arrays
+//   searchParams.facilities?.forEach((facility) => queryParams.append("facilities", facility));
+//   searchParams.types?.forEach((type) => queryParams.append("types", type));
+//   searchParams.stars?.forEach((star) => queryParams.append("stars", star));
+
+//   // Make the API call
+//   const response = await fetch(`${API_BASE_URL}/api/hotels/search?${queryParams}`);
+
+//   if (!response.ok) {
+//     throw new Error("Error fetching hotels");
+//   }
+
+//   return response.json();
+// };
 export const searchHotels = async (
   searchParams: SearchParams
 ): Promise<HotelSearchResponse> => {
   const queryParams = new URLSearchParams();
-  queryParams.append("destination", searchParams.destination || "");
-  queryParams.append("checkIn", searchParams.checkIn || "");
-  queryParams.append("checkOut", searchParams.checkOut || "");
-  queryParams.append("roomCount", searchParams.roomCount || "");
 
-  queryParams.append("page", searchParams.page || "");
+  // Append query parameters
+  if (searchParams.destination) queryParams.append("destination", searchParams.destination);
+  if (searchParams.checkIn) queryParams.append("date", searchParams.checkIn); // Pass checkIn as 'date'
+  if (searchParams.checkOut) queryParams.append("checkOut", searchParams.checkOut);
+  if (searchParams.roomCount) queryParams.append("roomCount", searchParams.roomCount);
+  if (searchParams.page) queryParams.append("page", searchParams.page);
+  if (searchParams.maxPrice) queryParams.append("maxPrice", searchParams.maxPrice);
+  if (searchParams.sortOption) queryParams.append("sortOption", searchParams.sortOption);
 
-  queryParams.append("maxPrice", searchParams.maxPrice || "");
-  queryParams.append("sortOption", searchParams.sortOption || "");
-
-  searchParams.facilities?.forEach((facility) =>
-    queryParams.append("facilities", facility)
-  );
-
+  // Append facilities, types, and stars as arrays
+  searchParams.facilities?.forEach((facility) => queryParams.append("facilities", facility));
   searchParams.types?.forEach((type) => queryParams.append("types", type));
   searchParams.stars?.forEach((star) => queryParams.append("stars", star));
 
-  const response = await fetch(
-    `${API_BASE_URL}/api/hotels/search?${queryParams}`
-  );
+  // Make the API call with the query parameters
+  const response = await fetch(`${API_BASE_URL}/api/hotels/search?${queryParams}`);
 
   if (!response.ok) {
     throw new Error("Error fetching hotels");

@@ -22,7 +22,6 @@ type GuestInfoFormData = {
 
 const GuestInfoForm = ({
   hotelId,
-  pricePerNight: initialPricePerNight,
   availableRooms,
   roomsId,
   priceCalendar = [],
@@ -72,11 +71,6 @@ const GuestInfoForm = ({
     const checkOutDate = new Date(checkOut);
 
     // If check-in and check-out are the same day, treat it as 1 night
-    const numberOfNights =
-      checkInDate.getTime() === checkOutDate.getTime()
-        ? 1
-        : Math.abs(checkOutDate.getTime() - checkInDate.getTime()) /
-          (1000 * 60 * 60 * 24);
 
     let totalCost = 0;
     for (

@@ -9,26 +9,121 @@ import mongoose from "mongoose";
 const router = express.Router();
 
 // Search route to find hotels
-router.get("/search", async (req: Request, res: Response) => {
-  try {        
-    const query = constructSearchQuery(req.query);
-    
-    let sortOptions:{[key:string]:1 | -1} = { pricePerNight: 1 };;
-    switch (req.query.sortOption) {
-      case "starRating":
-        sortOptions = { starRating: -1 };
-        break;
-      case "pricePerNightAsc":
-        sortOptions = { pricePerNight: 1 };
-        break;
-      case "pricePerNightDesc":
-        sortOptions = { pricePerNight: -1 };
-        break;
-    }
+// router.get("/search", async (req: Request, res: Response) => {
+//   try {
+//     const query = constructSearchQuery(req.query);
 
-    const pageSize = 10;
-    const pageNumber = parseInt(req.query.page ? req.query.page.toString() : "1");
-    const skip = (pageNumber - 1) * pageSize;    
+//     const sortOption = req.query.sortOption;
+//     let sortOptions: { [key: string]: 1 | -1 } = { pricePerNight: 1 };
+//     if (sortOption === "starRating") sortOptions = { starRating: -1 };
+//     if (sortOption === "pricePerNightAsc") sortOptions = { pricePerNight: 1 };
+//     if (sortOption === "pricePerNightDesc") sortOptions = { pricePerNight: -1 };
+
+//     const pageSize = Math.min(20, parseInt(req.query.pageSize?.toString() || "10")); // Limit to 20 items per page
+//     const pageNumber = Math.max(1, parseInt(req.query.page?.toString() || "1")); // Ensure page number is at least 1
+//     const skip = (pageNumber - 1) * pageSize;
+
+//     const targetDate = req.query.date ? new Date(req.query.date.toString()) : new Date();
+//     const targetDateStr = targetDate.toISOString().split("T")[0]; // "YYYY-MM-DD"
+//     const roomCount = parseInt(req.query.roomCount as string) || 1;
+
+//     const hotels = await Hotel.aggregate([
+//       { $match: query },
+//       {
+//         $addFields: {
+//           pricePerNight: {
+//             $min: {
+//               $map: {
+//                 input: {
+//                   $filter: {
+//                     input: "$rooms",
+//                     as: "room",
+//                     cond: { $gte: ["$$room.availableRooms", roomCount] }
+//                   }
+//                 },
+//                 as: "room",
+//                 in: {
+//                   $let: {
+//                     vars: {
+//                       matchedCalendar: {
+//                         $first: {
+//                           $filter: {
+//                             input: "$$room.priceCalendar",
+//                             as: "cal",
+//                             cond: {
+//                               $eq: [
+//                                 { $dateToString: { format: "%Y-%m-%d", date: "$$cal.date" } },
+//                                 targetDateStr
+//                               ]
+//                             }
+//                           }
+//                         }
+//                       }
+//                     },
+//                     in: {
+//                       $ifNull: ["$$matchedCalendar.price", "$$room.defaultPrice"]
+//                     }
+//                   }
+//                 }
+//               }
+//             }
+//           }
+//         }
+//       },
+//       { $sort: sortOptions },
+//       { $skip: skip },
+//       { $limit: pageSize },
+//       {
+//         $project: {
+//           name: 1,
+//           imageUrls: 1,
+//           pricePerNight: 1,
+//           type: 1,
+//           facilities: 1,
+//           rooms: 1,
+//         }
+//       }
+//     ]);
+
+//     const total = await Hotel.countDocuments(query);
+
+//     const response: HotelSearchResponse = {
+//       data: hotels,
+//       pagination: {
+//         total,
+//         page: pageNumber,
+//         pages: Math.ceil(total / pageSize)
+//       }
+//     };
+
+//     res.json(response);
+//   } catch (error) {
+//     console.error("Error in /search route:", error);
+//     res.status(500).json({ message: "Error fetching hotels" });
+//   }
+// });
+router.get("/search", async (req: Request, res: Response) => {
+  try {
+    const query = constructSearchQuery(req.query);
+
+    // Determine the sort option
+    const sortOption = req.query.sortOption;
+    let sortOptions: { [key: string]: 1 | -1 } = { pricePerNight: 1 };
+    if (sortOption === "starRating") sortOptions = { starRating: -1 };
+    if (sortOption === "pricePerNightAsc") sortOptions = { pricePerNight: 1 };
+    if (sortOption === "pricePerNightDesc") sortOptions = { pricePerNight: -1 };
+
+    // Pagination setup
+    const pageSize = Math.min(20, parseInt(req.query.pageSize?.toString() || "10")); // Limit to 20 items per page
+    const pageNumber = Math.max(1, parseInt(req.query.page?.toString() || "1")); // Ensure page number is at least 1
+    const skip = (pageNumber - 1) * pageSize;
+
+    // Process the check-in date (defaults to today if not provided)
+    const targetDate = req.query.date ? new Date(req.query.date.toString()) : new Date();
+    const targetDateStr = targetDate.toISOString().split("T")[0]; // "YYYY-MM-DD"
+    const roomCount = parseInt(req.query.roomCount as string) || 1;
+
+    // Query hotels
     const hotels = await Hotel.aggregate([
       { $match: query },
       {
@@ -39,30 +134,55 @@ router.get("/search", async (req: Request, res: Response) => {
                 input: {
                   $filter: {
                     input: "$rooms",
-                    cond: { $gte: ["$$this.availableRooms", parseInt(req.query.roomCount as string)] }
+                    as: "room",
+                    cond: { $gte: ["$$room.availableRooms", roomCount] }
                   }
                 },
-                in: "$$this.price"
+                as: "room",
+                in: {
+                  $let: {
+                    vars: {
+                      matchedCalendar: {
+                        $first: {
+                          $filter: {
+                            input: "$$room.priceCalendar",
+                            as: "cal",
+                            cond: {
+                              $eq: [
+                                { $dateToString: { format: "%Y-%m-%d", date: "$$cal.date" } },
+                                targetDateStr
+                              ]
+                            }
+                          }
+                        }
+                      }
+                    },
+                    in: {
+                      $ifNull: ["$$matchedCalendar.price", "$$room.defaultPrice"]
+                    }
+                  }
+                }
               }
             }
           }
         }
       },
-      { $sort:  sortOptions },
+      { $sort: sortOptions },
       { $skip: skip },
       { $limit: pageSize },
       {
-        $project:{
-          name:1,
-          imageUrls:1,
-          pricePerNight:1,
-          type:1,
-          facilities:1,
-          
+        $project: {
+          name: 1,
+          imageUrls: 1,
+          pricePerNight: 1,
+          type: 1,
+          facilities: 1,
+          rooms: 1,
         }
       }
-    ]);    
-    
+    ]);
+
+    // Calculate total and pagination
     const total = await Hotel.countDocuments(query);
 
     const response: HotelSearchResponse = {
@@ -70,16 +190,18 @@ router.get("/search", async (req: Request, res: Response) => {
       pagination: {
         total,
         page: pageNumber,
-        pages: Math.ceil(total / pageSize),
-      },
+        pages: Math.ceil(total / pageSize)
+      }
     };
 
     res.json(response);
   } catch (error) {
-    console.log("error", error);
-    res.status(500).json({ message: "Something went wrong" });
+    console.error("Error in /search route:", error);
+    res.status(500).json({ message: "Error fetching hotels" });
   }
 });
+
+
 
 // Fetch all hotels
 // router.get("/", async (req: Request, res: Response) => {
@@ -184,7 +306,6 @@ router.get("/:id", [param("id").notEmpty().withMessage("Hotel ID is required")],
     res.status(500).json({ message: "Error fetching hotel" });
   }
 });
-
 
 // Construct search query for filtering hotels
 const constructSearchQuery = (queryParams: any) => {

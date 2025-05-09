@@ -66,7 +66,9 @@ const ManageHotelForm = ({ onSave, isLoading, hotel }: Props) => {
         policies: hotel.policies || [], // Set existing policies
         rooms: hotel.rooms.map((room) => ({
           ...room,
+          category: String(room.category), // Ensure category is a string
           priceCalendar: room.priceCalendar || [], // Ensure priceCalendar exists
+          images: [], // Default to an empty array for compatibility
         })),
         temples: hotel.temples || [], // Ensure temples is initialized
       });
@@ -127,7 +129,10 @@ const ManageHotelForm = ({ onSave, isLoading, hotel }: Props) => {
     if (formDataJson.temples && Array.isArray(formDataJson.temples)) {
       formDataJson.temples.forEach((temple, index) => {
         formData.append(`temples[${index}][name]`, temple.name);
-        formData.append(`temples[${index}][distance]`, temple.distance.toString());
+        formData.append(
+          `temples[${index}][distance]`,
+          temple.distance.toString()
+        );
       });
     }
 
@@ -146,7 +151,19 @@ const ManageHotelForm = ({ onSave, isLoading, hotel }: Props) => {
         <DetailsSection hotel={hotel} />
         <TypeSection />
         <FacilitiesSection />
-        <GuestsSection existingRooms={hotel?.rooms || []} />
+
+        <GuestsSection
+          existingRooms={(hotel?.rooms || []).map((room) => ({
+            ...room,
+            category: String(room.category), // Ensure category is a string
+            price: room.defaultPrice, // Map defaultPrice to price
+            priceCalendar: (room.priceCalendar || []).map((entry) => ({
+              ...entry,
+              date: entry.date ? new Date(entry.date).toISOString() : "", // Ensure date is converted to a Date object
+            })),
+          }))}
+        />
+
         <ImagesSection />
         <div className="flex justify-end mt-6 space-x-4">
           <button

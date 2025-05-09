@@ -10,6 +10,9 @@ export type UserType = {
 
 
 export type HotelType = {
+  [x: string]: any;
+  hotelName: string | undefined;
+  createdAt: number;
   _id: string;
   userId: string;
   name: string;
@@ -35,6 +38,8 @@ export type HotelType = {
 
 // Define the RoomType separately for clarity
 export type RoomType = {
+  
+  _id: string;
   category: number;
   totalRooms: number;
   availableRooms: number;

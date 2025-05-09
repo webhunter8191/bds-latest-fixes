@@ -25,13 +25,9 @@ const Footer: React.FC = () => {
         <div>
           <h3 className="font-semibold text-lg">Quick links</h3>
           <ul className="mt-2 space-y-1 text-sm">
-            <li className="cursor-pointer hover:underline">
-              <Link to="/search" className=" hover:underline">
-                Room booking
-              </Link>
-            </li>
-            {/* <li className="cursor-pointer hover:underline">Rooms</li>
-            <li className="cursor-pointer hover:underline">F.A.Q</li> */}
+            <li className="cursor-pointer hover:underline">Room booking</li>
+            <li className="cursor-pointer hover:underline">Rooms</li>
+            <li className="cursor-pointer hover:underline">F.A.Q</li>
           </ul>
         </div>
 
@@ -43,15 +39,6 @@ const Footer: React.FC = () => {
             <li className="cursor-pointer hover:underline">Refund policy</li>
             <li className="cursor-pointer hover:underline">Contact</li>
             <li className="cursor-pointer hover:underline">
-              <Link to="/privacy-policy"> Privacy policy</Link>
-            </li>
-            <li className="cursor-pointer hover:underline">Refund policy</li>
-            <li className="cursor-pointer hover:underline">
-              <Link to="/contact" className=" hover:underline">
-                Contact
-              </Link>
-            </li>
-            <li className="cursor-pointer hover:underline">
               <Link to="/about" className=" hover:underline">
                 About
               </Link>
@@ -61,15 +48,32 @@ const Footer: React.FC = () => {
 
         {/* Social Media */}
         <div>
-          <h3 className="font-semibold text-lg">Connect With Us</h3>
+          <h3 className="font-semibold text-lg">Follow us</h3>
           <ul className="mt-2 space-y-1 text-sm">
             <li className="cursor-pointer hover:underline">Facebook</li>
+            <li className="cursor-pointer hover:underline">Twitter</li>
             <li className="cursor-pointer hover:underline">Instagram</li>
-            <li className="cursor-pointer hover:underline">
-              <Link to="https://wa.me/message/HRXXOHRS5OYCC1">WhatsApp </Link>
-            </li>
+            <li className="cursor-pointer hover:underline">LinkedIn</li>
           </ul>
         </div>
+
+        {/* Newsletter */}
+        {/* <div className="col-span-1 md:col-span-2 lg:col-span-1">
+          <h3 className="font-semibold text-lg">Newsletter</h3>
+          <p className="text-sm mt-2">
+            Subscribe to our newsletter for the latest deals and discounts.
+          </p>
+          <div className="mt-3 flex flex-col sm:flex-row">
+            <input
+              type="email"
+              placeholder="Enter your email"
+              className="p-2 rounded-md text-black flex-1 mb-2 sm:mb-0 sm:mr-2"
+            />
+            <button className="bg-[#5C432B] px-4 py-2 rounded-md text-white w-full sm:w-auto">
+              Subscribe
+            </button>
+          </div>
+        </div> */}
       </div>
 
       {/* Copyright */}
