@@ -29,7 +29,7 @@ import { GiBathtub } from "react-icons/gi";
 import GuestInfoForm from "../forms/GuestInfoForm/GuestInfoForm";
 import Slider from "react-slick";
 import Modal from "react-modal"; // Install react-modal if not already installed
-import Calendar from "react-calendar"; // Import React-Calendar
+// import Calendar from "react-calendar"; // Import React-Calendar
 import "react-calendar/dist/Calendar.css"; // Import calendar styles
 import "slick-carousel/slick/slick.css";
 import "slick-carousel/slick/slick-theme.css";
@@ -93,25 +93,23 @@ const Detail = () => {
     }
   );
 
-  const [selectedDate, setSelectedDate] = useState<Date | null>(null); // State for selected date
-  const [priceForSelectedDate, setPriceForSelectedDate] = useState<
-    number | null
-  >(null);
+  // const [selectedDate, setSelectedDate] = useState<Date | null>(null); // State for selected date
+  const [priceForSelectedDate] = useState<number | null>(null);
 
-  const handleDateChange = (date: Date, room: any) => {
-    setSelectedDate(date);
+  // const handleDateChange = (date: Date, room: any) => {
+  //   setSelectedDate(date);
 
-    // Format the selected date as YYYY-MM-DD
-    const formattedDate = date.toISOString().split("T")[0];
+  //   // Format the selected date as YYYY-MM-DD
+  //   const formattedDate = date.toISOString().split("T")[0];
 
-    // Find the price for the selected date in the priceCalendar
-    const priceEntry = room.priceCalendar?.find(
-      (entry: { date: string; price: number }) =>
-        new Date(entry.date).toISOString().split("T")[0] === formattedDate
-    );
+  //   // Find the price for the selected date in the priceCalendar
+  //   const priceEntry = room.priceCalendar?.find(
+  //     (entry: { date: string; price: number }) =>
+  //       new Date(entry.date).toISOString().split("T")[0] === formattedDate
+  //   );
 
-    setPriceForSelectedDate(priceEntry?.price || room.defaultPrice); // Fallback to defaultPrice
-  };
+  //   setPriceForSelectedDate(priceEntry?.price || room.defaultPrice); // Fallback to defaultPrice
+  // };
 
   console.log("Hotel Data:", JSON.stringify(hotel)); // Debugging
 
@@ -287,8 +285,6 @@ const Detail = () => {
                       /night
                     </p>
 
-                    <p>Price: ₹ {room.defaultPrice}/night</p>
-
                     <p>Available Rooms: {room.availableRooms}</p>
                     <p>Adults Allowed: {room.adultCount}</p>
                     <p>Children Allowed: {room.childCount}</p>
@@ -296,7 +292,7 @@ const Detail = () => {
 
                   {/* Calendar */}
                   <div className="mt-4">
-                    <Calendar
+                    {/* <Calendar
                       onChange={(date) => handleDateChange(date as Date, room)}
                       value={selectedDate}
                       tileContent={({ date }) => {
@@ -313,7 +309,7 @@ const Detail = () => {
                           </div>
                         ) : null;
                       }}
-                    />
+                    /> */}
                   </div>
 
                   <button
@@ -429,7 +425,7 @@ const Detail = () => {
 
         {/* Debugging: Modal state can be logged here if needed */}
         <div className="p-4 sm:p-6 border border-slate-200 rounded-lg shadow-lg bg-white">
-          <GuestInfoForm
+          {/* <GuestInfoForm
             pricePerNight={selectedRoomPrice}
             availableRooms={availableRooms}
             roomsId={selectedRoomId}
@@ -444,7 +440,7 @@ const Detail = () => {
               hotel.rooms.find((room) => room._id === selectedRoomId)
                 ?.defaultPrice || 0
             }
-          />
+          /> */}
 
           <GuestInfoForm
             pricePerNight={selectedRoomPrice}

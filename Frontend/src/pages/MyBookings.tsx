@@ -70,7 +70,7 @@ const MyBookings = () => {
             className="bg-white shadow-lg rounded-2xl p-6 border border-gray-200 flex flex-col items-center"
           >
             <img
-              src={hotel?.imageUrls}
+              src={hotel?.imageUrl}
               alt={hotel?.hotelName}
               className="w-full md:w-1/3 h-52 object-cover rounded-lg shadow-md mb-4"
             />

@@ -10,7 +10,7 @@ export type UserType = {
 
 
 export type HotelType = {
-  bookings: any;
+  [x: string]: any;
   hotelName: string | undefined;
   createdAt: number;
   _id: string;
