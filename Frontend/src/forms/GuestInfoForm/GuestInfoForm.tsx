@@ -63,14 +63,17 @@ const GuestInfoForm = ({
     return matchingEntry ? matchingEntry.price : defaultPrice;
   };
 
+  // Dynamically get the price for the selected check-in date
+  const priceForSelectedDate = checkIn
+    ? getPriceForDate(new Date(checkIn))
+    : defaultPrice;
+
   // Calculate the total cost dynamically
   const calculateTotalCost = () => {
     if (!checkIn || !checkOut) return 0;
 
     const checkInDate = new Date(checkIn);
     const checkOutDate = new Date(checkOut);
-
-    // If check-in and check-out are the same day, treat it as 1 night
 
     let totalCost = 0;
     for (
@@ -119,7 +122,8 @@ const GuestInfoForm = ({
 
   return (
     <div className="flex flex-col p-4 bg-blue-50 gap-4">
-      <h3 className="text-md font-bold">₹{defaultPrice} per night</h3>
+      {/* Display the price for the selected check-in date dynamically */}
+      <h3 className="text-md font-bold">₹{priceForSelectedDate} per night</h3>
       <form
         onSubmit={
           isLoggedIn ? handleSubmit(onSubmit) : handleSubmit(onSignInClick)
@@ -198,14 +202,14 @@ const GuestInfoForm = ({
           {isLoggedIn ? (
             <button
               className="bg-[#6A5631] text-white h-full p-2 font-bold hover:bg-[#6A5631] text-xl disabled:bg-gray-400 disabled:cursor-not-allowed"
-              disabled={!defaultPrice || defaultPrice === 0}
+              disabled={!priceForSelectedDate || priceForSelectedDate === 0}
             >
               Book Now
             </button>
           ) : (
             <button
               className="bg-[#6A5631] text-white h-full p-2 font-bold hover:bg-[#6A5631] text-xl disabled:bg-gray-400 disabled:cursor-not-allowed"
-              disabled={!defaultPrice || defaultPrice === 0}
+              disabled={!priceForSelectedDate || priceForSelectedDate === 0}
             >
               Sign in to Book
             </button>
