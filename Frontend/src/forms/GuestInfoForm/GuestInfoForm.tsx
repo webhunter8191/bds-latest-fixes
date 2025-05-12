@@ -75,6 +75,11 @@ const GuestInfoForm = ({
     const checkInDate = new Date(checkIn);
     const checkOutDate = new Date(checkOut);
 
+    // If check-in and check-out dates are the same, charge for 1 day
+    if (checkInDate.toDateString() === checkOutDate.toDateString()) {
+      return getPriceForDate(checkInDate) * watch("roomCount");
+    }
+
     let totalCost = 0;
     for (
       let currentDate = new Date(checkInDate);
