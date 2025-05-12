@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from "react";
-import { useFormContext } from "react-hook-form";
+import { Controller, useFormContext } from "react-hook-form";
 import { HotelFormData } from "./ManageHotelForm";
 import { Dialog } from "@headlessui/react";
 import PriceCalendarForm from "./PriceCalendarForm";
@@ -22,12 +22,12 @@ const GuestsSection = ({
 }: {
   existingRooms: existingRooms[];
 }) => {
-  const { setValue } = useFormContext<HotelFormData>();
+  const { setValue, control } = useFormContext<HotelFormData>();
   const [showRooms, setShowRooms] = useState(true);
   const [isDialogOpen, setIsDialogOpen] = useState(false);
   const [rooms, setRooms] = useState<any[]>([]);
   const [editingRoomIndex, setEditingRoomIndex] = useState<number | null>(null);
-  // const [newPolicy, setNewPolicy] = useState("");
+  const [newPolicy, setNewPolicy] = useState("");
   const [priceCalendarEntries, setPriceCalendarEntries] = useState<
     { date: string; price: number }[]
   >([]);
@@ -189,7 +189,8 @@ const GuestsSection = ({
                   i: React.Key | null | undefined
                 ) => (
                   <li key={i}>
-                    {entry.date} - ₹{entry.price}
+                    {/* {entry.date} - ₹{entry.price} */}
+                    {entry.date ? entry.date : "Invalid Date"} - ₹{entry.price}
                   </li>
                 )
               )}
@@ -238,6 +239,159 @@ const GuestsSection = ({
             </div>
           </div>
         ))}
+      </div>
+      <div className="mt-10">
+        <h3 className="text-xl font-semibold mb-2">Hotel Policies</h3>
+        <Controller
+          name="policies"
+          control={control}
+          render={({ field }) => {
+            const policies = Array.isArray(field.value) ? field.value : [];
+
+            const handlePolicyChange = (index: number, newValue: string) => {
+              const updated = [...policies];
+              updated[index] = newValue;
+              field.onChange(updated);
+            };
+
+            const handleDeletePolicy = (index: number) => {
+              const updated = policies.filter((_, i) => i !== index);
+              field.onChange(updated);
+            };
+
+            const handleAddPolicy = () => {
+              const trimmed = newPolicy.trim();
+              if (trimmed) {
+                field.onChange([...policies, trimmed]);
+                setNewPolicy("");
+              }
+            };
+
+            return (
+              <div>
+                <div className="flex gap-2 mb-4">
+                  <input
+                    name="policy"
+                    type="text"
+                    className="w-full border p-2 rounded"
+                    placeholder="Enter a new policy"
+                    value={newPolicy}
+                    onChange={(e) => setNewPolicy(e.target.value)}
+                  />
+                  <button
+                    type="button"
+                    onClick={handleAddPolicy}
+                    className="bg-blue-500 text-white px-4 rounded-lg"
+                  >
+                    Add
+                  </button>
+                </div>
+
+                <ul className="space-y-2">
+                  {policies.map((policy, index) => (
+                    <li
+                      key={index}
+                      className="flex items-center gap-2 border rounded p-2"
+                    >
+                      <input
+                        type="text"
+                        className="flex-grow border rounded px-2 py-1"
+                        value={policy}
+                        onChange={(e) =>
+                          handlePolicyChange(index, e.target.value)
+                        }
+                      />
+                      <button
+                        type="button"
+                        onClick={() => handleDeletePolicy(index)}
+                        className="bg-red-500 text-white px-3 py-1 rounded-lg"
+                      >
+                        Delete
+                      </button>
+                    </li>
+                  ))}
+                </ul>
+              </div>
+            );
+          }}
+        />
+      </div>
+      <div className="mt-10">
+        <h3 className="text-xl font-semibold mb-2">Nearby Temples</h3>
+        <Controller
+          name="temples"
+          control={control}
+          render={({ field }) => {
+            const temples = Array.isArray(field.value) ? field.value : [];
+
+            const handleTempleChange = (
+              index: number,
+              key: "name" | "distance",
+              value: string
+            ) => {
+              const updated = [...temples];
+              updated[index] = {
+                ...updated[index],
+                [key]: key === "distance" ? Number(value) : value,
+              };
+              field.onChange(updated);
+            };
+
+            const handleAddTemple = () => {
+              field.onChange([...temples, { name: "", distance: 0 }]);
+            };
+
+            const handleRemoveTemple = (index: number) => {
+              const updated = temples.filter((_, i) => i !== index);
+              field.onChange(updated);
+            };
+
+            return (
+              <div className="space-y-4">
+                {temples.map((temple, index) => (
+                  <div
+                    key={index}
+                    className="flex gap-2 items-center border rounded p-2"
+                  >
+                    <input
+                      type="text"
+                      placeholder="Temple name"
+                      className="flex-grow border p-2 rounded"
+                      value={temple.name}
+                      onChange={(e) =>
+                        handleTempleChange(index, "name", e.target.value)
+                      }
+                    />
+                    <input
+                      type="number"
+                      step="0.1"
+                      placeholder="Distance (km)"
+                      className="w-32 border p-2 rounded"
+                      value={temple.distance}
+                      onChange={(e) =>
+                        handleTempleChange(index, "distance", e.target.value)
+                      }
+                    />
+                    <button
+                      type="button"
+                      onClick={() => handleRemoveTemple(index)}
+                      className="bg-red-500 text-white px-3 py-1 rounded-lg"
+                    >
+                      Delete
+                    </button>
+                  </div>
+                ))}
+                <button
+                  type="button"
+                  onClick={handleAddTemple}
+                  className="bg-blue-500 text-white px-4 py-2 rounded-lg"
+                >
+                  Add Temple
+                </button>
+              </div>
+            );
+          }}
+        />
       </div>
       {/* Room Dialog */}
       <Dialog open={isDialogOpen} onClose={() => setIsDialogOpen(false)}>

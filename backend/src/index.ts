@@ -12,6 +12,7 @@ import hotelRoutes from "./routes/hotels";
 import bookingRoutes from "./routes/my-bookings";
 import paymentRoutes from "./routes/payment";
 import otpRoutes from "./routes/otp";
+import pdfUpload from "./routes/pdfUpload";
 
 cloudinary.config({
   cloud_name: process.env.CLOUDINARY_CLOUD_NAME,
@@ -67,6 +68,7 @@ app.use("/api/hotels", hotelRoutes);
 app.use("/api/my-bookings", bookingRoutes);
 app.use("/api/payment", paymentRoutes);
 app.use("/api/otp", otpRoutes);
+app.use("/api/pdfUpload", pdfUpload);
 
 app.get("*", (req: Request, res: Response) => {
   res.sendFile(path.join(__dirname, "../../frontend/dist/index.html"));
