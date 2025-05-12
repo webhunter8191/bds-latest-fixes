@@ -2,7 +2,6 @@ type Props = {
   selectedPrice?: number;
   onChange: (value?: number) => void;
 };
-
 const PriceFilter = ({ selectedPrice, onChange }: Props) => {
   return (
     <div>

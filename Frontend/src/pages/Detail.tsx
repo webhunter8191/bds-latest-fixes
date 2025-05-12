@@ -1,6 +1,5 @@
 import {
   useState,
-  useEffect,
   JSXElementConstructor,
   Key,
   ReactElement,
@@ -30,6 +29,8 @@ import { GiBathtub } from "react-icons/gi";
 import GuestInfoForm from "../forms/GuestInfoForm/GuestInfoForm";
 import Slider from "react-slick";
 import Modal from "react-modal"; // Install react-modal if not already installed
+// import Calendar from "react-calendar"; // Import React-Calendar
+import "react-calendar/dist/Calendar.css"; // Import calendar styles
 import "slick-carousel/slick/slick.css";
 import "slick-carousel/slick/slick-theme.css";
 
@@ -92,9 +93,17 @@ const Detail = () => {
     }
   );
 
-  useEffect(() => {
-    setIsLoading(true);
-  }, [hotelId]);
+  const getPriceForToday = (room: any) => {
+    console.log("Room Price Calendar:", room.priceCalendar); // Debugging
+    const today = new Date().toISOString().split("T")[0]; // Format today's date as YYYY-MM-DD
+    const priceEntry = room.priceCalendar?.find(
+      (entry: { date: string; price: number }) =>
+        new Date(entry.date).toISOString().split("T")[0] === today
+    );
+    const priceToShow = priceEntry ? priceEntry.price : room.defaultPrice;
+    console.log("Price for Today:", priceToShow); // Debugging
+    return priceToShow; // Fallback to defaultPrice if no price is found
+  };
 
   const categories = {
     1: "Double Bed AC",
@@ -109,7 +118,7 @@ const Detail = () => {
   const [selectedRooms, setSelectedRooms] = useState<{
     [key: string]: boolean;
   }>({});
-  const [selectedRoomPrice, setSelectedRoomPrice] = useState<number>(0);
+  const [, setSelectedRoomPrice] = useState<number>(0);
   const [availableRooms, setAvailableRooms] = useState<number>(0);
   const [selectedRoomId, setSelectedRoomId] = useState<string>("");
 
@@ -260,28 +269,94 @@ const Detail = () => {
                     {categories[room.category as keyof typeof categories]}
                   </h3>
                   <div className="text-gray-600 text-sm sm:text-base">
-                    <p>Price: ₹ {room.price}/night</p>
+                    <p>
+                      Price: ₹ {getPriceForToday(room)}
+                      /night
+                    </p>
                     <p>Available Rooms: {room.availableRooms}</p>
                     <p>Adults Allowed: {room.adultCount}</p>
                     <p>Children Allowed: {room.childCount}</p>
                   </div>
 
-                  <button
-                    type="button" // Add this to prevent default form submission behavior
-                    onClick={() =>
-                      handleRoomSelection(
-                        room.availableRooms,
-                        room.category,
-                        room.price,
-                        room._id
-                      )
-                    }
-                    className="w-full bg-[#6A5631] text-white py-2 rounded-lg hover:bg-[#5A4728] transition duration-200"
-                  >
-                    {selectedRooms[room.category]
-                      ? "Unselect Room"
-                      : "Select Room"}
-                  </button>
+                  {/* Price-wise Calendar */}
+                  <div className="mt-4">
+                    <h4 className="text-sm font-semibold mb-2">
+                      Price Calendar:
+                    </h4>
+                    <div className="p-4 bg-gray-50">
+                      <div className="grid grid-cols-7 gap-3 text-center">
+                        {/* Weekday Headers */}
+                        {["Sun", "Mon", "Tue", "Wed", "Thu", "Fri", "Sat"].map(
+                          (day, idx) => (
+                            <div key={idx} className="font-bold text-gray-700">
+                              {day}
+                            </div>
+                          )
+                        )}
+
+                        {/* Dates with Prices */}
+                        {Array.from({ length: 42 }).map((_, idx) => {
+                          const currentDate = new Date();
+                          currentDate.setDate(1); // Set to the first day of the current month
+                          const firstDayOfWeek = currentDate.getDay(); // Get the weekday of the first day
+                          const date = new Date(currentDate);
+                          date.setDate(idx - firstDayOfWeek + 1); // Calculate the date for each cell
+
+                          const isCurrentMonth =
+                            date.getMonth() === currentDate.getMonth();
+                          const priceEntry = room.priceCalendar?.find(
+                            (entry: { date: string; price: number }) =>
+                              new Date(entry.date).toDateString() ===
+                              date.toDateString()
+                          );
+
+                          const priceToShow = priceEntry
+                            ? priceEntry.price
+                            : room.defaultPrice; // Use price from calendar or fallback to default price
+
+                          return (
+                            <div
+                              key={idx}
+                              className={`flex flex-col items-center h-10 justify-center p-2 border rounded-sm ${
+                                isCurrentMonth ? "" : ""
+                              }`}
+                            >
+                              <div className="font-bold text-sm">
+                                {isCurrentMonth ? date.getDate() : ""}
+                              </div>
+                              {isCurrentMonth && (
+                                <div className="flex items-center justify-center w-8 h-8 bg-green-100 text-black text-xs font-semibold rounded-full mt-1">
+                                  ₹{priceToShow}
+                                </div>
+                              )}
+                            </div>
+                          );
+                        })}
+                      </div>
+                    </div>
+                  </div>
+
+                  <form onSubmit={(e) => e.preventDefault()}>
+                    {/* Form content */}
+                    <button
+                      type="button"
+                      onClick={(e) => {
+                        e.preventDefault();
+                        console.log("Button clicked!"); // Debugging log
+                        handleRoomSelection(
+                          room.availableRooms,
+                          room.category,
+                          getPriceForToday(room),
+                          room._id
+                        );
+                      }}
+                      className="w-full bg-[#6A5631] text-white py-2 rounded-lg hover:bg-[#5A4728] transition duration-200"
+                    >
+                      {selectedRooms[room.category]
+                        ? "Unselect Room"
+                        : "Select Room"}
+                    </button>
+                  </form>
                 </div>
               </div>
             ))}
@@ -366,7 +441,7 @@ const Detail = () => {
                 <iframe
                   src={`https://www.google.com/maps/embed/v1/place?q=${encodeURIComponent(
                     hotel.location
-                  )}&key=AIzaSyBFoJNp6RW84aL_Apk3j2CufrcS967Oy1o`}
+                  )}&key=AIzaSyBfdU1HrvqgUUy-rsXNbvqCJRdQGMshjEE`}
                   className="w-full h-full border-none"
                   allowFullScreen
                 />
@@ -380,10 +455,29 @@ const Detail = () => {
         {/* Debugging: Modal state can be logged here if needed */}
         <div className="p-4 sm:p-6 border border-slate-200 rounded-lg shadow-lg bg-white">
           <GuestInfoForm
-            pricePerNight={selectedRoomPrice}
+            pricePerNight={
+              selectedRoomId
+                ? getPriceForToday(
+                    hotel.rooms.find((room) => room._id === selectedRoomId) ||
+                      {}
+                  )
+                : 0 // Fallback to 0 if no room is selected
+            }
             availableRooms={availableRooms}
             roomsId={selectedRoomId}
             hotelId={hotel._id}
+            priceCalendar={
+              hotel.rooms
+                .find((room) => room._id === selectedRoomId)
+                ?.priceCalendar?.map(({ date, price }) => ({
+                  date: new Date(date).toISOString().split("T")[0], // Convert Date to YYYY-MM-DD string
+                  price,
+                })) || []
+            } // Fallback to an empty array if priceCalendar is undefined
+            defaultPrice={
+              hotel.rooms.find((room) => room._id === selectedRoomId)
+                ?.defaultPrice || 0
+            }
           />
         </div>
       </div>

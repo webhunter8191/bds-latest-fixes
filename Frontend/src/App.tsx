@@ -24,6 +24,7 @@ import SuperAdminPanel from "./pages/SuperAdminPanel";
 import AboutUs from "./components/AboutUs";
 import PrivacyPolicy from "./components/PrivacyPolicy";
 import ContactUs from "./components/Contact";
+import AgreementTwoStep from "./pages/AgreementFrom";
 
 const App = () => {
   const { isLoggedIn, isAdmin } = useAppContext();
@@ -95,6 +96,14 @@ const App = () => {
           element={
             <Layout>
               <PrivacyPolicy />
+            </Layout>
+          }
+        />
+        <Route
+          path="/agreement"
+          element={
+            <Layout>
+              <AgreementTwoStep />
             </Layout>
           }
         />
