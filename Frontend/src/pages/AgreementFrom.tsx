@@ -110,6 +110,7 @@ export default function AgreementTwoStep() {
   const generateAndUploadPdf = async () => {
     const input = agreementRef.current;
     if (!input) return;
+    input.classList.add("a4-pdf-export");
 
     setLoading(true); // Show loader during PDF generation and upload
 
@@ -208,6 +209,7 @@ export default function AgreementTwoStep() {
     } catch (error) {
       console.error("Error generating or uploading PDF:", error);
     } finally {
+      input.classList.remove("a4-pdf-export");
       setLoading(false); // Hide loader after process
     }
   };

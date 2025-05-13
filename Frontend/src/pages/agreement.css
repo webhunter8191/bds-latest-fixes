@@ -33,3 +33,14 @@
     transform: rotate(360deg);
   }
 }
+.agreement-preview {
+  width: 100%;
+  max-width: 794px; /* A4 width at 96 DPI */
+  margin: 0 auto;
+}
+
+@media print {
+  .agreement-preview {
+    width: 794px;
+  }
+}
