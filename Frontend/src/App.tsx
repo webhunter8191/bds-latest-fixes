@@ -25,6 +25,7 @@ import AboutUs from "./components/AboutUs";
 import PrivacyPolicy from "./components/PrivacyPolicy";
 import ContactUs from "./components/Contact";
 import AgreementTwoStep from "./pages/AgreementFrom";
+import TermsAndConditions from "./pages/Terms&Conditions";
 
 const App = () => {
   const { isLoggedIn, isAdmin } = useAppContext();
@@ -99,6 +100,7 @@ const App = () => {
             </Layout>
           }
         />
+        <Route path="/terms-and-conditions" element={<TermsAndConditions />} />
         <Route
           path="/agreement"
           element={
