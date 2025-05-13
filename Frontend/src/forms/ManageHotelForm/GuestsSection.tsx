@@ -396,7 +396,7 @@ const GuestsSection = ({
       {/* Room Dialog */}
       <Dialog open={isDialogOpen} onClose={() => setIsDialogOpen(false)}>
         <div className="fixed inset-0 bg-black bg-opacity-30 flex justify-center items-center">
-          <div className="bg-white p-6 rounded-lg w-96">
+          <div className="bg-white p-6 rounded-lg w-96 max-h-[90vh] overflow-y-auto">
             <h3 className="text-lg font-semibold mb-4">
               {editingRoomIndex !== null
                 ? "Edit Room Category"
