@@ -2,8 +2,11 @@ import React, { useRef, useState } from "react";
 import html2canvas from "html2canvas";
 import jsPDF from "jspdf";
 import "./agreement.css"; // Import your CSS file for styling
+import { useNavigate } from "react-router-dom";
 
 export default function AgreementTwoStep() {
+  const navigate = useNavigate();
+  const [successMessage, setSuccessMessage] = useState("");
   const agreementRef = useRef<HTMLDivElement>(null);
   const [step, setStep] = useState(1);
   const [loading, setLoading] = useState(false); // Loader state
@@ -102,6 +105,10 @@ export default function AgreementTwoStep() {
       const data = await response.json();
       console.log("Uploaded File URL:", data.secure_url);
       setUploadedFileUrl(data.secure_url);
+      setSuccessMessage("Agreement successfully submitted!");
+      setTimeout(() => {
+        navigate("/");
+      }, 3000);
     } catch (error) {
       console.error("Error uploading file:", error);
     }
@@ -216,6 +223,11 @@ export default function AgreementTwoStep() {
 
   return (
     <div className="max-w-5xl mx-auto p-6">
+      {successMessage && (
+        <div className="mb-4 p-4 bg-green-100 text-green-700 border border-green-300 rounded text-center">
+          {successMessage}
+        </div>
+      )}
       {loading && (
         <div className="fixed inset-0 flex items-center justify-center bg-gray-800 bg-opacity-50 z-50">
           <div className="loader border-t-4 border-blue-500 rounded-full w-12 h-12 animate-spin"></div>
