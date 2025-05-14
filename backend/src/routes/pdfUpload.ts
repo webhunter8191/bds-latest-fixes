@@ -36,7 +36,7 @@ router.post(
         const uploadStream: UploadStream = cloudinary.uploader.upload_stream(
           {
             resource_type: "auto",
-            folder: `property_agreements/${propertyName}`, // Explicitly set the folder
+            folder: `property_agreements/${propertyName.trim()}`, // Explicitly set the folder
             public_id: "agreement", // File name within the folder
           },
           (error, result) => {

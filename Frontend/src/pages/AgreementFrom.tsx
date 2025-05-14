@@ -224,8 +224,10 @@ export default function AgreementTwoStep() {
   return (
     <div className="max-w-5xl mx-auto p-6">
       {successMessage && (
-        <div className="mb-4 p-4 bg-green-100 text-green-700 border border-green-300 rounded text-center">
-          {successMessage}
+        <div className="fixed inset-0 flex items-center justify-center z-50">
+          <div className="bg-green-100 text-green-700 border border-green-300 rounded-lg px-6 py-4 shadow-lg">
+            {successMessage}
+          </div>
         </div>
       )}
       {loading && (
