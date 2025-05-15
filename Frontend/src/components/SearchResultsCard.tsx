@@ -1,41 +1,57 @@
 import { Link } from "react-router-dom";
 import { HotelType } from "../../../backend/src/shared/types";
+import { useSearchContext } from "../contexts/SearchContext";
 
 type Props = {
   hotel: HotelType;
 };
 
 const SearchResultsCard = ({ hotel }: Props) => {
-  // Helper function to get the price for the current date
-  const getPriceForToday = () => {
-    const today = new Date().toISOString().split("T")[0]; // Get today's date in YYYY-MM-DD format
+  const search = useSearchContext();
+
+  // Helper function to check room availability and get price for the selected date
+  const getRoomAvailabilityAndPrice = () => {
+    const checkInDate = search.checkIn.toISOString().split("T")[0]; // Get check-in date in YYYY-MM-DD format
+    const requiredRooms = search.roomCount;
+
+    let availableRooms = 0;
+    let priceForDate: string | number = "N/A";
 
     // Ensure hotel.rooms is an array and loop through each room
     for (const room of hotel.rooms || []) {
-      // Find the price entry that matches today's date
-      const priceEntry = room.priceCalendar?.find(
-        (entry) => new Date(entry.date).toISOString().split("T")[0] === today
+      // Find the price and availability entry that matches the check-in date
+      const calendarEntry = room.priceCalendar?.find(
+        (entry) =>
+          new Date(entry.date).toISOString().split("T")[0] === checkInDate
       );
 
-      // If a price entry for today is found, return that price
-      if (priceEntry) {
-        return priceEntry.price;
+      if (calendarEntry) {
+        // If we have a calendar entry for this date, use its price and availability
+        if (calendarEntry.availableRooms > 0) {
+          availableRooms += calendarEntry.availableRooms;
+          priceForDate = calendarEntry.price;
+        }
+      } else {
+        // If no calendar entry, check if the room is generally available
+        if (room.availableRooms > 0) {
+          availableRooms += room.availableRooms;
+          priceForDate = room.defaultPrice || "N/A";
+        }
       }
-
-      // Optionally, log room and priceCalendar to debug
-      console.log("Room:", room);
-      console.log("Price Calendar:", room.priceCalendar);
     }
 
-    // Fallback to the first room's defaultPrice if no price for today
-    const firstRoomWithDefault = (hotel.rooms || []).find(
-      (r) => r.defaultPrice
-    );
-    return firstRoomWithDefault?.defaultPrice || "N/A";
+    return {
+      hasEnoughRooms: availableRooms >= requiredRooms,
+      price: priceForDate,
+    };
   };
 
-  // Get the price for today using the helper function
-  const priceForToday = getPriceForToday();
+  const { hasEnoughRooms, price } = getRoomAvailabilityAndPrice();
+
+  // If not enough rooms are available, don't render the card
+  if (!hasEnoughRooms) {
+    return null;
+  }
 
   return (
     <div className="bg-white flex flex-col border border-slate-200 rounded-lg shadow-lg hover:shadow-2xl transition-shadow duration-300 max-w-xs md:max-w-md lg:max-w-lg mx-auto">
@@ -86,7 +102,7 @@ const SearchResultsCard = ({ hotel }: Props) => {
           <div className="flex justify-between items-center mt-auto">
             <div className="text-left">
               <span className="block font-bold text-lg md:text-xl text-blue-800">
-                Rs.{priceForToday}
+                Rs.{price}
               </span>
               <span className="text-sm font-normal text-gray-500">
                 per night

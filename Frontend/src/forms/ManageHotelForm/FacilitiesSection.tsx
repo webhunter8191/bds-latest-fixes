@@ -9,13 +9,13 @@ const FacilitiesSection = () => {
   } = useFormContext<HotelFormData>();
 
   return (
-    <div className="mb-8">
-      <h2 className="text-2xl font-semibold mb-4">Facilities</h2>
+    <div className="bg-gray-50 rounded-xl p-6">
+      <h2 className="text-xl font-semibold text-gray-800 mb-4">Facilities</h2>
       <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 gap-4">
         {hotelFacilities.map((facility) => (
           <label
             key={facility}
-            className="flex items-center gap-2 text-sm text-gray-700 cursor-pointer"
+            className="flex items-center space-x-3 p-3 rounded-lg border border-gray-200 hover:border-[#6A5631] hover:bg-gray-50 cursor-pointer transition-all duration-200"
           >
             <input
               type="checkbox"
@@ -29,9 +29,9 @@ const FacilitiesSection = () => {
                   }
                 },
               })}
-              className="mr-2"
+              className="w-4 h-4 text-[#6A5631] border-gray-300 rounded focus:ring-[#6A5631]"
             />
-            {facility}
+            <span className="text-sm text-gray-700">{facility}</span>
           </label>
         ))}
       </div>

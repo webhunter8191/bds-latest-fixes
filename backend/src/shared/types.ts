@@ -38,12 +38,10 @@ export type HotelType = {
 
 // Define the RoomType separately for clarity
 export type RoomType = {
-  
   _id: string;
   category: number;
   totalRooms: number;
   availableRooms: number;
-  features: string[];
   images: string[];
   adultCount: number;
   childCount: number;
@@ -51,6 +49,7 @@ export type RoomType = {
   priceCalendar: {
     date: Date; // Specific date
     price: number; // Price for that date
+    availableRooms: number; // Available rooms for that date
   }[];
 };
 

@@ -1,33 +1,47 @@
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 
 type PriceCalendarEntry = {
   date: string; // Date as a string (YYYY-MM-DD)
   price: number; // Price for the date
+  availableRooms: number; // Number of available rooms for the date
 };
 
-type Props = {
-  initialEntries?: PriceCalendarEntry[]; // Existing price calendar entries
-  onChange: (entries: PriceCalendarEntry[]) => void; // Callback to update parent state
-};
+interface Props {
+  priceCalendarEntries: PriceCalendarEntry[];
+  setPriceCalendarEntries: React.Dispatch<
+    React.SetStateAction<PriceCalendarEntry[]>
+  >;
+  handleAvailableRoomsChange: (index: number, value: string) => void;
+}
 
-const PriceCalendarForm: React.FC<Props> = ({ initialEntries, onChange }) => {
-  const [entries, setEntries] = useState<PriceCalendarEntry[]>(
-    initialEntries || []
-  );
+const PriceCalendarForm = ({
+  priceCalendarEntries,
+  setPriceCalendarEntries,
+  handleAvailableRoomsChange,
+}: Props) => {
+  const [entries, setEntries] =
+    useState<PriceCalendarEntry[]>(priceCalendarEntries);
+
+  useEffect(() => {
+    setEntries(priceCalendarEntries);
+  }, [priceCalendarEntries]);
 
   const handleAddEntry = () => {
-    setEntries([...entries, { date: "", price: 0 }]);
+    const newEntry = { date: "", price: 0, availableRooms: 0 };
+    const updatedEntries = [...entries, newEntry];
+    setEntries(updatedEntries);
+    setPriceCalendarEntries(updatedEntries);
   };
 
   const handleRemoveEntry = (index: number) => {
     const updatedEntries = entries.filter((_, i) => i !== index);
     setEntries(updatedEntries);
-    onChange(updatedEntries);
+    setPriceCalendarEntries(updatedEntries);
   };
 
   const handleChange = (
     index: number,
-    field: "date" | "price",
+    field: "date" | "price" | "availableRooms",
     value: string | number
   ) => {
     const updatedEntries = [...entries];
@@ -36,7 +50,7 @@ const PriceCalendarForm: React.FC<Props> = ({ initialEntries, onChange }) => {
       [field]: value,
     };
     setEntries(updatedEntries);
-    onChange(updatedEntries);
+    setPriceCalendarEntries(updatedEntries);
   };
 
   return (
@@ -48,9 +62,7 @@ const PriceCalendarForm: React.FC<Props> = ({ initialEntries, onChange }) => {
             <input
               type="date"
               value={entry.date}
-              onChange={(e) =>
-                handleChange(index, "date", e.target.value)
-              }
+              onChange={(e) => handleChange(index, "date", e.target.value)}
               className="border border-gray-300 rounded-md p-2 flex-1"
             />
             <input
@@ -62,6 +74,16 @@ const PriceCalendarForm: React.FC<Props> = ({ initialEntries, onChange }) => {
               placeholder="Price"
               className="border border-gray-300 rounded-md p-2 w-32"
             />
+            <input
+              type="number"
+              value={entry.availableRooms}
+              onChange={(e) => {
+                handleChange(index, "availableRooms", Number(e.target.value));
+                handleAvailableRoomsChange(index, e.target.value);
+              }}
+              placeholder="Available Rooms"
+              className="border border-gray-300 rounded-md p-2 w-32"
+            />
             <button
               type="button"
               onClick={() => handleRemoveEntry(index)}
@@ -71,8 +93,9 @@ const PriceCalendarForm: React.FC<Props> = ({ initialEntries, onChange }) => {
             </button>
           </div>
           <div className="text-sm text-gray-600 mt-1 ml-1">
-            {entry.date && <div>Date: {entry.date.split('T')[0]}</div>}
+            {entry.date && <div>Date: {entry.date.split("T")[0]}</div>}
             <div>Price: ₹{entry.price}</div>
+            <div>Available Rooms: {entry.availableRooms}</div>
           </div>
         </div>
       ))}
