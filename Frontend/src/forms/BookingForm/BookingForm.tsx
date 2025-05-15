@@ -212,19 +212,19 @@ const BookingForm = ({ currentUser, totalCost, roomsId }: Props) => {
           </div>
           <h2 className="text-xl font-semibold text-gray-800">Price Summary</h2>
         </div>
-        <div className="bg-[#6A5631]/5 p-6 rounded-lg border border-[#6A5631]/10">
+        <div className="bg-[#6A5631]/5 p-4 sm:p-6 rounded-lg border border-[#6A5631]/10">
           <div className="space-y-3">
-            <div className="flex justify-between items-center">
-              <div className="text-sm text-gray-600">Subtotal</div>
+            <div className="flex justify-between items-center text-sm sm:text-base">
+              <div className="text-gray-600">Subtotal</div>
               <div className="font-medium">
                 ₹
                 {Math.round(
                   search.totalCost / (search.totalCost < 7000 ? 1.12 : 1.18)
-                )}
+                ).toLocaleString()}
               </div>
             </div>
-            <div className="flex justify-between items-center">
-              <div className="text-sm text-gray-600">
+            <div className="flex justify-between items-center text-sm sm:text-base">
+              <div className="text-gray-600">
                 Taxes & Fees ({search.totalCost < 7000 ? "12%" : "18%"})
               </div>
               <div className="font-medium">
@@ -232,14 +232,16 @@ const BookingForm = ({ currentUser, totalCost, roomsId }: Props) => {
                 {Math.round(
                   search.totalCost -
                     search.totalCost / (search.totalCost < 7000 ? 1.12 : 1.18)
-                )}
+                ).toLocaleString()}
               </div>
             </div>
             <div className="border-t border-[#6A5631]/10 pt-3 mt-3">
               <div className="flex justify-between items-center">
-                <div className="text-sm text-gray-600">Total Amount</div>
-                <div className="text-2xl font-bold text-[#6A5631]">
-                  ₹{Math.round(search.totalCost)}
+                <div className="text-sm sm:text-base text-gray-600">
+                  Total Amount
+                </div>
+                <div className="text-lg sm:text-2xl font-bold text-[#6A5631]">
+                  ₹{Math.round(search.totalCost).toLocaleString()}
                 </div>
               </div>
             </div>

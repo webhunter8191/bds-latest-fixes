@@ -139,14 +139,14 @@ const Home = () => {
             1024: { slidesPerView: 3 },
           }}
           modules={[Autoplay, Pagination]}
-          className="relative w-full max-w-6xl mx-auto z-10 pb-12"
+          className="relative w-full max-w-6xl mx-auto z-10 pb-12 px-2"
         >
           <SwiperSlide>
-            <div className="bg-white p-4 rounded-lg shadow-lg w-80 mx-auto">
+            <div className="bg-white p-3 sm:p-4 rounded-lg shadow-lg w-full max-w-xs mx-auto">
               <img
                 src={room1img}
                 alt="Room 1"
-                className="w-full h-48 object-cover rounded-lg"
+                className="w-full h-52 sm:h-64 object-cover rounded-lg"
               />
 
               {/* <span className="absolute top-3 right-3 bg-green-500 text-white text-xs px-2 py-1 rounded">
@@ -159,11 +159,11 @@ const Home = () => {
           </SwiperSlide>
 
           <SwiperSlide>
-            <div className="bg-white p-4 rounded-lg shadow-lg w-80 mx-auto">
+            <div className="bg-white p-3 sm:p-4 rounded-lg shadow-lg w-full max-w-xs mx-auto">
               <img
                 src={room2img}
                 alt="Room 2"
-                className="w-full h-48 object-cover rounded-lg"
+                className="w-full h-52 sm:h-64 object-cover rounded-lg"
               />
               {/* <span className="absolute top-3 right-3 bg-green-500 text-white text-xs px-2 py-1 rounded">
                 4 Rooms available
@@ -175,11 +175,11 @@ const Home = () => {
           </SwiperSlide>
 
           <SwiperSlide>
-            <div className="bg-white p-4 rounded-lg shadow-lg w-80 mx-auto">
+            <div className="bg-white p-3 sm:p-4 rounded-lg shadow-lg w-full max-w-xs mx-auto">
               <img
                 src={room3img}
                 alt="Room 3"
-                className="w-full h-48 object-cover rounded-lg"
+                className="w-full h-52 sm:h-64 object-cover rounded-lg"
               />
               {/* <span className="absolute top-3 right-3 bg-green-500 text-white text-xs px-2 py-1 rounded">
                 6 Rooms available
