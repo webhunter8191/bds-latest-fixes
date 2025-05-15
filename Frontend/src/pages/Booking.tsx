@@ -5,7 +5,17 @@ import { useSearchContext } from "../contexts/SearchContext";
 import { useParams, useLocation } from "react-router-dom";
 import { useEffect, useState } from "react";
 import BookingDetailsSummary from "../components/BookingDetailsSummary";
-import ClipLoader from "react-spinners/ClipLoader"; // Import a loader from react-spinners
+import ClipLoader from "react-spinners/ClipLoader";
+
+const categories = {
+  1: "Double Bed AC",
+  2: "Double Bed Non AC",
+  3: "3 Bed AC",
+  4: "3 Bed Non AC",
+  5: "4 Bed AC",
+  6: "4 Bed Non AC",
+  7: "Community Hall",
+};
 
 const Booking = () => {
   const { hotelId } = useParams();
@@ -50,6 +60,28 @@ const Booking = () => {
     return <></>;
   }
 
+  // Find the selected room
+  const selectedRoom = hotel.rooms.find((room) => room._id === roomsId);
+
+  // Get price from price calendar based on check-in date
+  const getPriceForDate = (room: any, date: Date) => {
+    const dateString = date.toISOString().split("T")[0];
+    const priceEntry = room.priceCalendar?.find(
+      (entry: { date: string; price: number }) =>
+        new Date(entry.date).toISOString().split("T")[0] === dateString
+    );
+    return priceEntry ? priceEntry.price : room.defaultPrice;
+  };
+
+  const selectedRoomCategory = selectedRoom
+    ? categories[selectedRoom.category as keyof typeof categories]
+    : undefined;
+
+  const selectedRoomPrice =
+    selectedRoom && search.checkIn
+      ? getPriceForDate(selectedRoom, search.checkIn)
+      : selectedRoom?.defaultPrice;
+
   return (
     <div className="grid md:grid-cols-[1fr_2fr]">
       <BookingDetailsSummary
@@ -58,6 +90,8 @@ const Booking = () => {
         roomCount={search.roomCount}
         numberOfNights={numberOfNights}
         hotel={hotel}
+        selectedRoomCategory={selectedRoomCategory}
+        selectedRoomPrice={selectedRoomPrice}
       />
       {currentUser && (
         <BookingForm

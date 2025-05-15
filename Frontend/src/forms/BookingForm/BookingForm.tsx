@@ -159,60 +159,127 @@ const BookingForm = ({ currentUser, totalCost, roomsId }: Props) => {
   return (
     <form
       onSubmit={handleSubmit(handlePayment)}
-      className="grid grid-cols-1 gap-5 rounded-lg border border-slate-300 p-5 mx-5"
+      className="max-w-4xl mx-auto bg-white rounded-xl shadow-lg p-8"
     >
-      <span className="text-3xl font-bold">Confirm Your Details</span>
-      <div className="grid grid-cols-2 gap-6">
-        <label className="text-gray-700 text-sm font-bold flex-1">
-          First Name
-          <input
-            className="mt-1 border rounded w-full py-2 px-3 text-gray-700 bg-gray-200 font-normal"
-            type="text"
-            readOnly
-            disabled
-            {...register("firstName")}
-          />
-        </label>
-        <label className="text-gray-700 text-sm font-bold flex-1">
-          Last Name
-          <input
-            className="mt-1 border rounded w-full py-2 px-3 text-gray-700 bg-gray-200 font-normal"
-            type="text"
-            readOnly
-            disabled
-            {...register("lastName")}
-          />
-        </label>
-        <label className="text-gray-700 text-sm font-bold flex-1">
-          Email
-          <input
-            className="mt-1 border rounded w-full py-2 px-3 text-gray-700 bg-gray-200 font-normal"
-            type="text"
-            readOnly
-            disabled
-            {...register("email")}
-          />
-        </label>
+      <div className="flex items-center gap-2 mb-6">
+        <div className="h-6 w-6 rounded-full bg-[#6A5631] flex items-center justify-center">
+          <span className="text-white text-sm">✓</span>
+        </div>
+        <h2 className="text-2xl font-bold text-gray-800">
+          Confirm Your Details
+        </h2>
       </div>
 
-      <div className="space-y-2">
-        <h2 className="text-xl font-semibold">Your Price Summary</h2>
-        <div className="bg-blue-200 p-4 rounded-md">
-          <div className="font-semibold text-lg">
-            Total Cost: Rs.{Math.round(search.totalCost)}
+      <div className="bg-gray-50 rounded-lg p-6 mb-8">
+        <div className="grid grid-cols-2 gap-6">
+          <label className="text-gray-700 text-sm font-bold flex-1">
+            First Name
+            <input
+              className="mt-1 border rounded-lg w-full py-3 px-4 text-gray-700 bg-white font-normal focus:outline-none focus:ring-2 focus:ring-[#6A5631]"
+              type="text"
+              readOnly
+              disabled
+              {...register("firstName")}
+            />
+          </label>
+          <label className="text-gray-700 text-sm font-bold flex-1">
+            Last Name
+            <input
+              className="mt-1 border rounded-lg w-full py-3 px-4 text-gray-700 bg-white font-normal focus:outline-none focus:ring-2 focus:ring-[#6A5631]"
+              type="text"
+              readOnly
+              disabled
+              {...register("lastName")}
+            />
+          </label>
+          <label className="text-gray-700 text-sm font-bold flex-1 col-span-2">
+            Email
+            <input
+              className="mt-1 border rounded-lg w-full py-3 px-4 text-gray-700 bg-white font-normal focus:outline-none focus:ring-2 focus:ring-[#6A5631]"
+              type="text"
+              readOnly
+              disabled
+              {...register("email")}
+            />
+          </label>
+        </div>
+      </div>
+
+      <div className="space-y-4 mb-8">
+        <div className="flex items-center gap-2">
+          <div className="h-6 w-6 rounded-full bg-[#6A5631] flex items-center justify-center">
+            <span className="text-white text-sm">₹</span>
           </div>
-          <div className="text-xs">Includes taxes and charges</div>
+          <h2 className="text-xl font-semibold text-gray-800">Price Summary</h2>
+        </div>
+        <div className="bg-[#6A5631]/5 p-6 rounded-lg border border-[#6A5631]/10">
+          <div className="space-y-3">
+            <div className="flex justify-between items-center">
+              <div className="text-sm text-gray-600">Subtotal</div>
+              <div className="font-medium">
+                ₹
+                {Math.round(
+                  search.totalCost / (search.totalCost < 7000 ? 1.12 : 1.18)
+                )}
+              </div>
+            </div>
+            <div className="flex justify-between items-center">
+              <div className="text-sm text-gray-600">
+                Taxes & Fees ({search.totalCost < 7000 ? "12%" : "18%"})
+              </div>
+              <div className="font-medium">
+                ₹
+                {Math.round(
+                  search.totalCost -
+                    search.totalCost / (search.totalCost < 7000 ? 1.12 : 1.18)
+                )}
+              </div>
+            </div>
+            <div className="border-t border-[#6A5631]/10 pt-3 mt-3">
+              <div className="flex justify-between items-center">
+                <div className="text-sm text-gray-600">Total Amount</div>
+                <div className="text-2xl font-bold text-[#6A5631]">
+                  ₹{Math.round(search.totalCost)}
+                </div>
+              </div>
+            </div>
+          </div>
         </div>
       </div>
 
       <div className="flex justify-end">
         <button
           disabled={isLoading}
-          // onClick={handlePayment}
           type="submit"
-          className="bg-blue-600 text-white p-2 font-bold hover:bg-blue-500 text-md disabled:bg-gray-500 ml-2"
+          className="bg-[#6A5631] text-white px-8 py-3 font-bold rounded-lg hover:bg-[#5a4a2a] transition-all duration-200 text-lg disabled:bg-gray-400 disabled:cursor-not-allowed flex items-center gap-2"
         >
-          Confirm Booking
+          {isLoading ? (
+            <>
+              <svg
+                className="animate-spin h-4 w-4 text-white"
+                xmlns="http://www.w3.org/2000/svg"
+                fill="none"
+                viewBox="0 0 24 24"
+              >
+                <circle
+                  className="opacity-25"
+                  cx="12"
+                  cy="12"
+                  r="10"
+                  stroke="currentColor"
+                  strokeWidth="4"
+                ></circle>
+                <path
+                  className="opacity-75"
+                  fill="currentColor"
+                  d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"
+                ></path>
+              </svg>
+              Processing...
+            </>
+          ) : (
+            "Confirm Booking"
+          )}
         </button>
       </div>
     </form>

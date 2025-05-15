@@ -43,31 +43,37 @@ const PriceCalendarForm: React.FC<Props> = ({ initialEntries, onChange }) => {
     <div className="space-y-4">
       <h3 className="text-lg font-semibold">Dynamic Pricing Calendar</h3>
       {entries.map((entry, index) => (
-        <div key={index} className="flex space-x-4 items-center">
-          <input
-            type="date"
-            value={entry.date}
-            onChange={(e) =>
-              handleChange(index, "date", e.target.value)
-            }
-            className="border border-gray-300 rounded-md p-2 flex-1"
-          />
-          <input
-            type="number"
-            value={entry.price}
-            onChange={(e) =>
-              handleChange(index, "price", Number(e.target.value))
-            }
-            placeholder="Price"
-            className="border border-gray-300 rounded-md p-2 w-32"
-          />
-          <button
-            type="button"
-            onClick={() => handleRemoveEntry(index)}
-            className="text-red-500 hover:text-red-700"
-          >
-            Remove
-          </button>
+        <div key={index} className="flex flex-col space-y-1">
+          <div className="flex space-x-4 items-center">
+            <input
+              type="date"
+              value={entry.date}
+              onChange={(e) =>
+                handleChange(index, "date", e.target.value)
+              }
+              className="border border-gray-300 rounded-md p-2 flex-1"
+            />
+            <input
+              type="number"
+              value={entry.price}
+              onChange={(e) =>
+                handleChange(index, "price", Number(e.target.value))
+              }
+              placeholder="Price"
+              className="border border-gray-300 rounded-md p-2 w-32"
+            />
+            <button
+              type="button"
+              onClick={() => handleRemoveEntry(index)}
+              className="text-red-500 hover:text-red-700"
+            >
+              Remove
+            </button>
+          </div>
+          <div className="text-sm text-gray-600 mt-1 ml-1">
+            {entry.date && <div>Date: {entry.date.split('T')[0]}</div>}
+            <div>Price: ₹{entry.price}</div>
+          </div>
         </div>
       ))}
       <button

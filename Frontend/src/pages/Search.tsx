@@ -1,7 +1,7 @@
 import { useQuery } from "react-query";
 import { useSearchContext } from "../contexts/SearchContext";
 import * as apiClient from "../api-client";
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import SearchResultsCard from "../components/SearchResultsCard";
 import Pagination from "../components/Pagination";
 import StarRatingFilter from "../components/StarRatingFilter";
@@ -19,6 +19,13 @@ const Search = () => {
   const [selectedPrice, setSelectedPrice] = useState<number | undefined>();
   const [sortOption, setSortOption] = useState<string>("");
   const [isFiltersVisible, setFiltersVisible] = useState(false);
+  const [isContentVisible, setIsContentVisible] = useState(false);
+
+  const handlePriceChange = (value?: number) => {
+    console.log("Price changed in Search:", value); // Debug log
+    setSelectedPrice(value);
+    setPage(1); // Reset to first page when filter changes
+  };
 
   const searchParams = {
     destination: search.destination,
@@ -33,10 +40,24 @@ const Search = () => {
     sortOption,
   };
 
+  console.log("Search params:", searchParams); // Debug log
+
   const { data: hotelData, isLoading } = useQuery(
     ["searchHotels", searchParams],
-    () => apiClient.searchHotels(searchParams)
+    () => apiClient.searchHotels(searchParams),
+    {
+      keepPreviousData: true,
+      refetchOnWindowFocus: false,
+    }
   );
+
+  useEffect(() => {
+    if (!isLoading && hotelData) {
+      setIsContentVisible(true);
+    } else {
+      setIsContentVisible(false);
+    }
+  }, [isLoading, hotelData]);
 
   const handleStarsChange = (event: React.ChangeEvent<HTMLInputElement>) => {
     const starRating = event.target.value;
@@ -78,7 +99,13 @@ const Search = () => {
         </div>
       )}
       {!isLoading && hotelData && (
-        <div className={`transition-opacity duration-500 space-y-4`}>
+        <div
+          className={`transition-all duration-700 ease-in-out ${
+            isContentVisible
+              ? "opacity-100 translate-y-0"
+              : "opacity-0 translate-y-4"
+          }`}
+        >
           <div className="grid grid-cols-1 lg:grid-cols-[250px_1fr] gap-1">
             {/* Filters Sidebar */}
             <div className="lg:block ">
@@ -130,7 +157,7 @@ const Search = () => {
                   />
                   <PriceFilter
                     selectedPrice={selectedPrice}
-                    onChange={(value?: number) => setSelectedPrice(value)}
+                    onChange={handlePriceChange}
                   />
                 </div>
               </div>
@@ -206,7 +233,7 @@ const Search = () => {
               />
               <PriceFilter
                 selectedPrice={selectedPrice}
-                onChange={(value?: number) => setSelectedPrice(value)}
+                onChange={handlePriceChange}
               />
             </div>
           </div>

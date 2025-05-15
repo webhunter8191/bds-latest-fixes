@@ -155,8 +155,8 @@ const GuestsSection = ({
               Category: {categoriesTitles[room.category]}
             </h3>
             <p>Total Rooms: {room.totalRooms}</p>
-            <p>Default Price: {room.defaultPrice}</p>
-            <p>Dynamic Pricing Calendar:</p>
+            <p>Regular Price: {room.defaultPrice}</p>
+            <p>Seasonal Price Calendar:</p>
             <ul className="ml-4 list-disc">
               {room.priceCalendar.map(
                 (
@@ -430,7 +430,7 @@ const GuestsSection = ({
                     : ""
                 }
               />
-              <label className="block mt-4">Default Price</label>
+              <label className="block mt-4">Regular price</label>
               <input
                 name="defaultPrice"
                 type="number"
@@ -441,7 +441,7 @@ const GuestsSection = ({
                     : ""
                 }
               />
-              <label className="block mt-4">Dynamic Pricing Calendar</label>
+              <label className="block mt-4">Seasonal Price Calendar</label>
               <PriceCalendarForm
                 initialEntries={
                   editingRoomIndex !== null

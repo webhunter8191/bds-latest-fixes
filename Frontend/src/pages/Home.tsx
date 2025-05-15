@@ -139,17 +139,16 @@ const Home = () => {
             1024: { slidesPerView: 3 },
           }}
           modules={[Autoplay, Pagination]}
-          className="relative w-full max-w-6xl mx-auto z-10"
+          className="relative w-full max-w-6xl mx-auto z-10 pb-12"
         >
           <SwiperSlide>
             <div className="bg-white p-4 rounded-lg shadow-lg w-80 mx-auto">
-              <a href="http://localhost:5174/detail/678a397018c17388cf8a6760">
-                <img
-                  src={room1img}
-                  alt="Room 1"
-                  className="w-full h-48 object-cover rounded-lg"
-                />
-              </a>
+              <img
+                src={room1img}
+                alt="Room 1"
+                className="w-full h-48 object-cover rounded-lg"
+              />
+
               {/* <span className="absolute top-3 right-3 bg-green-500 text-white text-xs px-2 py-1 rounded">
                 3 Rooms available
               </span> */}
