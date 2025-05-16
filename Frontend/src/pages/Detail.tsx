@@ -95,11 +95,22 @@ const Detail = () => {
   );
 
   const getRoomInfoForDate = (room: any, date: Date) => {
-    const dateString = date.toISOString().split("T")[0];
+    // Format the input date as YYYY-MM-DD
+    const dateString = `${date.getFullYear()}-${String(
+      date.getMonth() + 1
+    ).padStart(2, "0")}-${String(date.getDate()).padStart(2, "0")}`;
+
+    // Find matching entry by direct string comparison
     const priceEntry = room.priceCalendar?.find(
-      (entry: { date: string; price: number; availableRooms?: number }) =>
-        new Date(entry.date).toISOString().split("T")[0] === dateString
+      (entry: { date: string; price: number; availableRooms?: number }) => {
+        const entryDateString =
+          typeof entry.date === "string"
+            ? entry.date.substring(0, 10)
+            : new Date(entry.date).toISOString().substring(0, 10);
+        return entryDateString === dateString;
+      }
     );
+
     return {
       price: priceEntry ? priceEntry.price : room.defaultPrice,
       availableRooms:
@@ -314,77 +325,172 @@ const Detail = () => {
                     <h4 className="text-sm font-semibold mb-2">
                       Price Calendar:
                     </h4>
-                    <div className="p-4 bg-gray-50">
-                      <div className="grid grid-cols-7 gap-3 text-center">
+                    <div className="p-4 bg-gray-50 rounded-lg shadow-sm border border-gray-200">
+                      <div className="grid grid-cols-7 gap-1 text-center">
                         {/* Weekday Headers */}
                         {["Sun", "Mon", "Tue", "Wed", "Thu", "Fri", "Sat"].map(
                           (day, idx) => (
-                            <div key={idx} className="font-bold text-gray-700">
+                            <div
+                              key={idx}
+                              className="font-bold text-gray-700 text-xs sm:text-sm py-2"
+                            >
                               {day}
                             </div>
                           )
                         )}
 
                         {/* Dates with Prices */}
-                        {Array.from({ length: 42 }).map((_, idx) => {
+                        {(() => {
                           const currentDate = new Date();
-                          currentDate.setDate(1); // Set to the first day of the current month
-                          const firstDayOfWeek = currentDate.getDay(); // Get the weekday of the first day
-                          const date = new Date(currentDate);
-                          date.setDate(idx - firstDayOfWeek + 1); // Calculate the date for each cell
+                          const year = currentDate.getFullYear();
+                          const month = currentDate.getMonth();
 
-                          const isCurrentMonth =
-                            date.getMonth() === currentDate.getMonth();
-                          const priceEntry = room.priceCalendar?.find(
-                            (entry: {
-                              date: string;
-                              price: number;
-                              availableRooms?: number;
-                            }) =>
-                              new Date(entry.date).toDateString() ===
-                              date.toDateString()
-                          );
+                          // First day of the month
+                          const firstDay = new Date(year, month, 1);
+                          const firstDayOfWeek = firstDay.getDay();
 
-                          const priceToShow = priceEntry
-                            ? priceEntry.price
-                            : room.defaultPrice;
-                          const availableRoomsToShow =
-                            priceEntry?.availableRooms;
+                          // Last day of the month
+                          const lastDay = new Date(year, month + 1, 0);
+                          const daysInMonth = lastDay.getDate();
 
-                          // Highlight if this date matches the selected check-in date
-                          const isSelected =
-                            selectedDate &&
-                            date.toDateString() === selectedDate.toDateString();
+                          // Create array for calendar cells
+                          const calendarCells = [];
 
-                          return (
-                            <div
-                              key={idx}
-                              className={`flex flex-col items-center h-10 justify-center p-2 border rounded-sm ${
-                                isCurrentMonth ? "" : "bg-gray-200"
-                              } ${
-                                isSelected
-                                  ? "bg-yellow-200 border-yellow-500"
-                                  : ""
-                              }`}
-                            >
-                              <div className="font-bold text-sm">
-                                {isCurrentMonth ? date.getDate() : ""}
-                              </div>
-                              {isCurrentMonth && (
-                                <>
-                                  <div className="flex items-center justify-center w-8 h-8 bg-green-100 text-black text-xs font-semibold rounded-full mt-1">
+                          // Add empty cells for days before the first day of month
+                          for (let i = 0; i < firstDayOfWeek; i++) {
+                            calendarCells.push(
+                              <div
+                                key={`empty-start-${i}`}
+                                className="h-16 sm:h-20 border border-gray-100 rounded-md opacity-0"
+                              ></div>
+                            );
+                          }
+
+                          // Add cells for days in month
+                          for (let day = 1; day <= daysInMonth; day++) {
+                            const date = new Date(year, month, day);
+                            const today = new Date();
+                            // Set hours to 0 for pure date comparison
+                            today.setHours(0, 0, 0, 0);
+                            const isPastDate = date < today;
+
+                            // Format date as YYYY-MM-DD for comparison
+                            const dateString = `${date.getFullYear()}-${String(
+                              date.getMonth() + 1
+                            ).padStart(2, "0")}-${String(
+                              date.getDate()
+                            ).padStart(2, "0")}`;
+
+                            const priceEntry = room.priceCalendar?.find(
+                              (entry: {
+                                date: string;
+                                price: number;
+                                availableRooms?: number;
+                              }) => {
+                                const entryDateString =
+                                  typeof entry.date === "string"
+                                    ? entry.date.substring(0, 10)
+                                    : new Date(entry.date)
+                                        .toISOString()
+                                        .substring(0, 10);
+                                return entryDateString === dateString;
+                              }
+                            );
+
+                            const priceToShow = priceEntry
+                              ? priceEntry.price
+                              : room.defaultPrice;
+
+                            // Get available rooms - use date-specific value if set, otherwise fall back to room's default
+                            const availableRoomsToShow =
+                              priceEntry?.availableRooms !== undefined
+                                ? priceEntry.availableRooms
+                                : room.availableRooms;
+
+                            const hasSpecialPrice =
+                              priceEntry &&
+                              priceEntry.price !== room.defaultPrice;
+
+                            // Highlight if this date matches the selected check-in date
+                            const isSelected =
+                              selectedDate &&
+                              date.toDateString() ===
+                                selectedDate.toDateString();
+
+                            calendarCells.push(
+                              <div
+                                key={`day-${day}`}
+                                className={`relative flex flex-col items-center justify-start p-1 border ${
+                                  hasSpecialPrice
+                                    ? "border-[#6A5631] border-opacity-40"
+                                    : "border-gray-200"
+                                } ${
+                                  isSelected
+                                    ? "bg-yellow-100 border-yellow-500"
+                                    : ""
+                                } ${
+                                  isPastDate ? "opacity-50 bg-gray-100" : ""
+                                } rounded-md overflow-hidden h-16 sm:h-20`}
+                              >
+                                <div
+                                  className={`font-bold text-xs w-full text-center py-1 ${
+                                    hasSpecialPrice
+                                      ? "bg-[#6A5631] text-white"
+                                      : "bg-gray-50 text-gray-700"
+                                  } ${
+                                    isPastDate
+                                      ? "bg-gray-200 text-gray-500"
+                                      : ""
+                                  }`}
+                                >
+                                  {day}
+                                </div>
+                                <div className="flex flex-col items-center justify-center w-full h-full">
+                                  <div
+                                    className={`text-xs font-semibold ${
+                                      hasSpecialPrice
+                                        ? "text-[#6A5631]"
+                                        : "text-gray-700"
+                                    } ${isPastDate ? "text-gray-500" : ""}`}
+                                  >
                                     ₹{priceToShow}
                                   </div>
-                                  {typeof availableRoomsToShow === "number" && (
-                                    <div className="text-[10px] text-blue-700 mt-1">
-                                      Rooms: {availableRoomsToShow}
-                                    </div>
-                                  )}
-                                </>
-                              )}
-                            </div>
-                          );
-                        })}
+                                  <div
+                                    className={`text-[9px] mt-0.5 ${
+                                      isPastDate
+                                        ? "text-gray-500"
+                                        : availableRoomsToShow > 0
+                                        ? "text-blue-700"
+                                        : "text-red-500"
+                                    }`}
+                                  >
+                                    {availableRoomsToShow}{" "}
+                                    {availableRoomsToShow === 1
+                                      ? "room"
+                                      : "rooms"}
+                                  </div>
+                                </div>
+                              </div>
+                            );
+                          }
+
+                          // Add empty cells to complete the calendar grid if needed
+                          const totalCells = firstDayOfWeek + daysInMonth;
+                          const rowsNeeded = Math.ceil(totalCells / 7);
+                          const cellsNeeded = rowsNeeded * 7;
+                          const remainingCells = cellsNeeded - totalCells;
+
+                          for (let i = 0; i < remainingCells; i++) {
+                            calendarCells.push(
+                              <div
+                                key={`empty-end-${i}`}
+                                className="h-16 sm:h-20 border border-gray-100 rounded-md opacity-0"
+                              ></div>
+                            );
+                          }
+
+                          return calendarCells;
+                        })()}
                       </div>
                     </div>
                   </div>
@@ -545,7 +651,17 @@ const Detail = () => {
               hotel.rooms
                 .find((room) => room._id === selectedRoomId)
                 ?.priceCalendar?.map(({ date, price, availableRooms }) => ({
-                  date: new Date(date).toISOString().split("T")[0],
+                  date:
+                    typeof date === "string"
+                      ? (date as string).substring(0, 10)
+                      : date instanceof Date
+                      ? `${date.getFullYear()}-${String(
+                          date.getMonth() + 1
+                        ).padStart(2, "0")}-${String(date.getDate()).padStart(
+                          2,
+                          "0"
+                        )}`
+                      : new Date().toISOString().substring(0, 10), // fallback
                   price,
                   availableRooms:
                     availableRooms !== undefined ? availableRooms : 0,

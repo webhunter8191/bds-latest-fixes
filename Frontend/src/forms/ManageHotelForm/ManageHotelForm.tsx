@@ -189,6 +189,7 @@ const ManageHotelForm = ({ onSave, isLoading, hotel }: Props) => {
                             ).availableRooms ?? 0,
                         })
                       ),
+                      features: room.features || [],
                     }))}
                   />
                 </div>

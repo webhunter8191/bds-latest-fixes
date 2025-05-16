@@ -61,10 +61,25 @@ const GuestInfoForm = ({
 
   // Function to get the price and available rooms for a specific date
   const getRoomInfoForDate = (date: Date) => {
-    const dateString = date.toISOString().split("T")[0];
-    const matchingEntry = priceCalendar.find(
-      (entry) => new Date(entry.date).toISOString().split("T")[0] === dateString
-    );
+    // Format the input date as YYYY-MM-DD without timezone issues
+    const dateString = `${date.getFullYear()}-${String(
+      date.getMonth() + 1
+    ).padStart(2, "0")}-${String(date.getDate()).padStart(2, "0")}`;
+
+    const matchingEntry = priceCalendar.find((entry) => {
+      // Format entry date consistently
+      const entryDateString =
+        typeof entry.date === "string"
+          ? entry.date.substring(0, 10)
+          : `${new Date(entry.date).getFullYear()}-${String(
+              new Date(entry.date).getMonth() + 1
+            ).padStart(2, "0")}-${String(
+              new Date(entry.date).getDate()
+            ).padStart(2, "0")}`;
+
+      return entryDateString === dateString;
+    });
+
     return {
       price: matchingEntry ? matchingEntry.price : defaultPrice,
       availableRooms: matchingEntry?.availableRooms ?? availableRooms,
@@ -106,8 +121,16 @@ const GuestInfoForm = ({
     const checkInDate = new Date(checkIn);
     const checkOutDate = new Date(checkOut);
 
+    // Format dates as YYYY-MM-DD for comparison
+    const checkInString = `${checkInDate.getFullYear()}-${String(
+      checkInDate.getMonth() + 1
+    ).padStart(2, "0")}-${String(checkInDate.getDate()).padStart(2, "0")}`;
+    const checkOutString = `${checkOutDate.getFullYear()}-${String(
+      checkOutDate.getMonth() + 1
+    ).padStart(2, "0")}-${String(checkOutDate.getDate()).padStart(2, "0")}`;
+
     // If check-in and check-out dates are the same, charge for 1 day
-    if (checkInDate.toDateString() === checkOutDate.toDateString()) {
+    if (checkInString === checkOutString) {
       return getRoomInfoForDate(checkInDate).price * watch("roomCount");
     }
 
@@ -186,12 +209,29 @@ const GuestInfoForm = ({
     const { price } = getRoomInfoForDate(date);
     const isSpecialPrice = price !== defaultPrice;
 
+    // Format current date as YYYY-MM-DD
+    const dateString = `${date.getFullYear()}-${String(
+      date.getMonth() + 1
+    ).padStart(2, "0")}-${String(date.getDate()).padStart(2, "0")}`;
+
+    // Format checkIn and checkOut dates consistently
+    const checkInString = checkIn
+      ? `${checkIn.getFullYear()}-${String(checkIn.getMonth() + 1).padStart(
+          2,
+          "0"
+        )}-${String(checkIn.getDate()).padStart(2, "0")}`
+      : "";
+
+    const checkOutString = checkOut
+      ? `${checkOut.getFullYear()}-${String(checkOut.getMonth() + 1).padStart(
+          2,
+          "0"
+        )}-${String(checkOut.getDate()).padStart(2, "0")}`
+      : "";
+
     // Check if this date is selected (either checkIn or checkOut)
     const isSelected =
-      (checkIn &&
-        new Date(date).toDateString() === new Date(checkIn).toDateString()) ||
-      (checkOut &&
-        new Date(date).toDateString() === new Date(checkOut).toDateString());
+      dateString === checkInString || dateString === checkOutString;
 
     return (
       <div className="flex flex-col items-center justify-center h-full">

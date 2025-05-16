@@ -99,6 +99,14 @@ const GuestsSection = ({
       finalImages = rooms[editingRoomIndex].images;
     }
 
+    // Preserve previous price calendar entries if editing and no new entries provided
+    const finalPriceCalendar =
+      priceCalendarEntries.length > 0
+        ? priceCalendarEntries
+        : editingRoomIndex !== null
+        ? rooms[editingRoomIndex].priceCalendar || []
+        : [];
+
     const newRoom = {
       category: formData.get("category"),
       totalRooms: Number(formData.get("totalRooms")),
@@ -108,7 +116,7 @@ const GuestsSection = ({
       adultCount: Number(formData.get("adultCount")),
       childCount: Number(formData.get("childCount")),
       defaultPrice: Number(formData.get("defaultPrice")),
-      priceCalendar: priceCalendarEntries,
+      priceCalendar: finalPriceCalendar,
       features: selectedFeatures,
     };
 
@@ -127,6 +135,10 @@ const GuestsSection = ({
       setValue("rooms", newRooms);
       setRooms(newRooms);
     }
+
+    // Clear state after saving
+    setPriceCalendarEntries([]);
+    setSelectedFeatures([]);
     setIsDialogOpen(false);
   };
 
@@ -135,6 +147,10 @@ const GuestsSection = ({
       setPriceCalendarEntries(
         (rooms[index].priceCalendar || []).map((entry: any) => ({
           ...entry,
+          date:
+            typeof entry.date === "string"
+              ? entry.date.substring(0, 10)
+              : new Date(entry.date).toISOString().substring(0, 10),
           availableRooms: entry.availableRooms ?? 0,
         }))
       );
@@ -184,6 +200,9 @@ const GuestsSection = ({
           onClick={(e) => {
             e.preventDefault();
             e.stopPropagation();
+            setPriceCalendarEntries([]);
+            setSelectedFeatures([]);
+            setEditingRoomIndex(null);
             setIsDialogOpen(true);
           }}
           className="w-full sm:w-auto px-6 py-3 bg-[#6A5631] text-white rounded-lg hover:bg-[#5A4728] transition-colors duration-200 flex items-center justify-center gap-2"
@@ -289,11 +308,56 @@ const GuestsSection = ({
                   Seasonal Price Calendar
                 </h4>
                 <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4">
-                  <PriceCalendarForm
-                    priceCalendarEntries={priceCalendarEntries}
-                    setPriceCalendarEntries={setPriceCalendarEntries}
-                    handleAvailableRoomsChange={handleAvailableRoomsChange}
-                  />
+                  {room.priceCalendar && room.priceCalendar.length > 0 ? (
+                    room.priceCalendar.map(
+                      (
+                        entry: {
+                          date: string;
+                          price: number;
+                          availableRooms: number;
+                        },
+                        idx: number
+                      ) => (
+                        <div
+                          key={idx}
+                          className="bg-white p-3 rounded-lg shadow-sm border border-gray-200"
+                        >
+                          <div className="flex flex-col">
+                            <span className="text-sm font-medium text-gray-700">
+                              {new Date(entry.date).toLocaleDateString(
+                                "en-GB",
+                                {
+                                  day: "2-digit",
+                                  month: "2-digit",
+                                  year: "numeric",
+                                }
+                              )}
+                            </span>
+                            <div className="flex justify-between mt-1">
+                              <span className="text-sm text-gray-600">
+                                Price:
+                              </span>
+                              <span className="text-sm font-semibold text-[#6A5631]">
+                                ₹{entry.price}
+                              </span>
+                            </div>
+                            <div className="flex justify-between mt-1">
+                              <span className="text-sm text-gray-600">
+                                Available:
+                              </span>
+                              <span className="text-sm font-medium text-gray-800">
+                                {entry.availableRooms}
+                              </span>
+                            </div>
+                          </div>
+                        </div>
+                      )
+                    )
+                  ) : (
+                    <div className="col-span-full text-sm text-gray-500 italic">
+                      No seasonal pricing set for this room
+                    </div>
+                  )}
                 </div>
               </div>
 
