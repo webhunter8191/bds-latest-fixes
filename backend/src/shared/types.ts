@@ -51,7 +51,7 @@ export type RoomType = {
     price: number; // Price for that date
     availableRooms: number; // Available rooms for that date
   }[];
-  features?: string[];
+  features: string[]; // Make this required, not optional
 };
 
 export type BookingType = {

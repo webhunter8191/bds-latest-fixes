@@ -16,6 +16,7 @@ const roomSchema = new mongoose.Schema({
       availableRooms: { type: Number, required: true, default: 0 },
     },
   ],
+  features: [{ type: String }],
 });
 
 const hotelSchema = new mongoose.Schema(

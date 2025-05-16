@@ -68,75 +68,54 @@ router.post(
       const imageUrls = await uploadImages(hotelImages);
 
       // Upload room images
-      const roomImageUrls = await Promise.all(
-        roomImages.map(async (file) => {
-          const roomImage = await uploadImages([file]);
-          return {
-            category: file.fieldname.split("roomImages")[1],
-            images: roomImage,
-          };
-        })
-      );
+      const roomImageUrls: Record<string, string[]> = {};
+      
+      // Process uploaded room images
+      for (const file of roomImages) {
+        const category = file.fieldname.split("roomImages")[1];
+        if (!roomImageUrls[category]) {
+          roomImageUrls[category] = [];
+        }
+        const imageUrl = await uploadImages([file]);
+        roomImageUrls[category] = roomImageUrls[category].concat(imageUrl);
+      }
 
       // Parse rooms data
-      newHotel.rooms = JSON.parse(newHotel.rooms);
+      const roomsData = JSON.parse(req.body.rooms);
+      let rooms = roomsData.map((room: any) => ({
+        ...room,
+        price: room.defaultPrice || room.price,
+        defaultPrice: room.defaultPrice || room.price, // Ensure defaultPrice is set
+        // Make sure features is always an array
+        features: Array.isArray(room.features) ? room.features : [],
+        // Set other defaults
+        availableRooms: Number(room.totalRooms) || 0,
+        adultCount: Number(room.adultCount) || 0,
+        childCount: Number(room.childCount) || 0,
+      }));
+
+      console.log("Rooms data with features:", rooms.map((room: any) => ({
+        category: room.category,
+        features: room.features
+      })));
 
       // Process rooms
-      const rooms = newHotel.rooms.map((room: any) => {
+      rooms = rooms.map((room: any) => {
         // Assign room images
-        room.images =
-          roomImageUrls.find(
-            (roomImage: any) => roomImage.category == room.category
-          )?.images || [];
+        const categoryKey = room.category.toString();
+        room.images = roomImageUrls[categoryKey] || [];
 
-        // Set availableRooms to totalRooms
-        room.availableRooms = room.totalRooms;
-
-        // Ensure adultCount and childCount are numbers
-        room.adultCount = Number(room.adultCount) || 0;
-        room.childCount = Number(room.childCount) || 0;
-
-        // Validate and normalize features
-        if (room.features) {
-          if (typeof room.features === 'string') {
-            try {
-              room.features = JSON.parse(room.features);
-            } catch {
-              room.features = [room.features];
-            }
-          }
-          // Ensure features is an array and remove duplicates
-          room.features = Array.isArray(room.features) 
-            ? [...new Set(room.features.map((f: string) => f.trim()))]
-            : [];
-        } else {
-          room.features = [];
-        }
-
-        // Handle priceCalendar
-        if (room.priceCalendar) {
-          if (typeof room.priceCalendar === "string") {
-            try {
-              room.priceCalendar = JSON.parse(room.priceCalendar);
-            } catch {
-              return res
-                .status(400)
-                .json({ message: "Invalid priceCalendar format" });
-            }
-          }
-
-          // Validate priceCalendar entries
+        // Ensure priceCalendar entries are properly formatted
+        if (room.priceCalendar && Array.isArray(room.priceCalendar)) {
           room.priceCalendar = room.priceCalendar.map((entry: any) => ({
-            date: new Date(entry.date), // Convert to Date object
-            price: Number(entry.price), // Ensure price is a number
-            availableRooms: entry.availableRooms ?? room.totalRooms, // Default to totalRooms if not provided
+            ...entry,
+            date: new Date(entry.date),
+            price: Number(entry.price) || 0,
+            availableRooms: Number(entry.availableRooms) || 0,
           }));
         } else {
           room.priceCalendar = []; // Default to empty array
         }
-
-        // Ensure defaultPrice is present
-        room.defaultPrice = Number(room.defaultPrice) || 0;
 
         return room;
       });
@@ -182,6 +161,42 @@ router.get("/:id", verifyToken, async (req: Request, res: Response) => {
       _id: id,
       userId: req.userId,
     });
+
+    // Ensure all room features are properly formatted arrays
+    if (hotel?.rooms?.length) {
+      hotel.rooms = hotel.rooms.map((room: any) => {
+        if (!room.features) {
+          room.features = [];
+        } else if (typeof room.features === 'string') {
+          try {
+            room.features = JSON.parse(room.features);
+            if (!Array.isArray(room.features)) {
+              room.features = [room.features];
+            }
+          } catch (e) {
+            room.features = [room.features];
+          }
+        } else if (!Array.isArray(room.features)) {
+          // If it's an object but not an array
+          room.features = Object.values(room.features);
+        }
+        
+        // Remove any duplicate features
+        if (Array.isArray(room.features)) {
+          room.features = [...new Set(room.features)];
+        }
+        
+        return room;
+      });
+      
+      console.log("Normalized room features in my-hotels:", 
+        hotel.rooms.map((room: any) => ({ 
+          category: room.category, 
+          features: room.features 
+        }))
+      );
+    }
+
     res.json(hotel);
   } catch (error) {
     res.status(500).json({ message: "Error fetching hotels" });
@@ -195,7 +210,6 @@ router.put(
   async (req: Request, res: Response) => {
     try {
       const updatedHotel = req.body;
-      updatedHotel.rooms = JSON.parse(updatedHotel.rooms);
       updatedHotel.lastUpdated = new Date();
 
       const files = req.files as Express.Multer.File[];
@@ -212,8 +226,17 @@ router.put(
         ...(updatedHotel.imageUrls || []),
       ];
 
+      // Get the existing hotel to preserve room data
+      const existingHotel = await Hotel.findOne({ 
+        _id: req.params.hotelId, 
+        userId: req.userId 
+      });
       
+      if (!existingHotel) {
+        return res.status(404).json({ message: "Hotel not found" });
+      }
 
+      // Handle policies
       if (updatedHotel.policies) {
         if (typeof updatedHotel.policies === "string") {
           try {
@@ -225,40 +248,40 @@ router.put(
         } else if (!Array.isArray(updatedHotel.policies)) {
           updatedHotel.policies = [updatedHotel.policies];
         }
-      
-        // Fetch existing hotel to preserve existing policies
-        const existingHotel = await Hotel.findOne({ _id: req.params.hotelId, userId: req.userId });
-        if (existingHotel) {
-          // Don't merge, just replace
-updatedHotel.policies = updatedHotel.policies;
-
-        }
       }
-      const roomImageUrls = await Promise.all(
-        roomImages.map(async (file) => {
-          const roomImage = await uploadImages([file]);
-          return {
-            category: file.fieldname.split("roomImages")[1],
-            images: roomImage,
-          };
-        })
-      );
+      
+      // Process room images
+      const roomImageUrls: Record<string, string[]> = {};
+      
+      // Process uploaded room images
+      for (const file of roomImages) {
+        const category = file.fieldname.split("roomImages")[1];
+        if (!roomImageUrls[category]) {
+          roomImageUrls[category] = [];
+        }
+        const imageUrl = await uploadImages([file]);
+        roomImageUrls[category] = roomImageUrls[category].concat(imageUrl);
+      }
 
+      // Parse rooms data
+      updatedHotel.rooms = JSON.parse(updatedHotel.rooms);
+      
+      // Log for debugging
+      console.log("Updating rooms with features:", updatedHotel.rooms.map((room: any) => ({
+        category: room.category,
+        features: room.features
+      })));
+
+      // Process each room
       updatedHotel.rooms = updatedHotel.rooms.map((room: any) => {
-        room.images =
-          roomImageUrls.find(
-            (roomImage: any) => roomImage.category == room.category
-          )?.images ||
-          updatedHotel.rooms.find(
-            (existingRoom: any) => existingRoom.category == room.category
-          )?.images ||
-          [];
-
-        // Ensure adultCount and childCount are included
-        room.adultCount = Number(room.adultCount) || 0;
-        room.childCount = Number(room.childCount) || 0;
-
-        // Validate and normalize features
+        const categoryKey = room.category.toString();
+        
+        // Find matching existing room for data preservation
+        const existingRoom = existingHotel.rooms.find(
+          (r: any) => r.category.toString() === categoryKey
+        );
+        
+        // Process features - ensure they're arrays
         if (room.features) {
           if (typeof room.features === 'string') {
             try {
@@ -271,9 +294,23 @@ updatedHotel.policies = updatedHotel.policies;
           room.features = Array.isArray(room.features) 
             ? [...new Set(room.features.map((f: string) => f.trim()))]
             : [];
+        } else if (existingRoom && existingRoom.features) {
+          // Preserve existing features if none provided
+          room.features = existingRoom.features;
         } else {
           room.features = [];
         }
+        
+        // Assign room images - use new uploads or preserve existing
+        room.images = roomImageUrls[categoryKey] || 
+          (existingRoom ? existingRoom.images : []);
+          
+        // Ensure numeric values
+        room.adultCount = Number(room.adultCount) || 0;
+        room.childCount = Number(room.childCount) || 0;
+        room.totalRooms = Number(room.totalRooms) || 0;
+        room.availableRooms = Number(room.availableRooms) || Number(room.totalRooms) || 0;
+        room.defaultPrice = Number(room.defaultPrice) || 0;
 
         // Handle priceCalendar
         if (room.priceCalendar) {
@@ -290,9 +327,12 @@ updatedHotel.policies = updatedHotel.policies;
           // Validate priceCalendar entries
           room.priceCalendar = room.priceCalendar.map((entry: any) => ({
             date: new Date(entry.date),
-            price: Number(entry.price),
-            availableRooms: entry.availableRooms ?? room.totalRooms,
+            price: Number(entry.price) || 0,
+            availableRooms: Number(entry.availableRooms) || room.totalRooms || 0,
           }));
+        } else if (existingRoom && existingRoom.priceCalendar) {
+          // Preserve existing price calendar if none provided
+          room.priceCalendar = existingRoom.priceCalendar;
         } else {
           room.priceCalendar = [];
         }
@@ -308,10 +348,6 @@ updatedHotel.policies = updatedHotel.policies;
         updatedHotel,
         { new: true }
       );
-
-      if (!hotel) {
-        return res.status(404).json({ message: "Hotel not found" });
-      }
 
       return res.status(201).json(hotel);
     } catch (error) {

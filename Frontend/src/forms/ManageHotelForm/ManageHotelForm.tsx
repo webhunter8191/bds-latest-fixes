@@ -107,6 +107,15 @@ const ManageHotelForm = ({ onSave, isLoading, hotel }: Props) => {
       }
     });
 
+    // Add console log to debug room features
+    console.log(
+      "Submitting rooms with features:",
+      formDataJson.rooms.map((room) => ({
+        category: room.category,
+        features: room.features,
+      }))
+    );
+
     // Append facilities
     formDataJson.facilities.forEach((facility, index) => {
       formData.append(`facilities[${index}]`, facility);

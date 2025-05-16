@@ -296,6 +296,25 @@ router.get("/:id", [param("id").notEmpty().withMessage("Hotel ID is required")],
     }
 
     const id = req.params.id.toString(); 
+    
+    // First fetch the hotel to check raw data
+    const rawHotel = await Hotel.findById(id);
+    console.log("Raw hotel data:", JSON.stringify({
+      id: rawHotel?._id,
+      name: rawHotel?.name,
+      roomCount: rawHotel?.rooms?.length
+    }));
+    
+    if (rawHotel?.rooms?.length) {
+      console.log("Raw features data sample:", 
+        rawHotel.rooms.map((r: any) => ({ 
+          category: r.category, 
+          features: r.features,
+          featuresType: typeof r.features
+        }))
+      );
+    }
+    
     const aggregation = [
       { $match: { _id: new mongoose.Types.ObjectId(id) } },
       {
@@ -337,7 +356,52 @@ router.get("/:id", [param("id").notEmpty().withMessage("Hotel ID is required")],
         }
       }
     ];
+    
     const [hotel] = await Hotel.aggregate(aggregation);
+    
+    // Log the processed hotel data
+    if (hotel?.rooms?.length) {
+      console.log("Processed hotel rooms features:", 
+        hotel.rooms.map((r: any) => ({ 
+          category: r.category, 
+          features: r.features
+        }))
+      );
+      
+      // Ensure all room features are properly formatted arrays
+      hotel.rooms = hotel.rooms.map((room: any) => {
+        if (!room.features) {
+          room.features = [];
+        } else if (typeof room.features === 'string') {
+          try {
+            room.features = JSON.parse(room.features);
+            if (!Array.isArray(room.features)) {
+              room.features = [room.features];
+            }
+          } catch (e) {
+            room.features = [room.features];
+          }
+        } else if (!Array.isArray(room.features)) {
+          // If it's an object but not an array
+          room.features = Object.values(room.features);
+        }
+        
+        // Remove any duplicate features
+        if (Array.isArray(room.features)) {
+          room.features = [...new Set(room.features)];
+        }
+        
+        return room;
+      });
+      
+      console.log("Normalized room features:", 
+        hotel.rooms.map((r: any) => ({ 
+          category: r.category, 
+          features: r.features
+        }))
+      );
+    }
+    
     return res.status(200).json(hotel);
   } catch (error) {
     console.log(error);

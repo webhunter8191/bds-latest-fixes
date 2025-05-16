@@ -6,7 +6,7 @@ import {
   ReactNode,
   ReactPortal,
 } from "react";
-import { useQuery } from "react-query";
+import { useQuery, useQueryClient } from "react-query";
 import { useParams } from "react-router-dom";
 import * as apiClient from "./../api-client";
 import { AiFillStar } from "react-icons/ai";
@@ -84,15 +84,117 @@ const PrevArrow = (props: { onClick: any }) => {
 const Detail = () => {
   const { hotelId } = useParams();
   const [isLoading, setIsLoading] = useState(true);
+  const queryClient = useQueryClient(); // Add queryClient for cache management
 
   const { data: hotel, isFetching } = useQuery(
     ["fetchHotelById", hotelId],
     () => apiClient.fetchHotelById(hotelId || ""),
     {
       enabled: !!hotelId,
-      onSuccess: () => setIsLoading(false),
+      onSuccess: (data) => {
+        console.log("Raw hotel data received:", data);
+        console.log("Hotel rooms data:", data.rooms);
+
+        if (data.rooms && data.rooms.length > 0) {
+          console.log("Room features before processing:");
+          data.rooms.forEach((room, idx) => {
+            console.log(
+              `Room ${idx} (category ${room.category}) features:`,
+              room.features
+            );
+            console.log(`Room ${idx} features type:`, typeof room.features);
+          });
+
+          // Fix any feature arrays that might be missing or malformed
+          data.rooms = data.rooms.map((room) => {
+            // Ensure features is always an array
+            if (!room.features || !Array.isArray(room.features)) {
+              console.log(`Fixing features for room ${room.category}`);
+
+              let fixedFeatures = [];
+
+              // Try to parse features if it's a string
+              if (typeof room.features === "string") {
+                try {
+                  const parsed = JSON.parse(room.features);
+                  fixedFeatures = Array.isArray(parsed) ? parsed : [];
+                  console.log("Parsed string features:", fixedFeatures);
+                } catch (e) {
+                  console.log("Failed to parse string features:", e);
+                  fixedFeatures = [room.features];
+                }
+              } else if (room.features && typeof room.features === "object") {
+                // In case features is an object but not an array
+                fixedFeatures = Object.values(room.features);
+                console.log(
+                  "Converted object features to array:",
+                  fixedFeatures
+                );
+              }
+
+              room.features = fixedFeatures;
+            }
+
+            return room;
+          });
+
+          // Log the fixed data
+          console.log("Room features after processing:");
+          data.rooms.forEach((room, index) => {
+            console.log(`Room ${index} fixed features:`, {
+              category: room.category,
+              features: room.features,
+            });
+          });
+        }
+
+        setIsLoading(false);
+      },
     }
   );
+
+  // Add function to refresh data
+  const refreshData = () => {
+    console.log("Manually refreshing data...");
+    setIsLoading(true);
+    queryClient.invalidateQueries(["fetchHotelById", hotelId]);
+  };
+
+  // Helper function to safely parse room features
+  const parseRoomFeatures = (room: any): string[] => {
+    if (!room.features) {
+      return [];
+    }
+
+    if (Array.isArray(room.features)) {
+      return room.features;
+    }
+
+    if (typeof room.features === "string") {
+      try {
+        const parsed = JSON.parse(room.features);
+        return Array.isArray(parsed) ? parsed : [room.features];
+      } catch {
+        return [room.features];
+      }
+    }
+
+    return [];
+  };
+
+  // Helper to get default bed configuration based on room category
+  const getDefaultBedConfiguration = (category: number): string => {
+    if (category === 1 || category === 2) {
+      return "Double Bed";
+    } else if (category === 3 || category === 4) {
+      return "Double Bed + Single Bed";
+    } else if (category === 5 || category === 6) {
+      return "Double Bed + Double Bed";
+    } else if (category === 7) {
+      return "Large Hall";
+    }
+    return "";
+  };
 
   const getRoomInfoForDate = (room: any, date: Date) => {
     // Format the input date as YYYY-MM-DD
@@ -192,6 +294,16 @@ const Detail = () => {
 
   return (
     <div className="space-y-5 p-4 sm:p-6 mx-auto min-h-screen">
+      {/* Refresh button */}
+      <div className="flex justify-end mb-2">
+        <button
+          onClick={refreshData}
+          className="px-4 py-1 bg-gray-200 text-gray-700 text-sm rounded-md hover:bg-gray-300 transition-colors"
+        >
+          Refresh Data
+        </button>
+      </div>
+
       {/* Image Slider */}
       <div className="relative mx-auto shadow-xl rounded-lg overflow-hidden">
         <Slider {...sliderSettings}>
@@ -245,25 +357,15 @@ const Detail = () => {
             <h2 className="text-xl sm:text-2xl font-semibold text-gray-800 border-b pb-2 mb-4">
               Amenities
             </h2>
-            <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-2 gap-2 sm:gap-6">
-              {hotel.facilities.map((facility, index) => {
-                const Icon =
-                  facilityIcons[facility as keyof typeof facilityIcons] ||
-                  FaHotel; // Default to FaHotel if no match
-                return (
-                  <div
-                    key={index}
-                    className="flex items-center gap-3 p-3  rounded-md transition duration-200"
-                  >
-                    <Icon className="text-[#6A5631] text-xl sm:text-xl lg:text-2xl" />{" "}
-                    {/* Smaller icons on small screens */}
-                    <span className="text-black-600 font-medium text-sm sm:text-base lg:text-md">
-                      {facility}
-                    </span>{" "}
-                    {/* Smaller text on small screens */}
-                  </div>
-                );
-              })}
+            <div className="flex flex-wrap gap-2">
+              {hotel.facilities.map((facility, index) => (
+                <div
+                  key={index}
+                  className="text-xs bg-gray-50 text-gray-700 px-3 py-1.5 rounded-full border border-gray-200"
+                >
+                  {facility}
+                </div>
+              ))}
             </div>
           </div>
           <div className="grid grid-rows-1 sm:grid-cols-2 gap-4 sm:gap-6">
@@ -278,6 +380,9 @@ const Detail = () => {
                     src={room.images[0]}
                     alt={`${room.type} Room`}
                     className="rounded-md w-full h-60 sm:h-40 md:h-25 lg:h-50 object-cover"
+                    onLoad={() => {
+                      console.log("Room features:", room.features);
+                    }}
                   />
                 </div>
 
@@ -300,25 +405,50 @@ const Detail = () => {
                     <p>Children Allowed: {room.childCount}</p>
                   </div>
 
-                  {/* Room Features */}
-                  {room.features && room.features.length > 0 && (
-                    <div className="mt-2">
-                      <h4 className="text-sm font-semibold mb-2">
-                        Room Features:
-                      </h4>
-                      <div className="grid grid-cols-2 gap-2">
-                        {room.features.map((feature: string, idx: number) => (
-                          <div
-                            key={idx}
-                            className="flex items-center gap-2 text-sm text-gray-600 bg-gray-50 p-2 rounded-md"
-                          >
-                            <span className="w-2 h-2 bg-[#6A5631] rounded-full"></span>
-                            {feature}
-                          </div>
-                        ))}
-                      </div>
+                  {/* Room Features - Simplified and More Prominent */}
+                  <div className="mt-0  p-3 ">
+                    <h4 className="text-base font-semibold mb-2 text-[#6A5631]">
+                      Room Includes
+                    </h4>
+
+                    <div className="grid grid-cols-2 gap-2">
+                      {(() => {
+                        // Get processed features array
+                        const features = parseRoomFeatures(room);
+
+                        // Add default bed configuration as first feature
+                        const bedConfig = getDefaultBedConfiguration(
+                          room.category
+                        );
+
+                        if (features.length > 0 || bedConfig) {
+                          return (
+                            <>
+                              {bedConfig && (
+                                <div className="flex items-center gap-1 text-xs font-semibold text-gray-800 p-0">
+                                  {bedConfig}
+                                </div>
+                              )}
+                              {features.map((feature: string, idx: number) => (
+                                <div
+                                  key={idx}
+                                  className="flex items-center gap-1 text-xs text-gray-700 p-0"
+                                >
+                                  {feature}
+                                </div>
+                              ))}
+                            </>
+                          );
+                        } else {
+                          return (
+                            <div className="col-span-2 text-xs text-gray-500 italic">
+                              Standard features based on room type
+                            </div>
+                          );
+                        }
+                      })()}
                     </div>
-                  )}
+                  </div>
 
                   {/* Price-wise Calendar */}
                   <div className="mt-4">
@@ -522,55 +652,43 @@ const Detail = () => {
             ))}
           </div>
 
-          {hotel.policies && hotel.policies.length > 0 && (
+          {hotel?.policies && hotel?.policies.length > 0 && (
             <div className="bg-white shadow-md rounded-lg p-4 sm:p-6">
               <h2 className="text-xl sm:text-2xl font-semibold text-gray-800 border-b pb-2 mb-4">
                 Hotel Policies
               </h2>
-              <ul className="list-disc list-inside text-gray-700 space-y-2">
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-2">
                 {hotel.policies.map((policy: string, index: number) => (
-                  <li key={index}>{policy}</li>
+                  <p key={index} className="text-sm text-gray-700 py-1">
+                    {policy}
+                  </p>
                 ))}
-              </ul>
+              </div>
             </div>
           )}
 
           {hotel?.temples?.length > 0 && (
-            <div className="my-4">
-              <h2 className="text-xl font-semibold mb-2">
+            <div className="bg-white shadow-md rounded-lg p-4 sm:p-6 my-4">
+              <h2 className="text-xl sm:text-2xl font-semibold text-gray-800 border-b pb-2 mb-4">
                 Distance from Temples
               </h2>
-              <ul className="list-disc list-inside space-y-1">
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-x-4 gap-y-1">
                 {hotel.temples.map(
                   (
-                    temple: {
-                      name:
-                        | string
-                        | number
-                        | boolean
-                        | ReactElement<any, string | JSXElementConstructor<any>>
-                        | Iterable<ReactNode>
-                        | ReactPortal
-                        | null
-                        | undefined;
-                      distance:
-                        | string
-                        | number
-                        | boolean
-                        | ReactElement<any, string | JSXElementConstructor<any>>
-                        | Iterable<ReactNode>
-                        | ReactPortal
-                        | null
-                        | undefined;
-                    },
-                    index: Key | null | undefined
+                    temple: { name: string; distance: number },
+                    index: number
                   ) => (
-                    <li key={index}>
-                      {temple.name} – {temple.distance} km
-                    </li>
+                    <div key={index} className="flex justify-between py-1">
+                      <span className="text-sm text-gray-700">
+                        {temple.name}
+                      </span>
+                      <span className="text-sm text-gray-600">
+                        {temple.distance} km
+                      </span>
+                    </div>
                   )
                 )}
-              </ul>
+              </div>
             </div>
           )}
           {/* Location Section */}

@@ -107,6 +107,9 @@ const GuestsSection = ({
         ? rooms[editingRoomIndex].priceCalendar || []
         : [];
 
+    // Ensure features are properly formatted
+    console.log("Selected features before saving:", selectedFeatures);
+
     const newRoom = {
       category: formData.get("category"),
       totalRooms: Number(formData.get("totalRooms")),
@@ -121,17 +124,24 @@ const GuestsSection = ({
     };
 
     console.log("New room object:", newRoom);
+    console.log("Room features data type:", typeof newRoom.features);
+    console.log("Is features an array?", Array.isArray(newRoom.features));
 
     if (editingRoomIndex !== null) {
       const updatedRooms = [...rooms];
       updatedRooms[editingRoomIndex] = newRoom;
       console.log("Updated rooms:", updatedRooms);
+      console.log(
+        "Updated room features:",
+        updatedRooms[editingRoomIndex].features
+      );
       setValue("rooms", updatedRooms);
       setRooms(updatedRooms);
       setEditingRoomIndex(null);
     } else {
       const newRooms = [...rooms, newRoom];
       console.log("New rooms array:", newRooms);
+      console.log("New room features:", newRoom.features);
       setValue("rooms", newRooms);
       setRooms(newRooms);
     }
@@ -155,6 +165,9 @@ const GuestsSection = ({
         }))
       );
       setSelectedFeatures(rooms[index].features || []);
+    } else {
+      // Reset features when adding a new room
+      setSelectedFeatures([]);
     }
     setEditingRoomIndex(index);
     setIsDialogOpen(true);
@@ -361,30 +374,25 @@ const GuestsSection = ({
                 </div>
               </div>
 
-              <div className="space-y-2">
-                <label className="block text-sm font-medium text-gray-700">
+              <div className="space-y-4">
+                <h4 className="text-sm font-medium text-gray-700">
                   Room Features
-                </label>
+                </h4>
                 <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 gap-2">
-                  {PREDEFINED_FEATURES.map((feature) => (
-                    <label key={feature} className="flex items-center gap-2">
-                      <input
-                        type="checkbox"
-                        checked={selectedFeatures.includes(feature)}
-                        onChange={(e) => {
-                          if (e.target.checked) {
-                            setSelectedFeatures([...selectedFeatures, feature]);
-                          } else {
-                            setSelectedFeatures(
-                              selectedFeatures.filter((f) => f !== feature)
-                            );
-                          }
-                        }}
-                        className="h-4 w-4 text-[#6A5631] border-gray-300 rounded focus:ring-[#6A5631]"
-                      />
-                      <span className="text-sm text-gray-700">{feature}</span>
-                    </label>
+                  {(room.features || []).map((feature: string, idx: number) => (
+                    <div
+                      key={idx}
+                      className="flex items-center gap-2 text-sm text-gray-600 bg-gray-50 p-2 rounded-md"
+                    >
+                      <span className="w-2 h-2 bg-[#6A5631] rounded-full"></span>
+                      {feature}
+                    </div>
                   ))}
+                  {(room.features || []).length === 0 && (
+                    <div className="col-span-full text-sm text-gray-500 italic">
+                      No features specified for this room
+                    </div>
+                  )}
                 </div>
               </div>
 
@@ -753,29 +761,81 @@ const GuestsSection = ({
                   <label className="block text-sm font-medium text-gray-700">
                     Room Features
                   </label>
-                  <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 gap-2">
-                    {PREDEFINED_FEATURES.map((feature) => (
-                      <label key={feature} className="flex items-center gap-2">
-                        <input
-                          type="checkbox"
-                          checked={selectedFeatures.includes(feature)}
-                          onChange={(e) => {
-                            if (e.target.checked) {
-                              setSelectedFeatures([
-                                ...selectedFeatures,
-                                feature,
-                              ]);
-                            } else {
-                              setSelectedFeatures(
-                                selectedFeatures.filter((f) => f !== feature)
-                              );
-                            }
-                          }}
-                          className="h-4 w-4 text-[#6A5631] border-gray-300 rounded focus:ring-[#6A5631]"
-                        />
-                        <span className="text-sm text-gray-700">{feature}</span>
-                      </label>
-                    ))}
+                  <div className="space-y-4">
+                    {/* Selected features display */}
+                    <div className="flex flex-wrap gap-2 p-4 bg-gray-50 rounded-lg border border-gray-200 min-h-[100px]">
+                      {selectedFeatures.length > 0 ? (
+                        selectedFeatures.map((feature, index) => (
+                          <div
+                            key={index}
+                            className="flex items-center gap-2 bg-white px-3 py-2 rounded-md border border-gray-200 group"
+                          >
+                            <span className="text-sm text-gray-700">
+                              {feature}
+                            </span>
+                            <button
+                              type="button"
+                              onClick={() => {
+                                setSelectedFeatures(
+                                  selectedFeatures.filter((_, i) => i !== index)
+                                );
+                              }}
+                              className="text-gray-400 hover:text-red-500 transition-colors"
+                            >
+                              <svg
+                                xmlns="http://www.w3.org/2000/svg"
+                                className="h-4 w-4"
+                                viewBox="0 0 20 20"
+                                fill="currentColor"
+                              >
+                                <path
+                                  fillRule="evenodd"
+                                  d="M10 18a8 8 0 100-16 8 8 0 000 16zM8.707 7.293a1 1 0 00-1.414 1.414L8.586 10l-1.293 1.293a1 1 0 101.414 1.414L10 11.414l1.293 1.293a1 1 0 001.414-1.414L11.414 10l1.293-1.293a1 1 0 00-1.414-1.414L10 8.586 8.707 7.293z"
+                                  clipRule="evenodd"
+                                />
+                              </svg>
+                            </button>
+                          </div>
+                        ))
+                      ) : (
+                        <div className="w-full h-full flex items-center justify-center text-gray-400 italic">
+                          No features selected
+                        </div>
+                      )}
+                    </div>
+
+                    {/* Feature selection dropdown */}
+                    <div className="flex items-center gap-2">
+                      <select
+                        className="flex-grow p-3 border border-gray-300 rounded-lg shadow-sm focus:ring-2 focus:ring-[#6A5631] focus:border-transparent"
+                        onChange={(e) => {
+                          const feature = e.target.value;
+                          if (feature && !selectedFeatures.includes(feature)) {
+                            setSelectedFeatures([...selectedFeatures, feature]);
+                          }
+                          e.target.value = ""; // Reset the dropdown
+                        }}
+                        defaultValue=""
+                      >
+                        <option value="" disabled>
+                          Add a feature
+                        </option>
+                        {PREDEFINED_FEATURES.filter(
+                          (feature) => !selectedFeatures.includes(feature)
+                        ).map((feature) => (
+                          <option key={feature} value={feature}>
+                            {feature}
+                          </option>
+                        ))}
+                      </select>
+                      <button
+                        type="button"
+                        onClick={() => setSelectedFeatures([])}
+                        className="px-3 py-3 text-red-500 hover:text-red-700 border border-gray-300 rounded-lg"
+                      >
+                        Clear all
+                      </button>
+                    </div>
                   </div>
                 </div>
 
