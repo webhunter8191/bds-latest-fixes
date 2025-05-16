@@ -24,8 +24,9 @@ export type HotelFormData = {
     category: string;
     totalRooms: number;
     defaultPrice: number; // Default price for unspecified dates
-    priceCalendar: { date: Date; price: number }[]; // Dynamic pricing
+    priceCalendar: { date: Date; price: number; availableRooms?: number }[]; // Dynamic pricing
     images: File[];
+    features: string[]; // <-- Added for room features
   }[];
 
   policies: string[]; // Policies field
@@ -141,47 +142,112 @@ const ManageHotelForm = ({ onSave, isLoading, hotel }: Props) => {
 
   return (
     <FormProvider {...formMethods}>
-      <form
-        className="bg-white p-6 rounded-lg shadow-lg max-w-2xl mx-auto"
-        onSubmit={onSubmit}
-      >
-        <h1 className="text-3xl font-semibold text-center mb-6">
-          Manage Hotel
-        </h1>
-        <DetailsSection hotel={hotel} />
-        <TypeSection />
-        <FacilitiesSection />
+      <div className="min-h-screen bg-gray-50 py-8 px-4 sm:px-6 lg:px-8">
+        <div className="max-w-4xl mx-auto">
+          <div className="bg-white rounded-2xl shadow-xl overflow-hidden">
+            {/* Header */}
+            <div className="bg-[#6A5631] px-6 py-8 sm:px-8">
+              <h1 className="text-3xl font-bold text-white text-center">
+                {hotel ? "Edit Hotel Details" : "Add New Hotel"}
+              </h1>
+              <p className="mt-2 text-center text-gray-200">
+                {hotel
+                  ? "Update your hotel information and room details"
+                  : "Fill in the details to create your hotel listing"}
+              </p>
+            </div>
 
-        <GuestsSection
-          existingRooms={(hotel?.rooms || []).map((room) => ({
-            ...room,
-            category: String(room.category), // Ensure category is a string
-            price: room.defaultPrice, // Map defaultPrice to price
-            priceCalendar: (room.priceCalendar || []).map((entry) => ({
-              ...entry,
-              date: entry.date ? new Date(entry.date).toISOString() : "", // Ensure date is converted to a Date object
-            })),
-          }))}
-        />
+            {/* Form Content */}
+            <form onSubmit={onSubmit} className="space-y-8 p-6 sm:p-8">
+              <div className="space-y-6">
+                <DetailsSection hotel={hotel} />
+                <TypeSection />
+                <FacilitiesSection />
 
-        <ImagesSection />
-        <div className="flex justify-end mt-6 space-x-4">
-          <button
-            type="button"
-            onClick={() => navigate("/my-hotels")}
-            className="bg-gray-600 text-white py-2 px-4 font-semibold rounded-md hover:bg-gray-500"
-          >
-            Back
-          </button>
-          <button
-            disabled={isLoading}
-            type="submit"
-            className="bg-blue-600 text-white py-2 px-4 font-semibold rounded-md hover:bg-blue-500 disabled:bg-gray-300"
-          >
-            {isLoading ? "Saving..." : "Save"}
-          </button>
+                <div className="bg-gray-50 rounded-xl p-6">
+                  <h2 className="text-xl font-semibold text-gray-800 mb-4">
+                    Room Management
+                  </h2>
+                  <GuestsSection
+                    existingRooms={(hotel?.rooms || []).map((room) => ({
+                      ...room,
+                      category: String(room.category),
+                      price: room.defaultPrice,
+                      priceCalendar: (room.priceCalendar || []).map(
+                        (entry) => ({
+                          ...entry,
+                          date: entry.date
+                            ? new Date(entry.date).toISOString()
+                            : "",
+                          availableRooms:
+                            (
+                              entry as {
+                                date: any;
+                                price: any;
+                                availableRooms?: any;
+                              }
+                            ).availableRooms ?? 0,
+                        })
+                      ),
+                    }))}
+                  />
+                </div>
+
+                <div className="bg-gray-50 rounded-xl p-6">
+                  <h2 className="text-xl font-semibold text-gray-800 mb-4">
+                    Hotel Images
+                  </h2>
+                  <ImagesSection />
+                </div>
+              </div>
+
+              {/* Action Buttons */}
+              <div className="flex flex-col sm:flex-row justify-end gap-4 pt-6 border-t border-gray-200">
+                <button
+                  type="button"
+                  onClick={() => navigate("/my-hotels")}
+                  className="w-full sm:w-auto px-6 py-3 border border-gray-300 rounded-lg text-gray-700 font-semibold hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-[#6A5631] transition-colors duration-200"
+                >
+                  Cancel
+                </button>
+                <button
+                  disabled={isLoading}
+                  type="submit"
+                  className="w-full sm:w-auto px-6 py-3 bg-[#6A5631] text-white font-semibold rounded-lg hover:bg-[#5A4728] focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-[#6A5631] disabled:bg-gray-400 disabled:cursor-not-allowed transition-colors duration-200"
+                >
+                  {isLoading ? (
+                    <div className="flex items-center justify-center">
+                      <svg
+                        className="animate-spin -ml-1 mr-3 h-5 w-5 text-white"
+                        xmlns="http://www.w3.org/2000/svg"
+                        fill="none"
+                        viewBox="0 0 24 24"
+                      >
+                        <circle
+                          className="opacity-25"
+                          cx="12"
+                          cy="12"
+                          r="10"
+                          stroke="currentColor"
+                          strokeWidth="4"
+                        ></circle>
+                        <path
+                          className="opacity-75"
+                          fill="currentColor"
+                          d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"
+                        ></path>
+                      </svg>
+                      Saving...
+                    </div>
+                  ) : (
+                    "Save Changes"
+                  )}
+                </button>
+              </div>
+            </form>
+          </div>
         </div>
-      </form>
+      </div>
     </FormProvider>
   );
 };

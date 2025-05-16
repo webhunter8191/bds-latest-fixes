@@ -5,7 +5,6 @@ const roomSchema = new mongoose.Schema({
   category: { type: Number, required: true },
   totalRooms: { type: Number, required: true },
   availableRooms: { type: Number, required: true },
-  features: [{ type: String }],
   images: [{ type: String }],
   adultCount: { type: Number, required: true, default: 0 },
   childCount: { type: Number, required: true, default: 0 },
@@ -14,6 +13,7 @@ const roomSchema = new mongoose.Schema({
     {
       date: { type: Date, required: true }, // Ensure this is stored as a Date
       price: { type: Number, required: true },
+      availableRooms: { type: Number, required: true, default: 0 },
     },
   ],
 });
