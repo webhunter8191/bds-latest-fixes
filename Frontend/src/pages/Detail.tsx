@@ -1,31 +1,10 @@
-import {
-  useState,
-  JSXElementConstructor,
-  Key,
-  ReactElement,
-  ReactNode,
-  ReactPortal,
-} from "react";
+import { useState } from "react";
 import { useQuery, useQueryClient } from "react-query";
 import { useParams } from "react-router-dom";
 import * as apiClient from "./../api-client";
 import { AiFillStar } from "react-icons/ai";
-import {
-  FaArrowLeft,
-  FaArrowRight,
-  FaWifi,
-  FaSwimmingPool,
-  FaConciergeBell,
-  FaParking,
-  FaDumbbell,
-  FaCoffee,
-  FaUtensils,
-  FaSpa,
-  FaHotel,
-} from "react-icons/fa";
+import { FaArrowLeft, FaArrowRight } from "react-icons/fa";
 
-import { MdLocalLaundryService, MdOutlineRoomService } from "react-icons/md";
-import { GiBathtub } from "react-icons/gi";
 import GuestInfoForm from "../forms/GuestInfoForm/GuestInfoForm";
 import Slider from "react-slick";
 import Modal from "react-modal"; // Install react-modal if not already installed
@@ -36,22 +15,6 @@ import "slick-carousel/slick/slick-theme.css";
 import { useSearchContext } from "../contexts/SearchContext";
 
 Modal.setAppElement("#root"); // Replace "#root" with the ID of your app's root element
-
-// Facility to icon mapping
-const facilityIcons = {
-  "Free WiFi": FaWifi,
-  "Swimming Pool": FaSwimmingPool,
-  "Concierge Service": FaConciergeBell,
-  Parking: FaParking,
-  Gym: FaDumbbell,
-  "Breakfast Included": FaCoffee,
-  Restaurant: FaUtensils,
-  Spa: FaSpa,
-  "Laundry Service": MdLocalLaundryService,
-  "Room Service": MdOutlineRoomService,
-  Bathtub: GiBathtub,
-  Hotel: FaHotel,
-};
 
 // Custom Next Arrow Component
 const NextArrow = (props: { onClick: any }) => {
