@@ -9,13 +9,32 @@ type existingRooms = {
   totalRooms: number;
   price: number;
   images: string[];
-  features: string[];
   availableRooms: number;
   adultCount: number;
   childCount: number;
   defaultPrice: number; // Default price for unspecified dates
-  priceCalendar: { date: string; price: number }[]; // Dynamic pricing
+  priceCalendar: { date: string; price: number; availableRooms: number }[]; // Dynamic pricing
+  features: string[];
 };
+
+const PREDEFINED_FEATURES = [
+  "AC",
+  "LED TV",
+  "Geyser",
+  "Fan",
+  "Breakfast",
+  "WiFi",
+  "Room Heater",
+  "Balcony",
+  "Mini Fridge",
+  "Tea/Coffee Maker",
+  "Wardrobe",
+  "Attached Bathroom",
+  "Hot Water",
+  "Intercom",
+  "Towels",
+  "Toiletries",
+];
 
 const GuestsSection = ({
   existingRooms,
@@ -29,8 +48,9 @@ const GuestsSection = ({
   const [editingRoomIndex, setEditingRoomIndex] = useState<number | null>(null);
   const [newPolicy, setNewPolicy] = useState("");
   const [priceCalendarEntries, setPriceCalendarEntries] = useState<
-    { date: string; price: number }[]
+    { date: string; price: number; availableRooms: number }[]
   >([]);
+  const [selectedFeatures, setSelectedFeatures] = useState<string[]>([]);
 
   const categories = [
     { value: 1, label: "2 Bed AC" },
@@ -88,25 +108,37 @@ const GuestsSection = ({
       adultCount: Number(formData.get("adultCount")),
       childCount: Number(formData.get("childCount")),
       defaultPrice: Number(formData.get("defaultPrice")),
-      priceCalendar: priceCalendarEntries, // Include priceCalendar
+      priceCalendar: priceCalendarEntries,
+      features: selectedFeatures,
     };
+
+    console.log("New room object:", newRoom);
 
     if (editingRoomIndex !== null) {
       const updatedRooms = [...rooms];
       updatedRooms[editingRoomIndex] = newRoom;
+      console.log("Updated rooms:", updatedRooms);
       setValue("rooms", updatedRooms);
       setRooms(updatedRooms);
       setEditingRoomIndex(null);
     } else {
-      setValue("rooms", [...rooms, newRoom]);
-      setRooms([...rooms, newRoom]);
+      const newRooms = [...rooms, newRoom];
+      console.log("New rooms array:", newRooms);
+      setValue("rooms", newRooms);
+      setRooms(newRooms);
     }
     setIsDialogOpen(false);
   };
 
   const handleEditRoom = (index: number | null) => {
     if (index !== null) {
-      setPriceCalendarEntries(rooms[index].priceCalendar || []);
+      setPriceCalendarEntries(
+        (rooms[index].priceCalendar || []).map((entry: any) => ({
+          ...entry,
+          availableRooms: entry.availableRooms ?? 0,
+        }))
+      );
+      setSelectedFeatures(rooms[index].features || []);
     }
     setEditingRoomIndex(index);
     setIsDialogOpen(true);
@@ -120,128 +152,213 @@ const GuestsSection = ({
     });
   };
 
+  const handleAvailableRoomsChange = (index: number, value: string) => {
+    const updatedEntries = [...priceCalendarEntries];
+    updatedEntries[index].availableRooms = Number(value);
+    setPriceCalendarEntries(updatedEntries);
+  };
+
   return (
-    <div className="mb-8">
-      <h2 className="text-2xl font-semibold mb-4">Guests</h2>
-      <div className="flex items-center mt-4">
-        <span className="mr-2 text-gray-700">Show Rooms</span>
-        <button
-          onClick={toggleRoomsVisibility}
-          className={`w-12 h-6 flex items-center rounded-full p-1 cursor-pointer ${
-            showRooms ? "bg-green-500" : "bg-gray-300"
-          }`}
-        >
-          <div
-            className={`w-4 h-4 bg-white rounded-full shadow-md transform transition-transform ${
-              showRooms ? "translate-x-6" : "translate-x-0"
-            }`}
-          ></div>
-        </button>
-      </div>
-      <button
-        onClick={(e) => {
-          e.preventDefault();
-          e.stopPropagation();
-          setIsDialogOpen(true);
-        }}
-        className="mt-4 bg-blue-500 text-white py-2 px-4 rounded-lg"
-      >
-        Add Rooms
-      </button>
-      <div className="mt-6">
-        {rooms.map((room, index) => (
-          <div key={index} className="p-4 border rounded-lg mb-4">
-            <h3 className="font-semibold">
-              Category: {categoriesTitles[room.category]}
-            </h3>
-            <p>Total Rooms: {room.totalRooms}</p>
-            <p>Regular Price: {room.defaultPrice}</p>
-            <p>Seasonal Price Calendar:</p>
-            <ul className="ml-4 list-disc">
-              {room.priceCalendar.map(
-                (
-                  entry: {
-                    date:
-                      | string
-                      | number
-                      | boolean
-                      | React.ReactElement<
-                          any,
-                          string | React.JSXElementConstructor<any>
-                        >
-                      | Iterable<React.ReactNode>
-                      | React.ReactPortal
-                      | null
-                      | undefined;
-                    price:
-                      | string
-                      | number
-                      | boolean
-                      | React.ReactElement<
-                          any,
-                          string | React.JSXElementConstructor<any>
-                        >
-                      | Iterable<React.ReactNode>
-                      | React.ReactPortal
-                      | null
-                      | undefined;
-                  },
-                  i: React.Key | null | undefined
-                ) => (
-                  <li key={i}>
-                    {/* {entry.date} - ₹{entry.price} */}
-                    {entry.date ? entry.date : "Invalid Date"} - ₹{entry.price}
-                  </li>
-                )
-              )}
-            </ul>
-            <p>Adult Count: {room.adultCount}</p>
-            <p>Child Count: {room.childCount}</p>
-            <div className="flex gap-2 mt-2">
-              {room.images &&
-                room.images.map((image: string | File, i: number) =>
-                  image &&
-                  (typeof image === "string" || image instanceof File) ? (
-                    <img
-                      key={i}
-                      src={
-                        image instanceof File
-                          ? URL.createObjectURL(image)
-                          : image
-                      }
-                      alt="Room"
-                      className="w-16 h-16 rounded object-cover"
-                    />
-                  ) : null
-                )}
-            </div>
-            <div className="mt-2 flex gap-2">
-              <button
-                onClick={(e) => {
-                  e.preventDefault();
-                  e.stopPropagation();
-                  handleEditRoom(index);
-                }}
-                className="bg-yellow-500 text-white py-1 px-3 rounded-lg"
-              >
-                Edit
-              </button>
-              <button
-                onClick={(e) => {
-                  e.preventDefault();
-                  e.stopPropagation();
-                  handleDeleteRoom(index);
-                }}
-                className="bg-red-500 text-white py-1 px-3 rounded-lg"
-              >
-                Delete
-              </button>
-            </div>
+    <div className="space-y-8">
+      <div className="bg-white rounded-xl p-6 shadow-sm">
+        <div className="flex items-center justify-between mb-6">
+          <h2 className="text-2xl font-semibold text-gray-800">Guests</h2>
+          <div className="flex items-center gap-3">
+            <span className="text-sm text-gray-600">Show Rooms</span>
+            <button
+              onClick={toggleRoomsVisibility}
+              className={`w-12 h-6 flex items-center rounded-full p-1 cursor-pointer transition-colors duration-200 ${
+                showRooms ? "bg-[#6A5631]" : "bg-gray-300"
+              }`}
+            >
+              <div
+                className={`w-4 h-4 bg-white rounded-full shadow-md transform transition-transform duration-200 ${
+                  showRooms ? "translate-x-6" : "translate-x-0"
+                }`}
+              ></div>
+            </button>
           </div>
-        ))}
+        </div>
+
+        <button
+          onClick={(e) => {
+            e.preventDefault();
+            e.stopPropagation();
+            setIsDialogOpen(true);
+          }}
+          className="w-full sm:w-auto px-6 py-3 bg-[#6A5631] text-white rounded-lg hover:bg-[#5A4728] transition-colors duration-200 flex items-center justify-center gap-2"
+        >
+          <svg
+            xmlns="http://www.w3.org/2000/svg"
+            className="h-5 w-5"
+            viewBox="0 0 20 20"
+            fill="currentColor"
+          >
+            <path
+              fillRule="evenodd"
+              d="M10 3a1 1 0 011 1v5h5a1 1 0 110 2h-5v5a1 1 0 11-2 0v-5H4a1 1 0 110-2h5V4a1 1 0 011-1z"
+              clipRule="evenodd"
+            />
+          </svg>
+          Add Room Category
+        </button>
+
+        <div className="mt-6 space-y-6">
+          {rooms.map((room, index) => (
+            <div
+              key={index}
+              className="bg-gray-50 rounded-xl p-6 border border-gray-200"
+            >
+              <div className="flex flex-col md:flex-row md:items-center md:justify-between gap-4 mb-4">
+                <h3 className="text-xl font-semibold text-gray-800">
+                  {categoriesTitles[room.category]}
+                </h3>
+                <div className="flex flex-col sm:flex-row gap-2">
+                  <button
+                    onClick={(e) => {
+                      e.preventDefault();
+                      e.stopPropagation();
+                      handleEditRoom(index);
+                    }}
+                    className="px-4 py-2 bg-[#6A5631] text-white rounded-lg hover:bg-[#5A4728] transition-colors duration-200 flex items-center justify-center gap-2"
+                  >
+                    <svg
+                      xmlns="http://www.w3.org/2000/svg"
+                      className="h-5 w-5"
+                      viewBox="0 0 20 20"
+                      fill="currentColor"
+                    >
+                      <path d="M13.586 3.586a2 2 0 112.828 2.828l-.793.793-2.828-2.828.793-.793zM11.379 5.793L3 14.172V17h2.828l8.38-8.379-2.83-2.828z" />
+                    </svg>
+                    Edit
+                  </button>
+                  <button
+                    onClick={(e) => {
+                      e.preventDefault();
+                      e.stopPropagation();
+                      handleDeleteRoom(index);
+                    }}
+                    className="px-4 py-2 bg-red-500 text-white rounded-lg hover:bg-red-600 transition-colors duration-200 flex items-center justify-center gap-2"
+                  >
+                    <svg
+                      xmlns="http://www.w3.org/2000/svg"
+                      className="h-5 w-5"
+                      viewBox="0 0 20 20"
+                      fill="currentColor"
+                    >
+                      <path
+                        fillRule="evenodd"
+                        d="M9 2a1 1 0 00-.894.553L7.382 4H4a1 1 0 000 2v10a2 2 0 002 2h8a2 2 0 002-2V6a1 1 0 100-2h-3.382l-.724-1.447A1 1 0 0011 2H9zM7 8a1 1 0 012 0v6a1 1 0 11-2 0V8zm5-1a1 1 0 00-1 1v6a1 1 0 102 0V8a1 1 0 00-1-1z"
+                        clipRule="evenodd"
+                      />
+                    </svg>
+                    Delete
+                  </button>
+                </div>
+              </div>
+
+              <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 mb-6">
+                <div className="bg-white p-4 rounded-lg shadow-sm">
+                  <span className="text-sm text-gray-600">Total Rooms</span>
+                  <p className="text-lg font-semibold text-gray-800">
+                    {room.totalRooms}
+                  </p>
+                </div>
+                <div className="bg-white p-4 rounded-lg shadow-sm">
+                  <span className="text-sm text-gray-600">Regular Price</span>
+                  <p className="text-lg font-semibold text-[#6A5631]">
+                    ₹{room.defaultPrice}
+                  </p>
+                </div>
+                <div className="bg-white p-4 rounded-lg shadow-sm">
+                  <span className="text-sm text-gray-600">Adult Count</span>
+                  <p className="text-lg font-semibold text-gray-800">
+                    {room.adultCount}
+                  </p>
+                </div>
+                <div className="bg-white p-4 rounded-lg shadow-sm">
+                  <span className="text-sm text-gray-600">Child Count</span>
+                  <p className="text-lg font-semibold text-gray-800">
+                    {room.childCount}
+                  </p>
+                </div>
+              </div>
+
+              <div className="space-y-4">
+                <h4 className="text-sm font-medium text-gray-700">
+                  Seasonal Price Calendar
+                </h4>
+                <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4">
+                  <PriceCalendarForm
+                    priceCalendarEntries={priceCalendarEntries}
+                    setPriceCalendarEntries={setPriceCalendarEntries}
+                    handleAvailableRoomsChange={handleAvailableRoomsChange}
+                  />
+                </div>
+              </div>
+
+              <div className="space-y-2">
+                <label className="block text-sm font-medium text-gray-700">
+                  Room Features
+                </label>
+                <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 gap-2">
+                  {PREDEFINED_FEATURES.map((feature) => (
+                    <label key={feature} className="flex items-center gap-2">
+                      <input
+                        type="checkbox"
+                        checked={selectedFeatures.includes(feature)}
+                        onChange={(e) => {
+                          if (e.target.checked) {
+                            setSelectedFeatures([...selectedFeatures, feature]);
+                          } else {
+                            setSelectedFeatures(
+                              selectedFeatures.filter((f) => f !== feature)
+                            );
+                          }
+                        }}
+                        className="h-4 w-4 text-[#6A5631] border-gray-300 rounded focus:ring-[#6A5631]"
+                      />
+                      <span className="text-sm text-gray-700">{feature}</span>
+                    </label>
+                  ))}
+                </div>
+              </div>
+
+              {room.images && room.images.length > 0 && (
+                <div className="mt-6">
+                  <h4 className="text-sm font-medium text-gray-700 mb-3">
+                    Room Images
+                  </h4>
+                  <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-6 gap-4">
+                    {room.images.map((image: string | File, i: number) =>
+                      image &&
+                      (typeof image === "string" || image instanceof File) ? (
+                        <div key={i} className="aspect-square relative group">
+                          <img
+                            src={
+                              image instanceof File
+                                ? URL.createObjectURL(image)
+                                : image
+                            }
+                            alt="Room"
+                            className="w-full h-full object-cover rounded-lg"
+                          />
+                        </div>
+                      ) : null
+                    )}
+                  </div>
+                </div>
+              )}
+            </div>
+          ))}
+        </div>
       </div>
-      <div className="mt-10">
-        <h3 className="text-xl font-semibold mb-2">Hotel Policies</h3>
+
+      {/* Hotel Policies Section */}
+      <div className="bg-white rounded-xl p-6 shadow-sm">
+        <h3 className="text-xl font-semibold text-gray-800 mb-4">
+          Hotel Policies
+        </h3>
         <Controller
           name="policies"
           control={control}
@@ -268,12 +385,12 @@ const GuestsSection = ({
             };
 
             return (
-              <div>
-                <div className="flex gap-2 mb-4">
+              <div className="space-y-4">
+                <div className="flex gap-2">
                   <input
                     name="policy"
                     type="text"
-                    className="w-full border p-2 rounded"
+                    className="flex-grow p-3 border border-gray-300 rounded-lg shadow-sm focus:ring-2 focus:ring-[#6A5631] focus:border-transparent"
                     placeholder="Enter a new policy"
                     value={newPolicy}
                     onChange={(e) => setNewPolicy(e.target.value)}
@@ -281,21 +398,33 @@ const GuestsSection = ({
                   <button
                     type="button"
                     onClick={handleAddPolicy}
-                    className="bg-blue-500 text-white px-4 rounded-lg"
+                    className="px-6 py-3 bg-[#6A5631] text-white rounded-lg hover:bg-[#5A4728] transition-colors duration-200 flex items-center justify-center gap-2"
                   >
+                    <svg
+                      xmlns="http://www.w3.org/2000/svg"
+                      className="h-5 w-5"
+                      viewBox="0 0 20 20"
+                      fill="currentColor"
+                    >
+                      <path
+                        fillRule="evenodd"
+                        d="M10 3a1 1 0 011 1v5h5a1 1 0 110 2h-5v5a1 1 0 11-2 0v-5H4a1 1 0 110-2h5V4a1 1 0 011-1z"
+                        clipRule="evenodd"
+                      />
+                    </svg>
                     Add
                   </button>
                 </div>
 
-                <ul className="space-y-2">
+                <div className="space-y-2">
                   {policies.map((policy, index) => (
-                    <li
+                    <div
                       key={index}
-                      className="flex items-center gap-2 border rounded p-2"
+                      className="flex items-center gap-2 bg-gray-50 p-4 rounded-lg border border-gray-200"
                     >
                       <input
                         type="text"
-                        className="flex-grow border rounded px-2 py-1"
+                        className="flex-grow p-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-[#6A5631] focus:border-transparent"
                         value={policy}
                         onChange={(e) =>
                           handlePolicyChange(index, e.target.value)
@@ -304,20 +433,35 @@ const GuestsSection = ({
                       <button
                         type="button"
                         onClick={() => handleDeletePolicy(index)}
-                        className="bg-red-500 text-white px-3 py-1 rounded-lg"
+                        className="p-2 text-red-500 hover:text-red-600 transition-colors duration-200"
                       >
-                        Delete
+                        <svg
+                          xmlns="http://www.w3.org/2000/svg"
+                          className="h-5 w-5"
+                          viewBox="0 0 20 20"
+                          fill="currentColor"
+                        >
+                          <path
+                            fillRule="evenodd"
+                            d="M9 2a1 1 0 00-.894.553L7.382 4H4a1 1 0 000 2v10a2 2 0 002 2h8a2 2 0 002-2V6a1 1 0 100-2h-3.382l-.724-1.447A1 1 0 0011 2H9zM7 8a1 1 0 012 0v6a1 1 0 11-2 0V8zm5-1a1 1 0 00-1 1v6a1 1 0 102 0V8a1 1 0 00-1-1z"
+                            clipRule="evenodd"
+                          />
+                        </svg>
                       </button>
-                    </li>
+                    </div>
                   ))}
-                </ul>
+                </div>
               </div>
             );
           }}
         />
       </div>
-      <div className="mt-10">
-        <h3 className="text-xl font-semibold mb-2">Nearby Temples</h3>
+
+      {/* Nearby Temples Section */}
+      <div className="bg-white rounded-xl p-6 shadow-sm">
+        <h3 className="text-xl font-semibold text-gray-800 mb-4">
+          Nearby Temples
+        </h3>
         <Controller
           name="temples"
           control={control}
@@ -351,41 +495,66 @@ const GuestsSection = ({
                 {temples.map((temple, index) => (
                   <div
                     key={index}
-                    className="flex gap-2 items-center border rounded p-2"
+                    className="flex flex-col sm:flex-row gap-3 bg-gray-50 p-4 rounded-lg border border-gray-200"
                   >
                     <input
                       type="text"
                       placeholder="Temple name"
-                      className="flex-grow border p-2 rounded"
+                      className="flex-grow p-3 border border-gray-300 rounded-lg shadow-sm focus:ring-2 focus:ring-[#6A5631] focus:border-transparent"
                       value={temple.name}
                       onChange={(e) =>
                         handleTempleChange(index, "name", e.target.value)
                       }
                     />
-                    <input
-                      type="number"
-                      step="0.1"
-                      placeholder="Distance (km)"
-                      className="w-32 border p-2 rounded"
-                      value={temple.distance}
-                      onChange={(e) =>
-                        handleTempleChange(index, "distance", e.target.value)
-                      }
-                    />
-                    <button
-                      type="button"
-                      onClick={() => handleRemoveTemple(index)}
-                      className="bg-red-500 text-white px-3 py-1 rounded-lg"
-                    >
-                      Delete
-                    </button>
+                    <div className="flex gap-3">
+                      <input
+                        type="number"
+                        step="0.1"
+                        placeholder="Distance (km)"
+                        className="w-32 p-3 border border-gray-300 rounded-lg shadow-sm focus:ring-2 focus:ring-[#6A5631] focus:border-transparent"
+                        value={temple.distance}
+                        onChange={(e) =>
+                          handleTempleChange(index, "distance", e.target.value)
+                        }
+                      />
+                      <button
+                        type="button"
+                        onClick={() => handleRemoveTemple(index)}
+                        className="p-3 text-red-500 hover:text-red-600 transition-colors duration-200"
+                      >
+                        <svg
+                          xmlns="http://www.w3.org/2000/svg"
+                          className="h-5 w-5"
+                          viewBox="0 0 20 20"
+                          fill="currentColor"
+                        >
+                          <path
+                            fillRule="evenodd"
+                            d="M9 2a1 1 0 00-.894.553L7.382 4H4a1 1 0 000 2v10a2 2 0 002 2h8a2 2 0 002-2V6a1 1 0 100-2h-3.382l-.724-1.447A1 1 0 0011 2H9zM7 8a1 1 0 012 0v6a1 1 0 11-2 0V8zm5-1a1 1 0 00-1 1v6a1 1 0 102 0V8a1 1 0 00-1-1z"
+                            clipRule="evenodd"
+                          />
+                        </svg>
+                      </button>
+                    </div>
                   </div>
                 ))}
                 <button
                   type="button"
                   onClick={handleAddTemple}
-                  className="bg-blue-500 text-white px-4 py-2 rounded-lg"
+                  className="w-full sm:w-auto px-6 py-3 bg-[#6A5631] text-white rounded-lg hover:bg-[#5A4728] transition-colors duration-200 flex items-center justify-center gap-2"
                 >
+                  <svg
+                    xmlns="http://www.w3.org/2000/svg"
+                    className="h-5 w-5"
+                    viewBox="0 0 20 20"
+                    fill="currentColor"
+                  >
+                    <path
+                      fillRule="evenodd"
+                      d="M10 3a1 1 0 011 1v5h5a1 1 0 110 2h-5v5a1 1 0 11-2 0v-5H4a1 1 0 110-2h5V4a1 1 0 011-1z"
+                      clipRule="evenodd"
+                    />
+                  </svg>
                   Add Temple
                 </button>
               </div>
@@ -393,129 +562,177 @@ const GuestsSection = ({
           }}
         />
       </div>
+
       {/* Room Dialog */}
       <Dialog open={isDialogOpen} onClose={() => setIsDialogOpen(false)}>
-        <div className="fixed inset-0 bg-black bg-opacity-30 flex justify-center items-center">
-          <div className="bg-white p-6 rounded-lg w-96 max-h-[90vh] overflow-y-auto">
-            <h3 className="text-lg font-semibold mb-4">
-              {editingRoomIndex !== null
-                ? "Edit Room Category"
-                : "Add Room Category"}
-            </h3>
-            <form onSubmit={handleSaveRoom}>
-              <label className="block mb-2">Category</label>
-              <select
-                name="category"
-                className="border w-full p-2 rounded"
-                defaultValue={
-                  editingRoomIndex !== null
-                    ? rooms[editingRoomIndex].category
-                    : ""
-                }
-              >
-                {categories.map((category) => (
-                  <option key={category.value} value={category.value}>
-                    {category.label}
-                  </option>
-                ))}
-              </select>
-              <label className="block mt-4">Number of Rooms</label>
-              <input
-                name="totalRooms"
-                type="number"
-                className="border w-full p-2 rounded"
-                defaultValue={
-                  editingRoomIndex !== null
-                    ? rooms[editingRoomIndex].totalRooms
-                    : ""
-                }
-              />
-              <label className="block mt-4">Regular price</label>
-              <input
-                name="defaultPrice"
-                type="number"
-                className="border w-full p-2 rounded"
-                defaultValue={
-                  editingRoomIndex !== null
-                    ? rooms[editingRoomIndex].defaultPrice
-                    : ""
-                }
-              />
-              <label className="block mt-4">Seasonal Price Calendar</label>
-              <PriceCalendarForm
-                initialEntries={
-                  editingRoomIndex !== null
-                    ? rooms[editingRoomIndex].priceCalendar
-                    : []
-                }
-                onChange={setPriceCalendarEntries}
-              />
-              <label className="block mt-4">Adult Count</label>
-              <input
-                name="adultCount"
-                type="number"
-                className="border w-full p-2 rounded"
-                defaultValue={
-                  editingRoomIndex !== null
-                    ? rooms[editingRoomIndex].adultCount
-                    : ""
-                }
-              />
-              <label className="block mt-4">Child Count</label>
-              <input
-                name="childCount"
-                type="number"
-                className="border w-full p-2 rounded"
-                defaultValue={
-                  editingRoomIndex !== null
-                    ? rooms[editingRoomIndex].childCount
-                    : ""
-                }
-              />
-              <label className="block mt-4">Upload Images</label>
-              <input
-                name="images"
-                type="file"
-                multiple
-                className="border w-full p-2 rounded"
-              />
-              {editingRoomIndex !== null && rooms[editingRoomIndex].images && (
-                <div className="mt-2 flex gap-2">
-                  {rooms[editingRoomIndex].images.map(
-                    (image: string | File, i: number) =>
-                      image &&
-                      (typeof image === "string" || image instanceof File) ? (
-                        <img
-                          key={i}
-                          src={
-                            image instanceof File
-                              ? URL.createObjectURL(image)
-                              : image
-                          }
-                          alt="Room"
-                          className="w-16 h-16 rounded object-cover"
-                        />
-                      ) : null
-                  )}
+        <div className="fixed inset-0 bg-black bg-opacity-30 flex justify-center items-center p-4">
+          <div className="bg-white rounded-2xl shadow-xl w-full max-w-2xl max-h-[90vh] overflow-y-auto">
+            <div className="p-6">
+              <h3 className="text-xl font-semibold text-gray-800 mb-6">
+                {editingRoomIndex !== null
+                  ? "Edit Room Category"
+                  : "Add Room Category"}
+              </h3>
+
+              <form onSubmit={handleSaveRoom} className="space-y-6">
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                  <div className="space-y-2">
+                    <label className="block text-sm font-medium text-gray-700">
+                      Category
+                    </label>
+                    <select
+                      name="category"
+                      className="w-full p-3 border border-gray-300 rounded-lg shadow-sm focus:ring-2 focus:ring-[#6A5631] focus:border-transparent"
+                      defaultValue={
+                        editingRoomIndex !== null
+                          ? rooms[editingRoomIndex].category
+                          : ""
+                      }
+                    >
+                      {categories.map((category) => (
+                        <option key={category.value} value={category.value}>
+                          {category.label}
+                        </option>
+                      ))}
+                    </select>
+                  </div>
+
+                  <div className="space-y-2">
+                    <label className="block text-sm font-medium text-gray-700">
+                      Number of Rooms
+                    </label>
+                    <input
+                      name="totalRooms"
+                      type="number"
+                      className="w-full p-3 border border-gray-300 rounded-lg shadow-sm focus:ring-2 focus:ring-[#6A5631] focus:border-transparent"
+                      defaultValue={
+                        editingRoomIndex !== null
+                          ? rooms[editingRoomIndex].totalRooms
+                          : ""
+                      }
+                    />
+                  </div>
+
+                  <div className="space-y-2">
+                    <label className="block text-sm font-medium text-gray-700">
+                      Regular Price
+                    </label>
+                    <input
+                      name="defaultPrice"
+                      type="number"
+                      className="w-full p-3 border border-gray-300 rounded-lg shadow-sm focus:ring-2 focus:ring-[#6A5631] focus:border-transparent"
+                      defaultValue={
+                        editingRoomIndex !== null
+                          ? rooms[editingRoomIndex].defaultPrice
+                          : ""
+                      }
+                    />
+                  </div>
+
+                  <div className="space-y-2">
+                    <label className="block text-sm font-medium text-gray-700">
+                      Adult Count
+                    </label>
+                    <input
+                      name="adultCount"
+                      type="number"
+                      className="w-full p-3 border border-gray-300 rounded-lg shadow-sm focus:ring-2 focus:ring-[#6A5631] focus:border-transparent"
+                      defaultValue={
+                        editingRoomIndex !== null
+                          ? rooms[editingRoomIndex].adultCount
+                          : ""
+                      }
+                    />
+                  </div>
+
+                  <div className="space-y-2">
+                    <label className="block text-sm font-medium text-gray-700">
+                      Child Count
+                    </label>
+                    <input
+                      name="childCount"
+                      type="number"
+                      className="w-full p-3 border border-gray-300 rounded-lg shadow-sm focus:ring-2 focus:ring-[#6A5631] focus:border-transparent"
+                      defaultValue={
+                        editingRoomIndex !== null
+                          ? rooms[editingRoomIndex].childCount
+                          : ""
+                      }
+                    />
+                  </div>
+
+                  <div className="space-y-2">
+                    <label className="block text-sm font-medium text-gray-700">
+                      Upload Images
+                    </label>
+                    <input
+                      name="images"
+                      type="file"
+                      multiple
+                      className="w-full p-3 border border-gray-300 rounded-lg shadow-sm focus:ring-2 focus:ring-[#6A5631] focus:border-transparent"
+                    />
+                  </div>
                 </div>
-              )}
-              <div className="mt-4 flex justify-end">
-                <button
-                  type="button"
-                  onClick={() => setIsDialogOpen(false)}
-                  className="bg-gray-500 text-white py-2 px-4 rounded-lg mr-2"
-                >
-                  Cancel
-                </button>
-                <button
-                  type="submit"
-                  onClick={(e) => e.stopPropagation()}
-                  className="bg-green-500 text-white py-2 px-4 rounded-lg"
-                >
-                  Save
-                </button>
-              </div>
-            </form>
+
+                <div className="space-y-2">
+                  <label className="block text-sm font-medium text-gray-700">
+                    Seasonal Price Calendar
+                  </label>
+                  <PriceCalendarForm
+                    priceCalendarEntries={priceCalendarEntries}
+                    setPriceCalendarEntries={setPriceCalendarEntries}
+                    handleAvailableRoomsChange={handleAvailableRoomsChange}
+                  />
+                </div>
+
+                <div className="space-y-2">
+                  <label className="block text-sm font-medium text-gray-700">
+                    Room Features
+                  </label>
+                  <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 gap-2">
+                    {PREDEFINED_FEATURES.map((feature) => (
+                      <label key={feature} className="flex items-center gap-2">
+                        <input
+                          type="checkbox"
+                          checked={selectedFeatures.includes(feature)}
+                          onChange={(e) => {
+                            if (e.target.checked) {
+                              setSelectedFeatures([
+                                ...selectedFeatures,
+                                feature,
+                              ]);
+                            } else {
+                              setSelectedFeatures(
+                                selectedFeatures.filter((f) => f !== feature)
+                              );
+                            }
+                          }}
+                          className="h-4 w-4 text-[#6A5631] border-gray-300 rounded focus:ring-[#6A5631]"
+                        />
+                        <span className="text-sm text-gray-700">{feature}</span>
+                      </label>
+                    ))}
+                  </div>
+                </div>
+
+                <div className="flex justify-end gap-4 pt-6 border-t border-gray-200">
+                  <button
+                    type="button"
+                    onClick={() => setIsDialogOpen(false)}
+                    className="px-6 py-3 border border-gray-300 rounded-lg text-gray-700 font-semibold hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-[#6A5631] transition-colors duration-200"
+                  >
+                    Cancel
+                  </button>
+                  <button
+                    type="submit"
+                    onClick={(e) => e.stopPropagation()}
+                    className="px-6 py-3 bg-[#6A5631] text-white font-semibold rounded-lg hover:bg-[#5A4728] focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-[#6A5631] transition-colors duration-200"
+                  >
+                    Save Changes
+                  </button>
+                </div>
+              </form>
+            </div>
           </div>
         </div>
       </Dialog>

@@ -33,6 +33,7 @@ import Modal from "react-modal"; // Install react-modal if not already installed
 import "react-calendar/dist/Calendar.css"; // Import calendar styles
 import "slick-carousel/slick/slick.css";
 import "slick-carousel/slick/slick-theme.css";
+import { useSearchContext } from "../contexts/SearchContext";
 
 Modal.setAppElement("#root"); // Replace "#root" with the ID of your app's root element
 
@@ -93,16 +94,19 @@ const Detail = () => {
     }
   );
 
-  const getPriceForToday = (room: any) => {
-    console.log("Room Price Calendar:", room.priceCalendar); // Debugging
-    const today = new Date().toISOString().split("T")[0]; // Format today's date as YYYY-MM-DD
+  const getRoomInfoForDate = (room: any, date: Date) => {
+    const dateString = date.toISOString().split("T")[0];
     const priceEntry = room.priceCalendar?.find(
-      (entry: { date: string; price: number }) =>
-        new Date(entry.date).toISOString().split("T")[0] === today
+      (entry: { date: string; price: number; availableRooms?: number }) =>
+        new Date(entry.date).toISOString().split("T")[0] === dateString
     );
-    const priceToShow = priceEntry ? priceEntry.price : room.defaultPrice;
-    console.log("Price for Today:", priceToShow); // Debugging
-    return priceToShow; // Fallback to defaultPrice if no price is found
+    return {
+      price: priceEntry ? priceEntry.price : room.defaultPrice,
+      availableRooms:
+        priceEntry?.availableRooms !== undefined
+          ? priceEntry.availableRooms
+          : room.availableRooms,
+    };
   };
 
   const categories = {
@@ -145,9 +149,11 @@ const Detail = () => {
       setAvailableRooms(0);
       setSelectedRoomPrice(0);
       setSelectedRoomId("");
-      console.log("Dialog Opened:", false); // Debugging
     }
   };
+
+  const search = useSearchContext();
+  const selectedDate = search.checkIn ? new Date(search.checkIn) : null;
 
   if (isLoading || isFetching) {
     return (
@@ -205,7 +211,8 @@ const Detail = () => {
           <span className="text-gray-500 text-sm">{hotel.type}</span>
         </div>
         <h1 className="text-2xl sm:text-3xl lg:text-4xl font-semibold text-black animate-fadeIn">
-          {hotel.name} near {hotel.nearbyTemple[0]}
+          {hotel.name}{" "}
+          {hotel.nearbyTemple?.[0] ? `near ${hotel.nearbyTemple[0]}` : ""}
         </h1>
       </div>
 
@@ -270,13 +277,37 @@ const Detail = () => {
                   </h3>
                   <div className="text-gray-600 text-sm sm:text-base">
                     <p>
-                      Price: ₹ {getPriceForToday(room)}
+                      Price: ₹{" "}
+                      {
+                        getRoomInfoForDate(room, selectedDate || new Date())
+                          .price
+                      }
                       /night
                     </p>
                     <p>Available Rooms: {room.availableRooms}</p>
                     <p>Adults Allowed: {room.adultCount}</p>
                     <p>Children Allowed: {room.childCount}</p>
                   </div>
+
+                  {/* Room Features */}
+                  {room.features && room.features.length > 0 && (
+                    <div className="mt-2">
+                      <h4 className="text-sm font-semibold mb-2">
+                        Room Features:
+                      </h4>
+                      <div className="grid grid-cols-2 gap-2">
+                        {room.features.map((feature: string, idx: number) => (
+                          <div
+                            key={idx}
+                            className="flex items-center gap-2 text-sm text-gray-600 bg-gray-50 p-2 rounded-md"
+                          >
+                            <span className="w-2 h-2 bg-[#6A5631] rounded-full"></span>
+                            {feature}
+                          </div>
+                        ))}
+                      </div>
+                    </div>
+                  )}
 
                   {/* Price-wise Calendar */}
                   <div className="mt-4">
@@ -305,29 +336,51 @@ const Detail = () => {
                           const isCurrentMonth =
                             date.getMonth() === currentDate.getMonth();
                           const priceEntry = room.priceCalendar?.find(
-                            (entry: { date: string; price: number }) =>
+                            (entry: {
+                              date: string;
+                              price: number;
+                              availableRooms?: number;
+                            }) =>
                               new Date(entry.date).toDateString() ===
                               date.toDateString()
                           );
 
                           const priceToShow = priceEntry
                             ? priceEntry.price
-                            : room.defaultPrice; // Use price from calendar or fallback to default price
+                            : room.defaultPrice;
+                          const availableRoomsToShow =
+                            priceEntry?.availableRooms;
+
+                          // Highlight if this date matches the selected check-in date
+                          const isSelected =
+                            selectedDate &&
+                            date.toDateString() === selectedDate.toDateString();
 
                           return (
                             <div
                               key={idx}
                               className={`flex flex-col items-center h-10 justify-center p-2 border rounded-sm ${
-                                isCurrentMonth ? "" : ""
+                                isCurrentMonth ? "" : "bg-gray-200"
+                              } ${
+                                isSelected
+                                  ? "bg-yellow-200 border-yellow-500"
+                                  : ""
                               }`}
                             >
                               <div className="font-bold text-sm">
                                 {isCurrentMonth ? date.getDate() : ""}
                               </div>
                               {isCurrentMonth && (
-                                <div className="flex items-center justify-center w-8 h-8 bg-green-100 text-black text-xs font-semibold rounded-full mt-1">
-                                  ₹{priceToShow}
-                                </div>
+                                <>
+                                  <div className="flex items-center justify-center w-8 h-8 bg-green-100 text-black text-xs font-semibold rounded-full mt-1">
+                                    ₹{priceToShow}
+                                  </div>
+                                  {typeof availableRoomsToShow === "number" && (
+                                    <div className="text-[10px] text-blue-700 mt-1">
+                                      Rooms: {availableRoomsToShow}
+                                    </div>
+                                  )}
+                                </>
                               )}
                             </div>
                           );
@@ -346,7 +399,8 @@ const Detail = () => {
                         handleRoomSelection(
                           room.availableRooms,
                           room.category,
-                          getPriceForToday(room),
+                          getRoomInfoForDate(room, selectedDate || new Date())
+                            .price,
                           room._id
                         );
                       }}
@@ -422,12 +476,30 @@ const Detail = () => {
               <p className="text-gray-700 leading-relaxed whitespace-pre-line">
                 {hotel.location ? (
                   <>
+                    <p className="mb-2">Address: {hotel.location}</p>
                     <a
-                      href={hotel.location}
+                      href={`https://www.google.com/maps/search/?api=1&query=${encodeURIComponent(
+                        hotel.location
+                      )}`}
                       target="_blank"
-                      className="text-[#6A5631] hover:underline"
+                      rel="noopener noreferrer"
+                      className="text-[#6A5631] hover:underline inline-flex items-center gap-2"
                     >
-                      View the hotel on Google Maps
+                      View on Google Maps
+                      <svg
+                        xmlns="http://www.w3.org/2000/svg"
+                        className="h-4 w-4"
+                        fill="none"
+                        viewBox="0 0 24 24"
+                        stroke="currentColor"
+                      >
+                        <path
+                          strokeLinecap="round"
+                          strokeLinejoin="round"
+                          strokeWidth={2}
+                          d="M10 6H6a2 2 0 00-2 2v10a2 2 0 002 2h10a2 2 0 002-2v-4M14 4h6m0 0v6m0-6L10 14"
+                        />
+                      </svg>
                     </a>
                   </>
                 ) : (
@@ -437,13 +509,15 @@ const Detail = () => {
             </div>
             {/* Google Maps Embed */}
             {hotel.location && (
-              <div className="w-full h-80 sm:h-96">
+              <div className="w-full h-80 sm:h-96 mt-4">
                 <iframe
                   src={`https://www.google.com/maps/embed/v1/place?q=${encodeURIComponent(
                     hotel.location
                   )}&key=AIzaSyBfdU1HrvqgUUy-rsXNbvqCJRdQGMshjEE`}
-                  className="w-full h-full border-none"
+                  className="w-full h-full border-none rounded-lg shadow-md"
                   allowFullScreen
+                  loading="lazy"
+                  referrerPolicy="no-referrer-when-downgrade"
                 />
               </div>
             )}
@@ -457,11 +531,12 @@ const Detail = () => {
           <GuestInfoForm
             pricePerNight={
               selectedRoomId
-                ? getPriceForToday(
+                ? getRoomInfoForDate(
                     hotel.rooms.find((room) => room._id === selectedRoomId) ||
-                      {}
-                  )
-                : 0 // Fallback to 0 if no room is selected
+                      {},
+                    selectedDate || new Date()
+                  ).price
+                : 0
             }
             availableRooms={availableRooms}
             roomsId={selectedRoomId}
@@ -469,11 +544,13 @@ const Detail = () => {
             priceCalendar={
               hotel.rooms
                 .find((room) => room._id === selectedRoomId)
-                ?.priceCalendar?.map(({ date, price }) => ({
-                  date: new Date(date).toISOString().split("T")[0], // Convert Date to YYYY-MM-DD string
+                ?.priceCalendar?.map(({ date, price, availableRooms }) => ({
+                  date: new Date(date).toISOString().split("T")[0],
                   price,
+                  availableRooms:
+                    availableRooms !== undefined ? availableRooms : 0,
                 })) || []
-            } // Fallback to an empty array if priceCalendar is undefined
+            }
             defaultPrice={
               hotel.rooms.find((room) => room._id === selectedRoomId)
                 ?.defaultPrice || 0

@@ -9,8 +9,12 @@ type Props = {
   pricePerNight: number;
   availableRooms: number;
   roomsId: string;
-  priceCalendar?: { date: string; price: number }[]; // Optional price calendar
-  defaultPrice: number; // Default price per night
+  priceCalendar: {
+    date: string;
+    price: number;
+    availableRooms: number;
+  }[];
+  defaultPrice: number;
 };
 
 type GuestInfoFormData = {
@@ -55,18 +59,45 @@ const GuestInfoForm = ({
   const maxDate = new Date();
   maxDate.setFullYear(maxDate.getFullYear() + 1);
 
-  // Function to get the price for a specific date
-  const getPriceForDate = (date: Date) => {
+  // Function to get the price and available rooms for a specific date
+  const getRoomInfoForDate = (date: Date) => {
+    const dateString = date.toISOString().split("T")[0];
     const matchingEntry = priceCalendar.find(
-      (entry) => new Date(entry.date).toDateString() === date.toDateString()
+      (entry) => new Date(entry.date).toISOString().split("T")[0] === dateString
     );
-    return matchingEntry ? matchingEntry.price : defaultPrice;
+    return {
+      price: matchingEntry ? matchingEntry.price : defaultPrice,
+      availableRooms: matchingEntry?.availableRooms ?? availableRooms,
+    };
   };
 
-  // Dynamically get the price for the selected check-in date
-  const priceForSelectedDate = checkIn
-    ? getPriceForDate(new Date(checkIn))
-    : defaultPrice;
+  // Function to get minimum available rooms across date range
+  const getMinAvailableRooms = () => {
+    if (!checkIn || !checkOut) return availableRooms;
+
+    const checkInDate = new Date(checkIn);
+    const checkOutDate = new Date(checkOut);
+    let minAvailableRooms = Infinity;
+
+    for (
+      let currentDate = new Date(checkInDate);
+      currentDate < checkOutDate;
+      currentDate.setDate(currentDate.getDate() + 1)
+    ) {
+      const { availableRooms } = getRoomInfoForDate(currentDate);
+      minAvailableRooms = Math.min(minAvailableRooms, availableRooms);
+    }
+
+    return minAvailableRooms === Infinity ? availableRooms : minAvailableRooms;
+  };
+
+  // Get room info for the selected check-in date
+  const roomInfoForSelectedDate = checkIn
+    ? getRoomInfoForDate(new Date(checkIn))
+    : { price: defaultPrice, availableRooms };
+
+  // Get minimum available rooms for the selected date range
+  const minAvailableRooms = getMinAvailableRooms();
 
   // Calculate the total cost dynamically
   const calculateTotalCost = () => {
@@ -77,7 +108,7 @@ const GuestInfoForm = ({
 
     // If check-in and check-out dates are the same, charge for 1 day
     if (checkInDate.toDateString() === checkOutDate.toDateString()) {
-      return getPriceForDate(checkInDate) * watch("roomCount");
+      return getRoomInfoForDate(checkInDate).price * watch("roomCount");
     }
 
     let totalCost = 0;
@@ -86,7 +117,7 @@ const GuestInfoForm = ({
       currentDate < checkOutDate;
       currentDate.setDate(currentDate.getDate() + 1)
     ) {
-      totalCost += getPriceForDate(currentDate);
+      totalCost += getRoomInfoForDate(currentDate).price;
     }
 
     return totalCost * watch("roomCount");
@@ -128,7 +159,6 @@ const GuestInfoForm = ({
       totalWithTax
     );
 
-    // Navigate with the total cost state including tax
     navigate(`/hotel/${hotelId}/booking`, {
       state: {
         totalCost: totalWithTax,
@@ -139,9 +169,21 @@ const GuestInfoForm = ({
     });
   };
 
-  // Custom render function for the date picker to show prices
+  // Function to set check-out date to next day
+  const handleCheckInChange = (date: Date | null) => {
+    if (date) {
+      const nextDay = new Date(date);
+      nextDay.setDate(nextDay.getDate() + 1);
+      setValue("checkIn", date);
+      setValue("checkOut", nextDay);
+    } else {
+      setValue("checkIn", null as unknown as Date);
+    }
+  };
+
+  // Custom render function for the date picker to show prices and availability
   const renderDayContents = (day: number, date: Date) => {
-    const price = getPriceForDate(date);
+    const { price } = getRoomInfoForDate(date);
     const isSpecialPrice = price !== defaultPrice;
 
     // Check if this date is selected (either checkIn or checkOut)
@@ -172,24 +214,21 @@ const GuestInfoForm = ({
   };
 
   return (
-    <div className="max-w-md mx-auto  flex flex-col gap-4">
+    <div className="max-w-md mx-auto flex flex-col gap-4">
       {/* Header Section: Price, Discount, Taxes */}
       <div className="flex flex-col gap-1 border-b pb-4">
         <div className="flex flex-col">
           <div className="flex items-center gap-2">
             <span className="text-3xl font-bold text-black">
-              ₹{priceForSelectedDate}
+              ₹{roomInfoForSelectedDate.price}
             </span>
             <div className="text-sm text-gray-500">
-              + taxes & fees: ₹{calculateTax(priceForSelectedDate)}
-              {/* <span className="text-xs text-gray-400 ml-1">
-                ({priceForSelectedDate < 7000 ? "12%" : "18%"} tax rate)
-              </span> */}
+              + taxes & fees: ₹{calculateTax(roomInfoForSelectedDate.price)}
             </div>
           </div>
           <div className="flex items-center gap-2">
             <span className="text-lg text-gray-400 line-through">
-              ₹{priceForSelectedDate * 2}
+              ₹{roomInfoForSelectedDate.price * 2}
             </span>
             <span className="text-md text-yellow-600 font-semibold">
               50% off
@@ -202,7 +241,7 @@ const GuestInfoForm = ({
           isLoggedIn ? handleSubmit(onSubmit) : handleSubmit(onSignInClick)
         }
       >
-        <div className="grid grid-cols-1 gap-4 items-center  bg-white p-4">
+        <div className="grid grid-cols-1 gap-4 items-center bg-white p-4">
           <div>
             <label className="block text-sm font-medium text-gray-700 mb-1">
               Check-in Date
@@ -210,7 +249,7 @@ const GuestInfoForm = ({
             <DatePicker
               required
               selected={checkIn}
-              onChange={(date) => setValue("checkIn", date as Date)}
+              onChange={handleCheckInChange}
               selectsStart
               startDate={checkIn}
               endDate={checkOut}
@@ -249,10 +288,10 @@ const GuestInfoForm = ({
             <label className="items-center flex">
               Rooms:
               <input
-                className="w-full p-1 focus:outline-none font-bold  ml-2"
+                className="w-full p-1 focus:outline-none font-bold ml-2"
                 type="number"
                 min={1}
-                max={availableRooms}
+                max={minAvailableRooms}
                 {...register("roomCount", {
                   required: "This field is required",
                   min: {
@@ -260,20 +299,23 @@ const GuestInfoForm = ({
                     message: "There must be at least one room",
                   },
                   max: {
-                    value: availableRooms,
-                    message: `Maximum ${availableRooms} rooms available`,
+                    value: minAvailableRooms,
+                    message: `Maximum ${minAvailableRooms} rooms available for selected dates`,
                   },
                   valueAsNumber: true,
                 })}
               />
             </label>
+
             {errors.roomCount && (
               <span className="text-red-500 font-semibold text-sm">
                 {errors.roomCount.message}
               </span>
             )}
           </div>
-
+          <div className="text-sm text-gray-600 mt-1">
+            {minAvailableRooms} rooms available for selected dates
+          </div>
           {/* Display the total price calculation */}
           <div className="bg-white px-2 py-1">
             <div className="font-semibold">Price Details</div>
@@ -282,7 +324,9 @@ const GuestInfoForm = ({
               <span>₹{calculateTotalCost().toFixed(2)}</span>
             </div>
             <div className="flex justify-between text-sm">
-              <span>Tax ({priceForSelectedDate < 7000 ? "12%" : "18%"}):</span>
+              <span>
+                Tax ({roomInfoForSelectedDate.price < 7000 ? "12%" : "18%"}):
+              </span>
               <span>₹{calculateTax(calculateTotalCost()).toFixed(2)}</span>
             </div>
             <div className="flex justify-between font-bold text-xl mt-2 border-t pt-2">
@@ -299,14 +343,20 @@ const GuestInfoForm = ({
           {isLoggedIn ? (
             <button
               className="bg-[#6A5631] text-white h-full p-2 font-bold hover:bg-[#6A5631] rounded-lg text-xl disabled:bg-gray-400 disabled:cursor-not-allowed"
-              disabled={!priceForSelectedDate || priceForSelectedDate === 0}
+              disabled={
+                !roomInfoForSelectedDate.price ||
+                roomInfoForSelectedDate.price === 0
+              }
             >
               Book Now
             </button>
           ) : (
             <button
               className="bg-[#6A5631] text-white h-full p-2 font-bold hover:bg-[#6A5631] text-xl disabled:bg-gray-400 disabled:cursor-not-allowed"
-              disabled={!priceForSelectedDate || priceForSelectedDate === 0}
+              disabled={
+                !roomInfoForSelectedDate.price ||
+                roomInfoForSelectedDate.price === 0
+              }
             >
               Sign in to Book
             </button>

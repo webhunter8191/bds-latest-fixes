@@ -177,7 +177,18 @@ router.get("/search", async (req: Request, res: Response) => {
           pricePerNight: 1,
           type: 1,
           facilities: 1,
-          rooms: 1,
+          rooms: {
+            _id: 1,
+            category: 1,
+            type: 1,
+            images: 1,
+            availableRooms: 1,
+            adultCount: 1,
+            childCount: 1,
+            defaultPrice: 1,
+            features: 1,
+            priceCalendar: 1
+          }
         }
       }
     ]);
@@ -295,6 +306,33 @@ router.get("/:id", [param("id").notEmpty().withMessage("Hotel ID is required")],
               as: "room",
               cond: { $gt: ["$$room.availableRooms", 0] }
             }
+          }
+        }
+      },
+      {
+        $project: {
+          name: 1,
+          description: 1,
+          type: 1,
+          city: 1,
+          country: 1,
+          location: 1,
+          facilities: 1,
+          imageUrls: 1,
+          nearbyTemple: 1,
+          temples: 1,
+          policies: 1,
+          rooms: {
+            _id: 1,
+            category: 1,
+            type: 1,
+            images: 1,
+            availableRooms: 1,
+            adultCount: 1,
+            childCount: 1,
+            defaultPrice: 1,
+            features: 1,
+            priceCalendar: 1
           }
         }
       }

@@ -96,6 +96,23 @@ router.post(
         room.adultCount = Number(room.adultCount) || 0;
         room.childCount = Number(room.childCount) || 0;
 
+        // Validate and normalize features
+        if (room.features) {
+          if (typeof room.features === 'string') {
+            try {
+              room.features = JSON.parse(room.features);
+            } catch {
+              room.features = [room.features];
+            }
+          }
+          // Ensure features is an array and remove duplicates
+          room.features = Array.isArray(room.features) 
+            ? [...new Set(room.features.map((f: string) => f.trim()))]
+            : [];
+        } else {
+          room.features = [];
+        }
+
         // Handle priceCalendar
         if (room.priceCalendar) {
           if (typeof room.priceCalendar === "string") {
@@ -112,6 +129,7 @@ router.post(
           room.priceCalendar = room.priceCalendar.map((entry: any) => ({
             date: new Date(entry.date), // Convert to Date object
             price: Number(entry.price), // Ensure price is a number
+            availableRooms: entry.availableRooms ?? room.totalRooms, // Default to totalRooms if not provided
           }));
         } else {
           room.priceCalendar = []; // Default to empty array
@@ -239,6 +257,45 @@ updatedHotel.policies = updatedHotel.policies;
         // Ensure adultCount and childCount are included
         room.adultCount = Number(room.adultCount) || 0;
         room.childCount = Number(room.childCount) || 0;
+
+        // Validate and normalize features
+        if (room.features) {
+          if (typeof room.features === 'string') {
+            try {
+              room.features = JSON.parse(room.features);
+            } catch {
+              room.features = [room.features];
+            }
+          }
+          // Ensure features is an array and remove duplicates
+          room.features = Array.isArray(room.features) 
+            ? [...new Set(room.features.map((f: string) => f.trim()))]
+            : [];
+        } else {
+          room.features = [];
+        }
+
+        // Handle priceCalendar
+        if (room.priceCalendar) {
+          if (typeof room.priceCalendar === "string") {
+            try {
+              room.priceCalendar = JSON.parse(room.priceCalendar);
+            } catch {
+              return res
+                .status(400)
+                .json({ message: "Invalid priceCalendar format" });
+            }
+          }
+
+          // Validate priceCalendar entries
+          room.priceCalendar = room.priceCalendar.map((entry: any) => ({
+            date: new Date(entry.date),
+            price: Number(entry.price),
+            availableRooms: entry.availableRooms ?? room.totalRooms,
+          }));
+        } else {
+          room.priceCalendar = [];
+        }
 
         return room;
       });
