@@ -3,6 +3,8 @@ import DatePicker from "react-datepicker";
 import { useSearchContext } from "../../contexts/SearchContext";
 import { useAppContext } from "../../contexts/AppContext";
 import { useLocation, useNavigate } from "react-router-dom";
+import { useState } from "react";
+import { Info } from "lucide-react";
 
 type Props = {
   hotelId: string;
@@ -22,6 +24,7 @@ type GuestInfoFormData = {
   checkOut: Date;
   roomCount: number;
   totalCost: number;
+  paymentOption: "full" | "partial";
 };
 
 const GuestInfoForm = ({
@@ -35,6 +38,9 @@ const GuestInfoForm = ({
   const { isLoggedIn } = useAppContext();
   const navigate = useNavigate();
   const location = useLocation();
+  const [showFullPaymentPolicy, setShowFullPaymentPolicy] = useState(false);
+  const [showPartialPaymentPolicy, setShowPartialPaymentPolicy] =
+    useState(false);
 
   const {
     watch,
@@ -48,11 +54,13 @@ const GuestInfoForm = ({
       checkOut: search.checkOut,
       roomCount: search.roomCount,
       totalCost: 0,
+      paymentOption: "full",
     },
   });
 
   const checkIn = watch("checkIn");
   const checkOut = watch("checkOut");
+  const paymentOption = watch("paymentOption");
 
   // Minimum and maximum date constraints
   const minDate = new Date();
@@ -156,16 +164,23 @@ const GuestInfoForm = ({
     const subtotal = calculateTotalCost();
     const tax = calculateTax(subtotal);
     const totalWithTax = subtotal + tax;
+    const finalAmount =
+      data.paymentOption === "partial" ? totalWithTax * 0.3 : totalWithTax;
 
     search.saveSearchValues(
       "",
       data.checkIn,
       data.checkOut,
       data.roomCount,
-      totalWithTax
+      finalAmount
     );
     navigate("/sign-in", {
-      state: { from: location, totalCost: totalWithTax },
+      state: {
+        from: location,
+        totalCost: finalAmount,
+        paymentOption: data.paymentOption,
+        fullAmount: totalWithTax,
+      },
     });
   };
 
@@ -173,21 +188,25 @@ const GuestInfoForm = ({
     const subtotal = calculateTotalCost();
     const tax = calculateTax(subtotal);
     const totalWithTax = subtotal + tax;
+    const finalAmount =
+      data.paymentOption === "partial" ? totalWithTax * 0.3 : totalWithTax;
 
     search.saveSearchValues(
       "",
       data.checkIn,
       data.checkOut,
       data.roomCount,
-      totalWithTax
+      finalAmount
     );
 
     navigate(`/hotel/${hotelId}/booking`, {
       state: {
-        totalCost: totalWithTax,
+        totalCost: finalAmount,
         subtotal: subtotal,
         tax: tax,
         roomsId,
+        paymentOption: data.paymentOption,
+        fullAmount: totalWithTax,
       },
     });
   };
@@ -251,6 +270,14 @@ const GuestInfoForm = ({
         </span>
       </div>
     );
+  };
+
+  // Calculate remaining amount for partial payment
+  const calculateRemainingAmount = () => {
+    const subtotal = calculateTotalCost();
+    const tax = calculateTax(subtotal);
+    const totalWithTax = subtotal + tax;
+    return totalWithTax * 0.7; // 70% remaining
   };
 
   return (
@@ -356,8 +383,102 @@ const GuestInfoForm = ({
           <div className="text-sm text-gray-600 mt-1">
             {minAvailableRooms} rooms available for selected dates
           </div>
-          {/* Display the total price calculation */}
-          <div className="bg-white px-2 py-1">
+          {/* Payment Options */}
+          <div className="mt-4 mb-2">
+            <h3 className="font-medium text-gray-700 mb-2">Payment Option</h3>
+            <div className="flex flex-col gap-2">
+              <div className="relative">
+                <label className="flex items-center gap-2">
+                  <input
+                    type="radio"
+                    value="full"
+                    {...register("paymentOption")}
+                    className="text-[#6A5631]"
+                  />
+                  <span>
+                    Pay full amount (₹
+                    {(
+                      calculateTotalCost() + calculateTax(calculateTotalCost())
+                    ).toFixed(2)}
+                    )
+                  </span>
+                  <button
+                    type="button"
+                    className="text-[#6A5631] hover:text-[#5a4827]"
+                    onClick={() => {
+                      setShowFullPaymentPolicy(!showFullPaymentPolicy);
+                      setShowPartialPaymentPolicy(false);
+                    }}
+                  >
+                    <Info size={16} />
+                  </button>
+                </label>
+                {showFullPaymentPolicy && (
+                  <div className="absolute left-0 mt-1 p-3 bg-white border border-[#6A5631]/20 rounded-md shadow-md z-10 text-sm text-gray-700 max-w-xs">
+                    <strong className="block mb-1">Cancellation Policy:</strong>
+                    <ul className="list-disc pl-5 space-y-1">
+                      <li>
+                        If you cancel at least 12 hours before check-in: 100%
+                        refund.
+                      </li>
+                      <li>
+                        If you cancel less than 12 hours before check-in: No
+                        refund.
+                      </li>
+                    </ul>
+                  </div>
+                )}
+              </div>
+
+              <div className="relative">
+                <label className="flex items-center gap-2">
+                  <input
+                    type="radio"
+                    value="partial"
+                    {...register("paymentOption")}
+                    className="text-[#6A5631]"
+                  />
+                  <span>
+                    Pay 30% now (₹
+                    {(
+                      (calculateTotalCost() +
+                        calculateTax(calculateTotalCost())) *
+                      0.3
+                    ).toFixed(2)}
+                    )
+                  </span>
+                  <button
+                    type="button"
+                    className="text-[#6A5631] hover:text-[#5a4827]"
+                    onClick={() => {
+                      setShowPartialPaymentPolicy(!showPartialPaymentPolicy);
+                      setShowFullPaymentPolicy(false);
+                    }}
+                  >
+                    <Info size={16} />
+                  </button>
+                </label>
+                {showPartialPaymentPolicy && (
+                  <div className="absolute left-0 mt-1 p-3 bg-white border border-[#6A5631]/20 rounded-md shadow-md z-10 text-sm text-gray-700 max-w-xs">
+                    <strong className="block mb-1">Cancellation Policy:</strong>
+                    <p>
+                      No cancellations allowed under any circumstances. No
+                      refund will be issued for the 30% booking amount.
+                    </p>
+                  </div>
+                )}
+              </div>
+
+              {paymentOption === "partial" && (
+                <div className="text-sm text-gray-600 mt-1 pl-6">
+                  Remaining amount of ₹{calculateRemainingAmount().toFixed(2)}{" "}
+                  to be paid at check-in
+                </div>
+              )}
+            </div>
+          </div>
+          {/* Price Details */}
+          <div className="p-3 bg-gray-50 rounded-lg space-y-2 mt-4">
             <div className="font-semibold">Price Details</div>
             <div className="flex justify-between text-sm">
               <span>Subtotal:</span>
@@ -370,14 +491,48 @@ const GuestInfoForm = ({
               <span>₹{calculateTax(calculateTotalCost()).toFixed(2)}</span>
             </div>
             <div className="flex justify-between font-bold text-xl mt-2 border-t pt-2">
-              <span>Total:</span>
+              <span>
+                {paymentOption === "partial" ? "Pay Now (30%):" : "Total:"}
+              </span>
               <span>
                 ₹
-                {(
-                  calculateTotalCost() + calculateTax(calculateTotalCost())
-                ).toFixed(2)}
+                {paymentOption === "partial"
+                  ? (
+                      (calculateTotalCost() +
+                        calculateTax(calculateTotalCost())) *
+                      0.3
+                    ).toFixed(2)
+                  : (
+                      calculateTotalCost() + calculateTax(calculateTotalCost())
+                    ).toFixed(2)}
               </span>
             </div>
+            {paymentOption === "partial" && (
+              <div className="flex justify-between text-sm text-gray-600">
+                <span>Pay Later (70%):</span>
+                <span>₹{calculateRemainingAmount().toFixed(2)}</span>
+              </div>
+            )}
+          </div>
+
+          {/* Terms and conditions agreement */}
+          <div className="text-xs text-gray-600 text-center px-2">
+            By clicking "Book Now", you agree to our{" "}
+            <a
+              href="/terms-and-conditions"
+              className="text-[#6A5631] hover:underline"
+              target="_blank"
+            >
+              Terms &amp; Conditions
+            </a>{" "}
+            and{" "}
+            <a
+              href="/privacy-policy"
+              className="text-[#6A5631] hover:underline"
+              target="_blank"
+            >
+              Privacy Policy
+            </a>
           </div>
 
           {isLoggedIn ? (

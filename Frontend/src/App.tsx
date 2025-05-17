@@ -100,7 +100,16 @@ const App = () => {
             </Layout>
           }
         />
-        <Route path="/terms-and-conditions" element={<TermsAndConditions />} />
+        <Route
+          path="/terms-and-conditions"
+          element={
+            <>
+              <Header />
+              <TermsAndConditions />
+              <Footer />
+            </>
+          }
+        />
         <Route
           path="/agreement"
           element={

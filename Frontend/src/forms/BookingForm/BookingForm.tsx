@@ -5,7 +5,7 @@ import { useParams } from "react-router-dom";
 import { useMutation } from "react-query";
 import * as apiClient from "../../api-client";
 import { useAppContext } from "../../contexts/AppContext";
-import { useNavigate } from "react-router-dom";
+import { useNavigate, useLocation } from "react-router-dom";
 
 const RAZORPAY_KEY_ID = import.meta.env.VITE_API_RAZORPAY_KEY_ID;
 const API_BASE_URL = import.meta.env.VITE_API_BASE_URL || "";
@@ -14,6 +14,8 @@ type Props = {
   currentUser: UserType;
   totalCost: number;
   roomsId: string;
+  paymentOption?: "full" | "partial";
+  fullAmount?: number;
 };
 
 export type BookingFormData = {
@@ -26,6 +28,7 @@ export type BookingFormData = {
   hotelId: string;
   paymentIntentId: string;
   totalCost: number;
+  paymentOption?: "full" | "partial";
 };
 
 declare global {
@@ -34,11 +37,26 @@ declare global {
   }
 }
 
-const BookingForm = ({ currentUser, totalCost, roomsId }: Props) => {
+const BookingForm = ({
+  currentUser,
+  totalCost,
+  roomsId,
+  paymentOption = "full",
+  fullAmount,
+}: Props) => {
   const search = useSearchContext();
   const { hotelId } = useParams();
   const navigate = useNavigate();
   const { showToast } = useAppContext();
+  const location = useLocation();
+
+  // Set default values for paymentOption and fullAmount from location state if not provided as props
+  const statePaymentOption = location.state?.paymentOption || paymentOption;
+  const stateFullAmount = location.state?.fullAmount || fullAmount || totalCost;
+
+  // Calculate remaining amount for partial payments
+  const remainingAmount =
+    statePaymentOption === "partial" ? stateFullAmount * 0.7 : 0;
 
   // Helper function to calculate number of days between check-in and check-out
   // const calculateDays = (checkIn: Date, checkOut: Date) => {
@@ -74,6 +92,8 @@ const BookingForm = ({ currentUser, totalCost, roomsId }: Props) => {
       checkOut: formattedCheckOut, // Pass formatted checkOut date
       hotelId: hotelId,
       totalCost,
+      paymentOption: statePaymentOption,
+      fullAmount: stateFullAmount,
     },
   });
 
@@ -85,10 +105,12 @@ const BookingForm = ({ currentUser, totalCost, roomsId }: Props) => {
         lastName: currentUser.lastName,
         email: currentUser.email,
         roomCount: search.roomCount,
-        checkIn: formattedCheckIn, // Pass the formatted checkIn date here
-        checkOut: formattedCheckOut, // Pass the formatted checkOut date here
+        checkIn: formattedCheckIn,
+        checkOut: formattedCheckOut,
         hotelId: hotelId,
         totalCost,
+        paymentOption: statePaymentOption,
+        fullAmount: stateFullAmount,
       };
 
       // const { bookingId } = bookingResponse.data;
@@ -219,29 +241,60 @@ const BookingForm = ({ currentUser, totalCost, roomsId }: Props) => {
               <div className="font-medium">
                 ₹
                 {Math.round(
-                  search.totalCost / (search.totalCost < 7000 ? 1.12 : 1.18)
+                  stateFullAmount / (stateFullAmount < 7000 ? 1.12 : 1.18)
                 ).toLocaleString()}
               </div>
             </div>
             <div className="flex justify-between items-center text-sm sm:text-base">
               <div className="text-gray-600">
-                Taxes & Fees ({search.totalCost < 7000 ? "12%" : "18%"})
+                Taxes & Fees ({stateFullAmount < 7000 ? "12%" : "18%"})
               </div>
               <div className="font-medium">
                 ₹
                 {Math.round(
-                  search.totalCost -
-                    search.totalCost / (search.totalCost < 7000 ? 1.12 : 1.18)
+                  stateFullAmount -
+                    stateFullAmount / (stateFullAmount < 7000 ? 1.12 : 1.18)
                 ).toLocaleString()}
               </div>
             </div>
+
+            {/* Payment option information */}
+            {statePaymentOption === "partial" && (
+              <>
+                <div className="flex justify-between items-center text-sm sm:text-base text-[#6A5631]">
+                  <div className="font-medium">Total Price</div>
+                  <div className="font-medium">
+                    ₹{Math.round(stateFullAmount).toLocaleString()}
+                  </div>
+                </div>
+                <div className="pt-2">
+                  <div className="flex justify-between items-center text-sm sm:text-base">
+                    <div className="font-medium">Payment Now (30%)</div>
+                    <div className="font-medium">
+                      ₹{Math.round(totalCost).toLocaleString()}
+                    </div>
+                  </div>
+                  <div className="flex justify-between items-center text-sm mt-1">
+                    <div className="text-gray-600">
+                      Pay Later at Check-in (70%)
+                    </div>
+                    <div className="text-gray-600">
+                      ₹{Math.round(remainingAmount).toLocaleString()}
+                    </div>
+                  </div>
+                </div>
+              </>
+            )}
+
             <div className="border-t border-[#6A5631]/10 pt-3 mt-3">
               <div className="flex justify-between items-center">
                 <div className="text-sm sm:text-base text-gray-600">
-                  Total Amount
+                  {statePaymentOption === "partial"
+                    ? "Amount to Pay Now"
+                    : "Total Amount"}
                 </div>
                 <div className="text-lg sm:text-2xl font-bold text-[#6A5631]">
-                  ₹{Math.round(search.totalCost).toLocaleString()}
+                  ₹{Math.round(totalCost).toLocaleString()}
                 </div>
               </div>
             </div>
@@ -280,7 +333,7 @@ const BookingForm = ({ currentUser, totalCost, roomsId }: Props) => {
               Processing...
             </>
           ) : (
-            "Confirm Booking"
+            `Pay ₹${Math.round(totalCost).toLocaleString()}`
           )}
         </button>
       </div>

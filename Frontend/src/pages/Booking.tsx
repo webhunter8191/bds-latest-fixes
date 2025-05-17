@@ -19,8 +19,15 @@ const categories = {
 
 const Booking = () => {
   const { hotelId } = useParams();
-  const { roomsId } = useLocation().state as { roomsId: string };
+  const location = useLocation();
+  const { roomsId, paymentOption, fullAmount } = location.state as {
+    roomsId: string;
+    paymentOption?: "full" | "partial";
+    fullAmount?: number;
+  };
   console.log("roomsId", roomsId);
+  console.log("paymentOption", paymentOption);
+  console.log("fullAmount", fullAmount);
 
   const search = useSearchContext();
   const [numberOfNights, setNumberOfNights] = useState<number>(0);
@@ -92,12 +99,17 @@ const Booking = () => {
         hotel={hotel}
         selectedRoomCategory={selectedRoomCategory}
         selectedRoomPrice={selectedRoomPrice}
+        paymentOption={paymentOption}
+        fullAmount={fullAmount}
+        totalCost={search.totalCost}
       />
       {currentUser && (
         <BookingForm
           currentUser={currentUser}
           totalCost={search.totalCost}
           roomsId={roomsId}
+          paymentOption={paymentOption}
+          fullAmount={fullAmount}
         />
       )}
     </div>

@@ -6,18 +6,20 @@ type PriceCalendarEntry = {
   availableRooms: number; // Number of available rooms for the date
 };
 
-interface Props {
+type Props = {
   priceCalendarEntries: PriceCalendarEntry[];
   setPriceCalendarEntries: React.Dispatch<
     React.SetStateAction<PriceCalendarEntry[]>
   >;
   handleAvailableRoomsChange: (index: number, value: string) => void;
-}
+  maxPrice?: number; // Add maxPrice prop
+};
 
 const PriceCalendarForm = ({
   priceCalendarEntries,
   setPriceCalendarEntries,
   handleAvailableRoomsChange,
+  maxPrice,
 }: Props) => {
   const [entries, setEntries] =
     useState<PriceCalendarEntry[]>(priceCalendarEntries);
@@ -103,8 +105,17 @@ const PriceCalendarForm = ({
                   handleChange(index, "price", Number(e.target.value))
                 }
                 placeholder="Enter price"
-                className="border border-gray-300 rounded-md p-2 w-full"
+                className={`border rounded-md p-2 w-full ${
+                  maxPrice && entry.price > maxPrice
+                    ? "border-orange-500 bg-orange-50"
+                    : "border-gray-300"
+                }`}
               />
+              {maxPrice && entry.price > maxPrice && (
+                <div className="text-xs text-orange-600 mt-1">
+                  Price exceeds max price (₹{maxPrice}) - 10% commission applies
+                </div>
+              )}
             </div>
 
             <div className="flex flex-col">

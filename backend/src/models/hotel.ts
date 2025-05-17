@@ -9,6 +9,8 @@ const roomSchema = new mongoose.Schema({
   adultCount: { type: Number, required: true, default: 0 },
   childCount: { type: Number, required: true, default: 0 },
   defaultPrice: { type: Number, required: true }, // Default price for unspecified dates
+  maxPrice: { type: Number }, // Maximum price threshold for commission calculation
+  maxPriceSet: { type: Boolean, default: false }, // Flag to track if maxPrice has been set
   priceCalendar: [
     {
       date: { type: Date, required: true }, // Ensure this is stored as a Date

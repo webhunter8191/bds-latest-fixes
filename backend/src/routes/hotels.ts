@@ -414,15 +414,44 @@ const constructSearchQuery = (queryParams: any) => {
   let constructedQuery: any = {};
 
   if (queryParams.destination) {
-    const templeSearchTerms = Array.isArray(queryParams.destination)
-      ? queryParams.destination.map((term: string) =>
-          term.trim().replace(/\s+/g, " ").toLowerCase()
-        )
-      : [queryParams.destination.trim().replace(/\s+/g, " ").toLowerCase()];
+    const searchTerm = queryParams.destination.trim().toLowerCase();
+    
+    // Create a regex pattern for partial matching
+    const regex = new RegExp(searchTerm, 'i');
+    
+    // Search in multiple fields related to location
+    constructedQuery.$or = [
+      { 'nearbyTemple': { $regex: regex } },
+      { 'location': { $regex: regex } },
+      { 'name': { $regex: regex } },
+      { 'temples.name': { $regex: regex } }
+    ];
+  }
 
-    constructedQuery.nearbyTemple = {
-      $in: templeSearchTerms,
-    };
+  // Add specific temple filters if provided
+  if (queryParams.temples) {
+    const templeFilters = Array.isArray(queryParams.temples)
+      ? queryParams.temples
+      : [queryParams.temples];
+
+    // Create case-insensitive regex patterns for each temple
+    const templeRegexes = templeFilters.map(
+      (temple: string) => new RegExp(temple.trim(), 'i')
+    );
+
+    // If we already have destination search, enhance it
+    if (constructedQuery.$or) {
+      // We need to add an $and condition to the existing query
+      constructedQuery = {
+        $and: [
+          constructedQuery,
+          { 'nearbyTemple': { $in: templeRegexes } }
+        ]
+      };
+    } else {
+      // If no destination search yet, create a direct nearbyTemple query
+      constructedQuery.nearbyTemple = { $in: templeRegexes };
+    }
   }
 
   if (queryParams.roomCount) {
@@ -432,7 +461,6 @@ const constructSearchQuery = (queryParams: any) => {
       }
     };
   }
-  
 
   if (queryParams.facilities) {
     constructedQuery.facilities = {

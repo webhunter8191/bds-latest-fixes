@@ -8,6 +8,9 @@ type Props = {
   hotel: HotelType;
   selectedRoomCategory?: string;
   selectedRoomPrice?: number;
+  paymentOption?: "full" | "partial";
+  fullAmount?: number;
+  totalCost?: number;
 };
 
 const BookingDetailsSummary = ({
@@ -18,7 +21,16 @@ const BookingDetailsSummary = ({
   hotel,
   selectedRoomCategory,
   selectedRoomPrice,
+  paymentOption = "full",
+  fullAmount,
+  totalCost,
 }: Props) => {
+  // Calculate remaining amount for partial payment
+  const displayFullAmount = fullAmount || totalCost || 0;
+  const displayPartialAmount = totalCost || displayFullAmount * 0.3;
+  const remainingAmount =
+    paymentOption === "partial" ? displayFullAmount * 0.7 : 0;
+
   return (
     <div className="bg-white rounded-xl shadow-lg p-6 h-fit">
       <div className="flex items-center gap-2 mb-6">
@@ -82,7 +94,7 @@ const BookingDetailsSummary = ({
         </div>
       </div>
 
-      <div className="grid grid-cols-2 gap-4 py-4">
+      <div className="grid grid-cols-2 gap-4 py-4 border-b border-gray-200">
         <div className="bg-gray-50 p-3 rounded-lg">
           <div className="text-gray-600 text-sm">Length of Stay</div>
           <div className="font-semibold text-gray-800 mt-1">
@@ -96,6 +108,52 @@ const BookingDetailsSummary = ({
           </div>
         </div>
       </div>
+
+      {/* Payment Information */}
+      {(displayFullAmount > 0 || displayPartialAmount > 0) && (
+        <div className="py-4">
+          <div className="text-gray-600 text-sm mb-3">Payment Option</div>
+          <div className="bg-[#6A5631]/5 p-3 rounded-lg">
+            <div className="font-semibold text-gray-800">
+              {paymentOption === "partial"
+                ? "Partial Payment (30%)"
+                : "Full Payment"}
+            </div>
+
+            {paymentOption === "partial" && (
+              <div className="mt-2 space-y-1">
+                <div className="flex justify-between text-sm">
+                  <span>Total Amount:</span>
+                  <span className="font-medium">
+                    ₹{Math.round(displayFullAmount).toLocaleString()}
+                  </span>
+                </div>
+                <div className="flex justify-between text-sm">
+                  <span>Pay Now (30%):</span>
+                  <span className="font-medium text-[#6A5631]">
+                    ₹{Math.round(displayPartialAmount).toLocaleString()}
+                  </span>
+                </div>
+                <div className="flex justify-between text-sm text-gray-500">
+                  <span>Pay at Check-in (70%):</span>
+                  <span>₹{Math.round(remainingAmount).toLocaleString()}</span>
+                </div>
+              </div>
+            )}
+
+            {paymentOption === "full" && (
+              <div className="mt-2">
+                <div className="flex justify-between text-sm">
+                  <span>Total Amount:</span>
+                  <span className="font-medium text-[#6A5631]">
+                    ₹{Math.round(displayFullAmount).toLocaleString()}
+                  </span>
+                </div>
+              </div>
+            )}
+          </div>
+        </div>
+      )}
     </div>
   );
 };

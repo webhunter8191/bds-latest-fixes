@@ -24,6 +24,8 @@ export type HotelFormData = {
     category: string;
     totalRooms: number;
     defaultPrice: number; // Default price for unspecified dates
+    maxPrice?: number; // Maximum price threshold for commission calculation
+    maxPriceSet?: boolean; // Flag to track if maxPrice has been set
     priceCalendar: { date: Date; price: number; availableRooms?: number }[]; // Dynamic pricing
     images: File[];
     features: string[]; // <-- Added for room features
@@ -171,6 +173,7 @@ const ManageHotelForm = ({ onSave, isLoading, hotel }: Props) => {
               <div className="space-y-6">
                 <DetailsSection hotel={hotel} />
                 <TypeSection />
+
                 <FacilitiesSection />
 
                 <div className="bg-gray-50 rounded-xl p-6">

@@ -398,7 +398,9 @@ const groupedBookings = bookings.reduce((acc: any, booking: any) => {
     category: (room as any)?.category,
     bookingId: booking._id.toString(),
     roomsCount: booking.roomsId.length.toString(),
-    totalCost: booking.totalCost
+    totalCost: booking.totalCost,
+    paymentOption: booking.paymentOption || 'full',
+    fullAmount: booking.fullAmount || booking.totalCost
   });
 
   return acc;
@@ -452,7 +454,9 @@ router.get("/admin/bookings",
       category: (room as any)?.category,
       bookingId: booking._id.toString(),
       roomsCount: booking.roomsId.length.toString(),
-      totalCost: booking.totalCost
+      totalCost: booking.totalCost,
+      paymentOption: booking.paymentOption || 'full',
+      fullAmount: booking.fullAmount || booking.totalCost
     });
   
     return acc;

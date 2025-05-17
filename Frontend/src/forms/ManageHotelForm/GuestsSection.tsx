@@ -13,6 +13,8 @@ type existingRooms = {
   adultCount: number;
   childCount: number;
   defaultPrice: number; // Default price for unspecified dates
+  maxPrice?: number; // Maximum price threshold for commission calculation
+  maxPriceSet?: boolean; // Flag to track if maxPrice has been set
   priceCalendar: { date: string; price: number; availableRooms: number }[]; // Dynamic pricing
   features: string[];
 };
@@ -22,7 +24,8 @@ const PREDEFINED_FEATURES = [
   "LED TV",
   "Geyser",
   "Fan",
-  "Breakfast",
+  "Free Breakfast",
+  "Paid Breakfast",
   "WiFi",
   "Room Heater",
   "Balcony",
@@ -51,6 +54,12 @@ const GuestsSection = ({
     { date: string; price: number; availableRooms: number }[]
   >([]);
   const [selectedFeatures, setSelectedFeatures] = useState<string[]>([]);
+
+  // Function to calculate commission rate based on price and max price
+  const calculateCommission = (price: number, maxPrice?: number): number => {
+    if (!maxPrice) return 5; // Default 5% if no max price is set
+    return price > maxPrice ? 10 : 5; // 10% if price exceeds max price, 5% otherwise
+  };
 
   const categories = [
     { value: 1, label: "2 Bed AC" },
@@ -107,6 +116,25 @@ const GuestsSection = ({
         ? rooms[editingRoomIndex].priceCalendar || []
         : [];
 
+    // Handle max price setting
+    let maxPrice = Number(formData.get("maxPrice")) || undefined;
+    let maxPriceSet = false;
+
+    if (editingRoomIndex !== null) {
+      // If editing an existing room
+      if (rooms[editingRoomIndex].maxPriceSet) {
+        // If maxPrice was already set, keep the original value
+        maxPrice = rooms[editingRoomIndex].maxPrice;
+        maxPriceSet = true;
+      } else if (maxPrice) {
+        // If maxPrice is being set for the first time
+        maxPriceSet = true;
+      }
+    } else if (maxPrice) {
+      // If creating a new room with maxPrice
+      maxPriceSet = true;
+    }
+
     // Ensure features are properly formatted
     console.log("Selected features before saving:", selectedFeatures);
 
@@ -119,6 +147,8 @@ const GuestsSection = ({
       adultCount: Number(formData.get("adultCount")),
       childCount: Number(formData.get("childCount")),
       defaultPrice: Number(formData.get("defaultPrice")),
+      maxPrice,
+      maxPriceSet,
       priceCalendar: finalPriceCalendar,
       features: selectedFeatures,
     };
@@ -302,6 +332,21 @@ const GuestsSection = ({
                     ₹{room.defaultPrice}
                   </p>
                 </div>
+                <div className="bg-white p-4 rounded-lg shadow-sm">
+                  <span className="text-sm text-gray-600">Max Price</span>
+                  <p className="text-lg font-semibold text-[#6A5631]">
+                    ₹{room.maxPrice || "Not set"}
+                  </p>
+                </div>
+                <div className="bg-white p-4 rounded-lg shadow-sm">
+                  <span className="text-sm text-gray-600">Commission</span>
+                  <p className="text-lg font-semibold text-gray-800">
+                    {calculateCommission(room.defaultPrice, room.maxPrice)}%
+                  </p>
+                </div>
+              </div>
+
+              <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 mb-6">
                 <div className="bg-white p-4 rounded-lg shadow-sm">
                   <span className="text-sm text-gray-600">Adult Count</span>
                   <p className="text-lg font-semibold text-gray-800">
@@ -692,13 +737,72 @@ const GuestsSection = ({
                     <input
                       name="defaultPrice"
                       type="number"
-                      className="w-full p-3 border border-gray-300 rounded-lg shadow-sm focus:ring-2 focus:ring-[#6A5631] focus:border-transparent"
+                      className={`w-full p-3 border rounded-lg shadow-sm focus:ring-2 focus:ring-[#6A5631] focus:border-transparent ${
+                        editingRoomIndex !== null &&
+                        rooms[editingRoomIndex].maxPrice &&
+                        rooms[editingRoomIndex].defaultPrice >
+                          rooms[editingRoomIndex].maxPrice
+                          ? "border-orange-500 bg-orange-50"
+                          : "border-gray-300"
+                      }`}
                       defaultValue={
                         editingRoomIndex !== null
                           ? rooms[editingRoomIndex].defaultPrice
                           : ""
                       }
+                      onChange={(e) => {
+                        if (editingRoomIndex !== null) {
+                          const updatedRooms = [...rooms];
+                          updatedRooms[editingRoomIndex] = {
+                            ...updatedRooms[editingRoomIndex],
+                            defaultPrice: Number(e.target.value),
+                          };
+                          setRooms(updatedRooms);
+                        }
+                      }}
                     />
+                    {editingRoomIndex !== null &&
+                      rooms[editingRoomIndex].maxPrice &&
+                      rooms[editingRoomIndex].defaultPrice >
+                        rooms[editingRoomIndex].maxPrice && (
+                        <div className="text-xs text-orange-600 mt-1">
+                          Price exceeds max price (₹
+                          {rooms[editingRoomIndex].maxPrice}) - 10% commission
+                          applies
+                        </div>
+                      )}
+                  </div>
+
+                  <div className="space-y-2">
+                    <label className="block text-sm font-medium text-gray-700">
+                      Maximum Price
+                    </label>
+                    <input
+                      name="maxPrice"
+                      type="number"
+                      className="w-full p-3 border border-gray-300 rounded-lg shadow-sm focus:ring-2 focus:ring-[#6A5631] focus:border-transparent"
+                      defaultValue={
+                        editingRoomIndex !== null
+                          ? rooms[editingRoomIndex].maxPrice
+                          : ""
+                      }
+                      disabled={
+                        editingRoomIndex !== null &&
+                        rooms[editingRoomIndex].maxPriceSet
+                      }
+                    />
+                    <div className="mt-2 p-3 bg-blue-50 text-sm text-blue-800 rounded-md border border-blue-200">
+                      <p>
+                        <strong>Commission Info:</strong>
+                      </p>
+                      <ul className="list-disc pl-4 space-y-1 mt-1">
+                        <li>5% commission if price is below max price</li>
+                        <li>10% commission if price exceeds max price</li>
+                        <li>
+                          <strong>Note:</strong> Max price can only be set once
+                        </li>
+                      </ul>
+                    </div>
                   </div>
 
                   <div className="space-y-2">
@@ -754,6 +858,11 @@ const GuestsSection = ({
                     priceCalendarEntries={priceCalendarEntries}
                     setPriceCalendarEntries={setPriceCalendarEntries}
                     handleAvailableRoomsChange={handleAvailableRoomsChange}
+                    maxPrice={
+                      editingRoomIndex !== null
+                        ? rooms[editingRoomIndex]?.maxPrice
+                        : undefined
+                    }
                   />
                 </div>
 

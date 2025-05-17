@@ -11,6 +11,8 @@ const bookingSchema = new mongoose.Schema({
     checkOut: { type: Date, required: true },
     totalCost: { type: Number, required: true },
     rooms:{type:String,required:true},
+    paymentOption: { type: String, enum: ['full', 'partial'], default: 'full' },
+    fullAmount: { type: Number },
     deletedAt: { type: Date , default:null},
   });
 

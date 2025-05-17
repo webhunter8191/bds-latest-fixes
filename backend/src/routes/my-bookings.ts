@@ -48,6 +48,8 @@ const finalData = data.map((booking) => {
         bookingId:booking._id,
         roomsCount:booking.roomsCount,
         totalCost:Math.abs(booking.totalCost),
+        paymentOption: booking.paymentOption || 'full',
+        fullAmount: booking.fullAmount || booking.totalCost
       }
     })
    }
@@ -75,6 +77,32 @@ const groupedData = finalData.reduce((acc: any, curr) => {
   }
 });
 
+router.get("/:id", 
+  verifyToken, 
+  async (req: Request, res: Response) => {
+  try {
+    const userId = req.userId;
+    const booking = await BookingModel.findOne({ 
+      _id: req.params.id,
+      userId 
+    });
+
+    if (!booking) {
+      return res.status(404).json({ message: "Booking not found" });
+    }
+
+    const hotel = await Hotel.findById(booking.hotelId);
+    if (!hotel) {
+      return res.status(404).json({ message: "Hotel not found" });
+    }
+
+    return res.status(200).json({ booking, hotel });
+  } catch (error) {
+    console.log(error);
+    res.status(500).json({ message: "Unable to fetch booking" });
+  }
+});
+
 router.post("/booking/:hotelId", 
   verifyToken, 
   async (req: Request, res: Response) => {
@@ -83,7 +111,7 @@ router.post("/booking/:hotelId",
     
     const userId = req.userId;
     const hotelId = req.params.hotelId;
-    const { firstName, lastName, email, checkIn, checkOut, totalCost, roomsId, roomCount } = req.body;
+    const { firstName, lastName, email, checkIn, checkOut, totalCost, roomsId, roomCount, paymentOption, fullAmount } = req.body;
     console.log("in booking route", req.body);
 
 
@@ -114,7 +142,8 @@ router.post("/booking/:hotelId",
       userId,
       totalCost,
       rooms,
-
+      paymentOption: paymentOption || 'full',
+      fullAmount: fullAmount || totalCost
     };
 
     const data = await BookingModel.create(booking);

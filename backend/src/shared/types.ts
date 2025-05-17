@@ -46,6 +46,8 @@ export type RoomType = {
   adultCount: number;
   childCount: number;
   defaultPrice: number; // Default price for unspecified dates
+  maxPrice?: number; // Maximum price threshold for commission calculation
+  maxPriceSet?: boolean; // Flag to track if maxPrice has been set
   priceCalendar: {
     date: Date; // Specific date
     price: number; // Price for that date
@@ -55,16 +57,16 @@ export type RoomType = {
 };
 
 export type BookingType = {
-
   userId: string;
   firstName: string;
   lastName: string;
   email: string;
-  roomCount:number,
+  roomCount: number,
   checkIn: Date;
   checkOut: Date;
   totalCost: number;
-
+  paymentOption?: "full" | "partial";
+  fullAmount?: number;
 };
 
 export type HotelSearchResponse = {
