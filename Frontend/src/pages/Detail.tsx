@@ -1,9 +1,10 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { useQuery, useQueryClient } from "react-query";
 import { useParams } from "react-router-dom";
 import * as apiClient from "./../api-client";
 import { AiFillStar } from "react-icons/ai";
 import { FaArrowLeft, FaArrowRight } from "react-icons/fa";
+import React from "react";
 
 import GuestInfoForm from "../forms/GuestInfoForm/GuestInfoForm";
 import Slider from "react-slick";
@@ -21,7 +22,9 @@ const NextArrow = (props: { onClick: any }) => {
   const { onClick } = props;
   return (
     <button
-      onClick={onClick}
+      onClick={(e) => {
+        if (onClick) onClick(e);
+      }}
       className="absolute top-1/2 right-4 transform -translate-y-1/2 p-3 rounded-full text-xl text-white bg-black hover:bg-black transition duration-200 shadow-lg"
       style={{ zIndex: 1 }}
     >
@@ -35,7 +38,9 @@ const PrevArrow = (props: { onClick: any }) => {
   const { onClick } = props;
   return (
     <button
-      onClick={onClick}
+      onClick={(e) => {
+        if (onClick) onClick(e);
+      }}
       className="absolute top-1/2 left-4 transform -translate-y-1/2  p-3 rounded-full text-xl text-white bg-black hover:bg-[#6A5631]-700 transition duration-200 shadow-lg"
       style={{ zIndex: 1 }}
     >
@@ -48,12 +53,27 @@ const Detail = () => {
   const { hotelId } = useParams();
   const [isLoading, setIsLoading] = useState(true);
   const queryClient = useQueryClient(); // Add queryClient for cache management
+  const initialLoadRef = React.useRef(false);
+
+  // Auto-refresh data on initial load
+  useEffect(() => {
+    // Only run this effect once when the component mounts
+    if (!initialLoadRef.current && hotelId) {
+      console.log("Initial data load for hotelId:", hotelId);
+      initialLoadRef.current = true;
+      setIsLoading(true);
+      // Force a fresh fetch
+      queryClient.invalidateQueries(["fetchHotelById", hotelId]);
+    }
+  }, [hotelId, queryClient]);
 
   const { data: hotel, isFetching } = useQuery(
     ["fetchHotelById", hotelId],
     () => apiClient.fetchHotelById(hotelId || ""),
     {
       enabled: !!hotelId,
+      staleTime: 0, // Ensure data is considered stale immediately
+      refetchOnMount: true, // Refetch on component mount
       onSuccess: (data) => {
         console.log("Raw hotel data received:", data);
         console.log("Hotel rooms data:", data.rooms);
@@ -115,13 +135,6 @@ const Detail = () => {
       },
     }
   );
-
-  // Add function to refresh data
-  const refreshData = () => {
-    console.log("Manually refreshing data...");
-    setIsLoading(true);
-    queryClient.invalidateQueries(["fetchHotelById", hotelId]);
-  };
 
   // Helper function to safely parse room features
   const parseRoomFeatures = (room: any): string[] => {
@@ -198,16 +211,22 @@ const Detail = () => {
   const [selectedRooms, setSelectedRooms] = useState<{
     [key: string]: boolean;
   }>({});
-  const [, setSelectedRoomPrice] = useState<number>(0);
   const [availableRooms, setAvailableRooms] = useState<number>(0);
   const [selectedRoomId, setSelectedRoomId] = useState<string>("");
 
+  // Handle room selection with explicit event prevention
   const handleRoomSelection = (
     availableRooms: number,
     category: string,
-    price: number,
-    roomId: string
+    roomId: string,
+    e?: React.MouseEvent
   ) => {
+    // Explicitly stop event if provided
+    if (e) {
+      e.stopPropagation();
+      if (e.preventDefault) e.preventDefault();
+    }
+
     setSelectedRooms((prev) => {
       if (prev[category]) {
         return {};
@@ -219,11 +238,9 @@ const Detail = () => {
 
     if (!selectedRooms[category]) {
       setAvailableRooms(availableRooms);
-      setSelectedRoomPrice(price);
       setSelectedRoomId(roomId);
     } else {
       setAvailableRooms(0);
-      setSelectedRoomPrice(0);
       setSelectedRoomId("");
     }
   };
@@ -257,16 +274,6 @@ const Detail = () => {
 
   return (
     <div className="space-y-5 p-4 sm:p-6 mx-auto min-h-screen">
-      {/* Refresh button */}
-      <div className="flex justify-end mb-2">
-        <button
-          onClick={refreshData}
-          className="px-4 py-1 bg-gray-200 text-gray-700 text-sm rounded-md hover:bg-gray-300 transition-colors"
-        >
-          Refresh Data
-        </button>
-      </div>
-
       {/* Image Slider */}
       <div className="relative mx-auto shadow-xl rounded-lg overflow-hidden">
         <Slider {...sliderSettings}>
@@ -336,6 +343,10 @@ const Detail = () => {
               <div
                 key={index}
                 className="bg-white p-4 sm:p-6 rounded-lg shadow-md grid grid-cols-1 gap-4"
+                onClick={(e) => {
+                  // Prevent any clicks on the card from propagating
+                  e.stopPropagation();
+                }}
               >
                 {/* Room image */}
                 <div className="flex justify-center">
@@ -588,28 +599,24 @@ const Detail = () => {
                     </div>
                   </div>
 
-                  <form onSubmit={(e) => e.preventDefault()}>
-                    {/* Form content */}
-                    <button
-                      type="button"
-                      onClick={(e) => {
-                        e.preventDefault();
-                        console.log("Button clicked!"); // Debugging log
-                        handleRoomSelection(
-                          room.availableRooms,
-                          room.category,
-                          getRoomInfoForDate(room, selectedDate || new Date())
-                            .price,
-                          room._id
-                        );
-                      }}
-                      className="w-full bg-[#6A5631] text-white py-2 rounded-lg hover:bg-[#5A4728] transition duration-200"
-                    >
-                      {selectedRooms[room.category]
-                        ? "Unselect Room"
-                        : "Select Room"}
-                    </button>
-                  </form>
+                  <button
+                    type="button"
+                    onClick={(e) => {
+                      // Pass the event to the handler
+                      console.log("Button clicked!"); // Debugging log
+                      handleRoomSelection(
+                        room.availableRooms,
+                        room.category,
+                        room._id,
+                        e
+                      );
+                    }}
+                    className="w-full bg-[#6A5631] text-white py-2 rounded-lg hover:bg-[#5A4728] transition duration-200"
+                  >
+                    {selectedRooms[room.category]
+                      ? "Unselect Room"
+                      : "Select Room"}
+                  </button>
                 </div>
               </div>
             ))}
@@ -712,8 +719,6 @@ const Detail = () => {
         </div>
 
         {/* Guest Info Form Dialog */}
-
-        {/* Debugging: Modal state can be logged here if needed */}
         <div className="p-4 sm:p-6 border border-slate-200 rounded-lg shadow-lg bg-white">
           <GuestInfoForm
             pricePerNight={
@@ -755,6 +760,8 @@ const Detail = () => {
           />
         </div>
       </div>
+
+      {/* Debugging: Modal state can be logged here if needed */}
     </div>
   );
 };

@@ -17,7 +17,7 @@ router.get("/",
     const bookings = await BookingModel.find({ userId, deletedAt:null},{deletedAt:0,__v:0}).sort({ checkIn: -1 });    
     const hotelIds = bookings.map((booking) => booking.hotelId);    
     const userDetails = await UserModel.findOne({_id:userId},{mobNo:1,_id:0});
-    const hotels = await Hotel.find({ _id: { $in: hotelIds } },{name:1,rooms:1,"imageUrls":1});    
+    const hotels = await Hotel.find({ _id: { $in: hotelIds } },{name:1,rooms:1,"imageUrls":1,location:1,address:1});    
     const data = bookings.map((booking) => {
       const hotel = hotels.find((hotel) => hotel._id.toString() === booking.hotelId);
       const rooms = hotel?.rooms.filter((room:any) => booking.roomsId.includes(room._id.toString()));      
@@ -26,6 +26,8 @@ router.get("/",
         hotelName: hotel?.name,
         roomsCount:booking?.rooms,
         imageUrl:hotel?.imageUrls[0],
+        location: hotel?.location,
+        address: hotel?.address,
         rooms,
 
       };
@@ -40,6 +42,8 @@ const finalData = data.map((booking) => {
     email:booking.email,
     phone:userDetails?.mobNo,
     imageUrl:booking.imageUrl,
+    location: booking.location,
+    address: booking.address,
     bookings:booking?.rooms?.map((room:any) => {
       return {
         checkIn:booking.checkIn,

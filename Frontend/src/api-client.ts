@@ -1,7 +1,6 @@
 import { RegisterFormData } from "./pages/Register";
 import { SignInFormData } from "./pages/SignIn";
 import {
-  HotelSearchResponse,
   HotelType,
   PaymentIntentResponse,
   
@@ -53,6 +52,7 @@ export const signIn = async (formData: SignInFormData) => {
   }
   return body;
 };
+
 
 export const validateToken = async () => {
   const response = await fetch(`${API_BASE_URL}/api/auth/validate-token`, {
@@ -269,6 +269,18 @@ export const fetchMyBookings = async (): Promise<HotelType[]> => {
 
   if (!response.ok) {
     throw new Error("Unable to fetch bookings");
+  }
+
+  return response.json();
+};
+
+export const fetchHotelOwnerBookings = async (): Promise<HotelType[]> => {
+  const response = await fetch(`${API_BASE_URL}/api/my-hotels/my-bookings/${Date.now()}`, {
+    credentials: "include",
+  });
+
+  if (!response.ok) {
+    throw new Error("Unable to fetch owner bookings");
   }
 
   return response.json();
