@@ -29,6 +29,7 @@ export type BookingFormData = {
   paymentIntentId: string;
   totalCost: number;
   paymentOption?: "full" | "partial";
+  fullAmount?: number;
 };
 
 declare global {
@@ -241,19 +242,22 @@ const BookingForm = ({
               <div className="font-medium">
                 ₹
                 {Math.round(
-                  stateFullAmount / (stateFullAmount < 7000 ? 1.12 : 1.18)
+                  stateFullAmount /
+                    (stateFullAmount / search.roomCount > 7000 ? 1.18 : 1.12)
                 ).toLocaleString()}
               </div>
             </div>
             <div className="flex justify-between items-center text-sm sm:text-base">
               <div className="text-gray-600">
-                Taxes & Fees ({stateFullAmount < 7000 ? "12%" : "18%"})
+                Taxes & Fees (
+                {stateFullAmount / search.roomCount > 7000 ? "18%" : "12%"})
               </div>
               <div className="font-medium">
                 ₹
                 {Math.round(
                   stateFullAmount -
-                    stateFullAmount / (stateFullAmount < 7000 ? 1.12 : 1.18)
+                    stateFullAmount /
+                      (stateFullAmount / search.roomCount > 7000 ? 1.18 : 1.12)
                 ).toLocaleString()}
               </div>
             </div>

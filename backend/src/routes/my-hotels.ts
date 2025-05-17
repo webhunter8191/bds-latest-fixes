@@ -209,137 +209,40 @@ router.put(
   upload,
   async (req: Request, res: Response) => {
     try {
+      console.log("Updated hotel body received", req.body);
       const updatedHotel = req.body;
       updatedHotel.lastUpdated = new Date();
-
-      const files = req.files as Express.Multer.File[];
-      const hotelImages = files.filter((file: Express.Multer.File) =>
-        file.fieldname.startsWith("imageFiles")
-      );
-      const roomImages = files.filter((file: Express.Multer.File) =>
-        file.fieldname.startsWith("roomImages")
-      );
-
-      const updatedImageUrls = await uploadImages(hotelImages);
-      updatedHotel.imageUrls = [
-        ...updatedImageUrls,
-        ...(updatedHotel.imageUrls || []),
-      ];
-
-      // Get the existing hotel to preserve room data
-      const existingHotel = await Hotel.findOne({ 
-        _id: req.params.hotelId, 
-        userId: req.userId 
-      });
       
-      if (!existingHotel) {
-        return res.status(404).json({ message: "Hotel not found" });
-      }
-
-      // Handle policies
-      if (updatedHotel.policies) {
-        if (typeof updatedHotel.policies === "string") {
-          try {
-            const parsed = JSON.parse(updatedHotel.policies);
-            updatedHotel.policies = Array.isArray(parsed) ? parsed : [parsed];
-          } catch {
-            updatedHotel.policies = [updatedHotel.policies];
-          }
-        } else if (!Array.isArray(updatedHotel.policies)) {
-          updatedHotel.policies = [updatedHotel.policies];
-        }
-      }
-      
-      // Process room images
-      const roomImageUrls: Record<string, string[]> = {};
-      
-      // Process uploaded room images
-      for (const file of roomImages) {
-        const category = file.fieldname.split("roomImages")[1];
-        if (!roomImageUrls[category]) {
-          roomImageUrls[category] = [];
-        }
-        const imageUrl = await uploadImages([file]);
-        roomImageUrls[category] = roomImageUrls[category].concat(imageUrl);
-      }
-
-      // Parse rooms data
-      updatedHotel.rooms = JSON.parse(updatedHotel.rooms);
-      
-      // Log for debugging
-      console.log("Updating rooms with features:", updatedHotel.rooms.map((room: any) => ({
-        category: room.category,
-        features: room.features
-      })));
-
-      // Process each room
-      updatedHotel.rooms = updatedHotel.rooms.map((room: any) => {
-        const categoryKey = room.category.toString();
-        
-        // Find matching existing room for data preservation
-        const existingRoom = existingHotel.rooms.find(
-          (r: any) => r.category.toString() === categoryKey
-        );
-        
-        // Process features - ensure they're arrays
-        if (room.features) {
-          if (typeof room.features === 'string') {
-            try {
-              room.features = JSON.parse(room.features);
-            } catch {
-              room.features = [room.features];
-            }
-          }
-          // Ensure features is an array and remove duplicates
-          room.features = Array.isArray(room.features) 
-            ? [...new Set(room.features.map((f: string) => f.trim()))]
-            : [];
-        } else if (existingRoom && existingRoom.features) {
-          // Preserve existing features if none provided
-          room.features = existingRoom.features;
-        } else {
-          room.features = [];
-        }
-        
-        // Assign room images - use new uploads or preserve existing
-        room.images = roomImageUrls[categoryKey] || 
-          (existingRoom ? existingRoom.images : []);
+      // Parse the rooms JSON string
+      if (updatedHotel.rooms && typeof updatedHotel.rooms === 'string') {
+        try {
+          updatedHotel.rooms = JSON.parse(updatedHotel.rooms);
+          console.log("Parsed rooms data:", JSON.stringify(updatedHotel.rooms.map((r: any) => ({
+            category: r.category,
+            priceCalendarCount: r.priceCalendar ? r.priceCalendar.length : 0
+          })), null, 2));
           
-        // Ensure numeric values
-        room.adultCount = Number(room.adultCount) || 0;
-        room.childCount = Number(room.childCount) || 0;
-        room.totalRooms = Number(room.totalRooms) || 0;
-        room.availableRooms = Number(room.availableRooms) || Number(room.totalRooms) || 0;
-        room.defaultPrice = Number(room.defaultPrice) || 0;
-
-        // Handle priceCalendar
-        if (room.priceCalendar) {
-          if (typeof room.priceCalendar === "string") {
-            try {
-              room.priceCalendar = JSON.parse(room.priceCalendar);
-            } catch {
-              return res
-                .status(400)
-                .json({ message: "Invalid priceCalendar format" });
+          // Ensure each room's priceCalendar is properly formatted
+          updatedHotel.rooms = updatedHotel.rooms.map((room: any) => {
+            if (room.priceCalendar) {
+              room.priceCalendar = room.priceCalendar.map((entry: any) => ({
+                date: new Date(entry.date),
+                price: Number(entry.price) || 0,
+                availableRooms: Number(entry.availableRooms) || 0
+              }));
+            } else {
+              room.priceCalendar = [];
             }
-          }
-
-          // Validate priceCalendar entries
-          room.priceCalendar = room.priceCalendar.map((entry: any) => ({
-            date: new Date(entry.date),
-            price: Number(entry.price) || 0,
-            availableRooms: Number(entry.availableRooms) || room.totalRooms || 0,
-          }));
-        } else if (existingRoom && existingRoom.priceCalendar) {
-          // Preserve existing price calendar if none provided
-          room.priceCalendar = existingRoom.priceCalendar;
-        } else {
-          room.priceCalendar = [];
+            return room;
+          });
+        } catch (error) {
+          console.error("Error parsing rooms data:", error);
+          return res.status(400).json({ message: "Invalid rooms data format" });
         }
-
-        return room;
-      });
-
+      }
+      
+      console.log("Processing update for hotel ID:", req.params.hotelId);
+      
       const hotel = await Hotel.findOneAndUpdate(
         {
           _id: req.params.hotelId,
@@ -349,9 +252,27 @@ router.put(
         { new: true }
       );
 
-      return res.status(201).json(hotel);
+      if (!hotel) {
+        console.log("Hotel not found:", req.params.hotelId);
+        return res.status(404).json({ message: "Hotel not found" });
+      }
+
+      console.log("Hotel updated successfully");
+
+      const files = req.files as Express.Multer.File[];
+      const updatedImageUrls = await uploadImages(files);
+
+      hotel.imageUrls = [
+        ...updatedImageUrls,
+        ...(updatedHotel.imageUrls || []),
+      ];
+
+      await hotel.save();
+      console.log("Hotel images updated and saved");
+      
+      res.status(201).json(hotel);
     } catch (error) {
-      console.log("error is", error);
+      console.error("Error updating hotel:", error);
       res.status(500).json({ message: "Something went wrong" });
     }
   }

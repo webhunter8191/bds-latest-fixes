@@ -11,6 +11,7 @@ import PriceFilter from "../components/PriceFilter";
 import TempleFilter from "../components/TempleFilter";
 import SearchBar from "../components/SearchBar";
 import { Sliders, X } from "lucide-react";
+import { HotelType } from "../../../backend/src/shared/types";
 
 const Search = () => {
   const search = useSearchContext();
@@ -278,7 +279,7 @@ const Search = () => {
 
               {/* Search Results Cards */}
               <div className="grid grid-rows-1 sm:grid-cols-2 lg:grid-cols-2 lg:mt-5 md:grid-cols-2 xl:grid-cols-3 gap-6">
-                {hotelData?.data.map((hotel) => (
+                {hotelData?.data.map((hotel: HotelType) => (
                   <SearchResultsCard key={hotel._id} hotel={hotel} />
                 ))}
               </div>

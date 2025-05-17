@@ -36,9 +36,21 @@ const PriceCalendarForm = ({
   };
 
   const handleRemoveEntry = (index: number) => {
+    console.log("Removing calendar entry at index:", index);
+    console.log("Before removal:", entries);
+
+    // Remove the entry from the local state
     const updatedEntries = entries.filter((_, i) => i !== index);
+    console.log("After removal:", updatedEntries);
+
+    // Update both local and parent state immediately
     setEntries(updatedEntries);
     setPriceCalendarEntries(updatedEntries);
+
+    // Alert the user that the entry has been removed (optional)
+    setTimeout(() => {
+      console.log("Updated price calendar entries:", updatedEntries);
+    }, 100);
   };
 
   const handleChange = (

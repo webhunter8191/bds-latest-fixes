@@ -83,10 +83,12 @@ const SearchResultsCard = ({ hotel }: Props) => {
           </div>
 
           {/* Location */}
-          <div className="flex items-start gap-1 text-gray-600 mb-2">
-            <MapPin size={16} className="mt-0.5" />
-            <span className="text-sm">{hotel.location}</span>
-          </div>
+          {hotel.location && (
+            <div className="flex items-start gap-1 text-gray-600 mb-2">
+              <MapPin size={16} className="mt-0.5" />
+              <span className="text-sm">{hotel.location}</span>
+            </div>
+          )}
 
           {/* Nearby Temples */}
           {hotel.nearbyTemple && hotel.nearbyTemple.length > 0 && (

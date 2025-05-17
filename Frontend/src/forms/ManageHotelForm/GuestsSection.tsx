@@ -108,13 +108,11 @@ const GuestsSection = ({
       finalImages = rooms[editingRoomIndex].images;
     }
 
-    // Preserve previous price calendar entries if editing and no new entries provided
-    const finalPriceCalendar =
-      priceCalendarEntries.length > 0
-        ? priceCalendarEntries
-        : editingRoomIndex !== null
-        ? rooms[editingRoomIndex].priceCalendar || []
-        : [];
+    // Use the current priceCalendarEntries - this will include any removed entries
+    // No need to check for existing entries since we're using the current state which already reflects removals
+    const finalPriceCalendar = priceCalendarEntries;
+
+    console.log("Saving room with price calendar:", finalPriceCalendar);
 
     // Handle max price setting
     let maxPrice = Number(formData.get("maxPrice")) || undefined;
@@ -184,20 +182,33 @@ const GuestsSection = ({
 
   const handleEditRoom = (index: number | null) => {
     if (index !== null) {
-      setPriceCalendarEntries(
-        (rooms[index].priceCalendar || []).map((entry: any) => ({
-          ...entry,
-          date:
+      console.log("Editing room at index:", index);
+      console.log("Room data:", rooms[index]);
+
+      // Convert price calendar entries to the expected format
+      const calendarEntries = (rooms[index].priceCalendar || []).map(
+        (entry: any) => {
+          // Ensure date is properly formatted as a string
+          const formattedDate =
             typeof entry.date === "string"
               ? entry.date.substring(0, 10)
-              : new Date(entry.date).toISOString().substring(0, 10),
-          availableRooms: entry.availableRooms ?? 0,
-        }))
+              : new Date(entry.date).toISOString().substring(0, 10);
+
+          return {
+            date: formattedDate,
+            price: Number(entry.price) || 0,
+            availableRooms: Number(entry.availableRooms) || 0,
+          };
+        }
       );
+
+      console.log("Setting price calendar entries:", calendarEntries);
+      setPriceCalendarEntries(calendarEntries);
       setSelectedFeatures(rooms[index].features || []);
     } else {
-      // Reset features when adding a new room
+      // Reset features and price calendar when adding a new room
       setSelectedFeatures([]);
+      setPriceCalendarEntries([]);
     }
     setEditingRoomIndex(index);
     setIsDialogOpen(true);
