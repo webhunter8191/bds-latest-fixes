@@ -20,10 +20,33 @@ export default function AgreementTwoStep() {
   const [emergencyContact, setEmergencyContact] = useState("");
   const [signingOwnerName, setSigningOwnerName] = useState("");
 
+  // Room category and pricing state
+  const [roomCategories, setRoomCategories] = useState({
+    "2BedAC": false,
+    "2BedNonAC": false,
+    "3BedAC": false,
+    "3BedNonAC": false,
+    "4BedAC": false,
+    "4BedNonAC": false,
+    CommunityHall: false,
+  });
+  const [maxPrices, setMaxPrices] = useState({
+    "2BedAC": "",
+    "2BedNonAC": "",
+    "3BedAC": "",
+    "3BedNonAC": "",
+    "4BedAC": "",
+    "4BedNonAC": "",
+    CommunityHall: "",
+  });
+
   const [aadhaarFront, setAadhaarFront] = useState<File | null>(null);
   const [aadhaarBack, setAadhaarBack] = useState<File | null>(null);
   const [panCard, setPanCard] = useState<File | null>(null);
-  const [rentAgreement, setRentAgreement] = useState<File | null>(null);
+  const [businessRegistration, setBusinessRegistration] = useState<File | null>(
+    null
+  );
+
   const [, setUploadedFileUrl] = useState<string | null>(null);
   const [isAgreed, setIsAgreed] = useState(false);
 
@@ -47,13 +70,31 @@ export default function AgreementTwoStep() {
     if (!signingOwnerName.trim())
       newErrors.signingOwnerName = "Signing owner name is required.";
 
+    // Validate room categories
+    const anyRoomSelected = Object.values(roomCategories).some(
+      (value) => value
+    );
+    if (!anyRoomSelected) {
+      newErrors.roomCategories = "At least one room category must be selected.";
+    }
+
+    // Validate room prices for selected categories
+    Object.entries(roomCategories).forEach(([category, selected]) => {
+      if (selected && !maxPrices[category as keyof typeof maxPrices]) {
+        newErrors[
+          `price_${category}`
+        ] = `Maximum price for ${category} room is required.`;
+      }
+    });
+
     // Validate document uploads
     if (!aadhaarFront) newErrors.aadhaarFront = "Aadhaar front is required.";
     if (!aadhaarBack) newErrors.aadhaarBack = "Aadhaar back is required.";
     if (!panCard) newErrors.panCard = "PAN card is required.";
-    if (propertyOwnership === "Rented" && !rentAgreement)
-      newErrors.rentAgreement =
-        "Rent agreement is required for rented properties.";
+    if (!businessRegistration)
+      newErrors.businessRegistration =
+        "Business Registration Certificate or Lease Agreement is required.";
+    // Removing the rent agreement validation since we now have the business registration or lease agreement field
 
     setErrors(newErrors);
     return Object.keys(newErrors).length === 0; // Return true if no errors
@@ -67,6 +108,20 @@ export default function AgreementTwoStep() {
 
   const handleCheckboxChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     setIsAgreed(e.target.checked);
+  };
+
+  const handleRoomCategoryChange = (category: string) => {
+    setRoomCategories({
+      ...roomCategories,
+      [category]: !roomCategories[category as keyof typeof roomCategories],
+    });
+  };
+
+  const handleMaxPriceChange = (category: string, value: string) => {
+    setMaxPrices({
+      ...maxPrices,
+      [category]: value,
+    });
   };
 
   const handleFileChange = async (
@@ -204,9 +259,11 @@ export default function AgreementTwoStep() {
       await addImageToPdf(aadhaarFront, "Aadhaar Card Front");
       await addImageToPdf(aadhaarBack, "Aadhaar Card Back");
       await addImageToPdf(panCard, "PAN Card");
-      if (propertyOwnership === "Rented") {
-        await addImageToPdf(rentAgreement, "Rent Agreement");
-      }
+      await addImageToPdf(
+        businessRegistration,
+        "Business Registration Certificate or Lease Agreement"
+      );
+      // Removing the conditional adding of rent agreement to PDF
 
       // Convert the PDF to a Blob
       const pdfBlob = pdf.output("blob");
@@ -219,6 +276,21 @@ export default function AgreementTwoStep() {
       input.classList.remove("a4-pdf-export");
       setLoading(false); // Hide loader after process
     }
+  };
+
+  // Helper function to format category names
+  const formatCategoryName = (category: string) => {
+    const categoryLabels: Record<string, string> = {
+      "2BedAC": "2 Bed AC",
+      "2BedNonAC": "2 Bed Non-AC",
+      "3BedAC": "3 Bed AC",
+      "3BedNonAC": "3 Bed Non-AC",
+      "4BedAC": "4 Bed AC",
+      "4BedNonAC": "4 Bed Non-AC",
+      CommunityHall: "Community Hall",
+    };
+
+    return categoryLabels[category] || category;
   };
 
   return (
@@ -291,6 +363,61 @@ export default function AgreementTwoStep() {
                 onChange={(e) => setGstNo(e.target.value)}
               />
             </label>
+          </div>
+
+          {/* Room Categories Section */}
+          <div className="space-y-4">
+            <h2 className="text-lg font-semibold text-gray-700">
+              Room Categories and Pricing
+            </h2>
+
+            {errors.roomCategories && (
+              <p className="text-red-500 text-sm">{errors.roomCategories}</p>
+            )}
+
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+              {Object.keys(roomCategories).map((category) => (
+                <div key={category} className="border p-3 rounded">
+                  <label className="flex items-center mb-2">
+                    <input
+                      type="checkbox"
+                      checked={
+                        roomCategories[category as keyof typeof roomCategories]
+                      }
+                      onChange={() => handleRoomCategoryChange(category)}
+                      className="form-checkbox h-5 w-5 text-blue-600"
+                    />
+                    <span className="ml-2 font-medium">
+                      {formatCategoryName(category)} Room
+                    </span>
+                  </label>
+
+                  {roomCategories[category as keyof typeof roomCategories] && (
+                    <div>
+                      <label className="block text-sm">
+                        <span className="text-gray-600">
+                          Maximum Price (₹):
+                        </span>
+                        <input
+                          type="number"
+                          min="0"
+                          value={maxPrices[category as keyof typeof maxPrices]}
+                          onChange={(e) =>
+                            handleMaxPriceChange(category, e.target.value)
+                          }
+                          className="border border-gray-300 p-2 w-full rounded focus:outline-none focus:ring-2 focus:ring-blue-500 mt-1"
+                        />
+                        {errors[`price_${category}`] && (
+                          <p className="text-red-500 text-sm">
+                            {errors[`price_${category}`]}
+                          </p>
+                        )}
+                      </label>
+                    </div>
+                  )}
+                </div>
+              ))}
+            </div>
           </div>
 
           {/* Contact Details Section */}
@@ -400,19 +527,21 @@ export default function AgreementTwoStep() {
               )}
             </label>
 
-            {propertyOwnership === "Rented" && (
-              <label className="block">
-                <span className="text-gray-600">Rent Agreement:</span>
-                <input
-                  type="file"
-                  onChange={(e) => handleFileChange(e, setRentAgreement)}
-                  className="border border-gray-300 p-2 w-full rounded focus:outline-none focus:ring-2 focus:ring-blue-500"
-                />
-                {errors.rentAgreement && (
-                  <p className="text-red-500 text-sm">{errors.rentAgreement}</p>
-                )}
-              </label>
-            )}
+            <label className="block">
+              <span className="text-gray-600">
+                Business Registration Certificate or Lease Agreement:
+              </span>
+              <input
+                type="file"
+                onChange={(e) => handleFileChange(e, setBusinessRegistration)}
+                className="border border-gray-300 p-2 w-full rounded focus:outline-none focus:ring-2 focus:ring-blue-500"
+              />
+              {errors.businessRegistration && (
+                <p className="text-red-500 text-sm">
+                  {errors.businessRegistration}
+                </p>
+              )}
+            </label>
           </div>
 
           {/* Signature Section */}
@@ -487,8 +616,8 @@ export default function AgreementTwoStep() {
               </p>
               <p>
                 This Agreement is made on 1st June, 2025, and shall be effective
-                from the same day (hereinafter referred to as the “Effective
-                Date”), by and between the following both parties.
+                from the same day (hereinafter referred to as the "Effective
+                Date"), by and between the following both parties.
               </p>
               <h3 className="text-lg font-bold mb-2">Agreement Terms</h3>
               <p>
@@ -501,7 +630,7 @@ export default function AgreementTwoStep() {
               <h4 className="text-md font-semibold mt-4">Important Terms</h4>
               <ul className="list-disc ml-6">
                 <li>International guests are not allowed</li>
-                <li>Room rents as per owner’s choice</li>
+                <li>Room rents as per owner's choice</li>
                 <li>Payment at the time of Check-in</li>
                 <li>Clarity of reconciliation</li>
               </ul>
@@ -510,17 +639,17 @@ export default function AgreementTwoStep() {
               </h4>
               <p>
                 "This Marketing and Operational Consulting Agreement
-                ("Agreement") is entered into on the “Signing Date” by and
+                ("Agreement") is entered into on the "Signing Date" by and
                 between Brij Divine Stay India, a firm registered under the MSME
-                scheme, through its authorized signatory Mr. Shivam (“Brij
-                Divine Stay”), and:"
+                scheme, through its authorized signatory Mr. Shivam ("Brij
+                Divine Stay"), and:"
               </p>
               <p>
                 <strong>
                   {ownerName || "_________________________________________"}
                 </strong>
                 <br />
-                (Hereinafter referred to as the “Owner”, which expression shall,
+                (Hereinafter referred to as the "Owner", which expression shall,
                 unless repugnant to the context or meaning hereof, mean heirs
                 and permitted assigns.)
               </p>
@@ -536,13 +665,13 @@ export default function AgreementTwoStep() {
               </p>
               <p>
                 The agreement between Brij Divine Stay and the Owner will have
-                its validity till 31-08-2025 (“Term”). Brij Divine Stay shall
+                its validity till 31-08-2025 ("Term"). Brij Divine Stay shall
                 have the right to terminate the agreement if the terms and
                 conditions are not met by the Owner/the Hotel as per this
                 Agreement. However, post the completion of the Lock-in period or
                 the expiry of the commercials end date, either party (Brij
                 Divine Stay or Owner) can terminate the Agreement with a 30
-                days’ notice.
+                days' notice.
               </p>
               <h4 className="text-md font-semibold mt-4">Terms:</h4>
               <ol className="list-decimal ml-6">
@@ -568,10 +697,28 @@ export default function AgreementTwoStep() {
                   honored by the Owner for the Hotel.
                 </li>
                 <li>
-                  Brij Divine Stay will charge a <b>15%</b> commission on the
-                  rate entered by the hotel owner on the portal for every
-                  booking made through the website.
+                  Brij Divine Stay will charge a <b>5%</b> commission on the
+                  rate entered by the hotel owner on the portal if the rate is
+                  under the maximum price, and <b>10%</b> commission if the rate
+                  is more than the maximum price.
                 </li>
+
+                {/* Room Categories and Maximum Prices */}
+                <li>
+                  <strong>Room Categories and Maximum Prices:</strong>
+                  <ul className="list-disc ml-6 mt-2">
+                    {Object.entries(roomCategories)
+                      .filter(([_, selected]) => selected)
+                      .map(([category, _]) => (
+                        <li key={category}>
+                          {formatCategoryName(category)} Room: ₹
+                          {maxPrices[category as keyof typeof maxPrices]}{" "}
+                          maximum price
+                        </li>
+                      ))}
+                  </ul>
+                </li>
+
                 <li>
                   Hotel owner shall be exclusively responsible for all kinds of
                   law and regulations related to Hotel operating, State

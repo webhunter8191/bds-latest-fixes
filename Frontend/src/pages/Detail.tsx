@@ -1,9 +1,9 @@
-import { useState, useEffect } from "react";
+import { useState, useEffect, useMemo } from "react";
 import { useQuery, useQueryClient } from "react-query";
-import { useParams } from "react-router-dom";
+import { useParams, useNavigate } from "react-router-dom";
 import * as apiClient from "./../api-client";
 import { AiFillStar } from "react-icons/ai";
-import { FaArrowLeft, FaArrowRight } from "react-icons/fa";
+import { FaArrowLeft, FaArrowRight, FaStar, FaRegStar } from "react-icons/fa";
 import React from "react";
 
 import GuestInfoForm from "../forms/GuestInfoForm/GuestInfoForm";
@@ -14,6 +14,7 @@ import "react-calendar/dist/Calendar.css"; // Import calendar styles
 import "slick-carousel/slick/slick.css";
 import "slick-carousel/slick/slick-theme.css";
 import { useSearchContext } from "../contexts/SearchContext";
+import { useAppContext } from "../contexts/AppContext";
 
 Modal.setAppElement("#root"); // Replace "#root" with the ID of your app's root element
 
@@ -49,11 +50,36 @@ const PrevArrow = (props: { onClick: any }) => {
   );
 };
 
+// Define a Review type for better type safety
+interface Review {
+  id: string;
+  hotelId: string;
+  userId: string;
+  userName: string;
+  rating: number;
+  comment: string;
+  createdAt: string;
+}
+
 const Detail = () => {
   const { hotelId } = useParams();
   const [isLoading, setIsLoading] = useState(true);
   const queryClient = useQueryClient(); // Add queryClient for cache management
   const initialLoadRef = React.useRef(false);
+  const [reviews, setReviews] = useState<Review[]>([]);
+  const [userReview, setUserReview] = useState({
+    rating: 0,
+    comment: "",
+  });
+  const [hoveredRating, setHoveredRating] = useState(0);
+  const [showReviewForm, setShowReviewForm] = useState(false);
+  const { isLoggedIn, currentUser } = useAppContext();
+  const navigate = useNavigate();
+
+  // Add these state variables with the other state declarations
+  const [isSubmitting, setIsSubmitting] = useState(false);
+  const [submissionError, setSubmissionError] = useState("");
+  const [submissionSuccess, setSubmissionSuccess] = useState(false);
 
   // Auto-refresh data on initial load
   useEffect(() => {
@@ -66,6 +92,46 @@ const Detail = () => {
       queryClient.invalidateQueries(["fetchHotelById", hotelId]);
     }
   }, [hotelId, queryClient]);
+
+  // Update the useEffect for fetching reviews to use localStorage and check if user has already reviewed
+  useEffect(() => {
+    const fetchReviews = () => {
+      if (!hotelId) return;
+
+      try {
+        // Get reviews from localStorage
+        const storedReviews = localStorage.getItem("hotelReviews");
+        const allReviews: Review[] = storedReviews
+          ? JSON.parse(storedReviews)
+          : [];
+
+        // Filter reviews for the current hotel
+        const hotelReviews = allReviews.filter(
+          (review) => review.hotelId === hotelId
+        );
+
+        // Sort reviews by date (newest first)
+        hotelReviews.sort(
+          (a, b) =>
+            new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime()
+        );
+
+        setReviews(hotelReviews);
+      } catch (error) {
+        console.error("Error fetching reviews from localStorage:", error);
+        setReviews([]);
+      }
+    };
+
+    fetchReviews();
+  }, [hotelId]);
+
+  // Check if the current user has already reviewed this hotel
+  const hasUserAlreadyReviewed = useMemo(() => {
+    if (!currentUser || !hotelId) return false;
+
+    return reviews.some((review) => review.userId === currentUser._id);
+  }, [reviews, currentUser, hotelId]);
 
   const { data: hotel, isFetching } = useQuery(
     ["fetchHotelById", hotelId],
@@ -247,6 +313,99 @@ const Detail = () => {
 
   const search = useSearchContext();
   const selectedDate = search.checkIn ? new Date(search.checkIn) : null;
+
+  const handleRatingClick = (rating: number) => {
+    setUserReview((prev) => ({ ...prev, rating }));
+  };
+
+  const handleCommentChange = (e: React.ChangeEvent<HTMLTextAreaElement>) => {
+    setUserReview((prev) => ({ ...prev, comment: e.target.value }));
+  };
+
+  // Update handleReviewSubmit to show a different error message
+  const handleReviewSubmit = async (e: React.FormEvent) => {
+    e.preventDefault();
+
+    if (!hotelId || !isLoggedIn || !userReview.rating) {
+      setSubmissionError("Please select a rating before submitting");
+      return;
+    }
+
+    if (hasUserAlreadyReviewed) {
+      setSubmissionError(
+        "You have already reviewed this hotel. Only one review per hotel is allowed."
+      );
+      return;
+    }
+
+    setIsSubmitting(true);
+    setSubmissionError("");
+    setSubmissionSuccess(false);
+
+    try {
+      // Create a new review with real user data from context
+      const newReview: Review = {
+        id: `review-${Date.now()}-${Math.random().toString(36).substr(2, 9)}`,
+        hotelId: hotelId,
+        userId: currentUser?._id || "unknown",
+        userName: currentUser
+          ? `${currentUser.firstName} ${currentUser.lastName}`
+          : "Guest User",
+        rating: userReview.rating,
+        comment: userReview.comment.trim(),
+        createdAt: new Date().toISOString(),
+      };
+
+      // Get existing reviews from localStorage
+      const storedReviews = localStorage.getItem("hotelReviews");
+      const allReviews: Review[] = storedReviews
+        ? JSON.parse(storedReviews)
+        : [];
+
+      // Add the new review
+      allReviews.push(newReview);
+
+      // Save back to localStorage
+      localStorage.setItem("hotelReviews", JSON.stringify(allReviews));
+
+      // Update the reviews state
+      const hotelReviews = allReviews.filter(
+        (review) => review.hotelId === hotelId
+      );
+      hotelReviews.sort(
+        (a, b) =>
+          new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime()
+      );
+      setReviews(hotelReviews);
+
+      // Handle successful submission
+      console.log("Review submitted successfully:", newReview);
+      setSubmissionSuccess(true);
+
+      // Reset form after successful submission
+      setUserReview({
+        rating: 0,
+        comment: "",
+      });
+
+      // Hide the form after successful submission
+      setTimeout(() => {
+        setShowReviewForm(false);
+        setSubmissionSuccess(false);
+      }, 2000);
+    } catch (error) {
+      console.error("Error saving review to localStorage:", error);
+      setSubmissionError("Failed to save your review. Please try again.");
+    } finally {
+      setIsSubmitting(false);
+    }
+  };
+
+  const handleLoginRedirect = () => {
+    navigate("/sign-in", {
+      state: { from: { pathname: `/hotel/${hotelId}` } },
+    });
+  };
 
   if (isLoading || isFetching) {
     return (
@@ -713,6 +872,159 @@ const Detail = () => {
                   loading="lazy"
                   referrerPolicy="no-referrer-when-downgrade"
                 />
+              </div>
+            )}
+          </div>
+
+          {/* Reviews Section */}
+          <div className="bg-white shadow-md rounded-lg p-4 sm:p-6">
+            <div className="flex justify-between items-center border-b pb-4 mb-4">
+              <h2 className="text-xl sm:text-2xl font-semibold text-gray-800">
+                Guest Reviews
+              </h2>
+              {isLoggedIn ? (
+                hasUserAlreadyReviewed ? (
+                  <div className="text-sm text-gray-600">
+                    You have already reviewed this hotel
+                  </div>
+                ) : (
+                  <button
+                    className="bg-[#6A5631] text-white px-4 py-2 rounded-lg hover:bg-[#5A4728] transition"
+                    onClick={() => setShowReviewForm((prev) => !prev)}
+                  >
+                    {showReviewForm ? "Cancel" : "Write a Review"}
+                  </button>
+                )
+              ) : (
+                <div className="flex items-center">
+                  <span className="text-sm text-gray-600 mr-3">
+                    Sign in to leave a review
+                  </span>
+                  <button
+                    className="bg-[#6A5631] text-white px-4 py-2 rounded-lg hover:bg-[#5A4728] transition"
+                    onClick={handleLoginRedirect}
+                  >
+                    Sign In
+                  </button>
+                </div>
+              )}
+            </div>
+
+            {/* Review Form for logged-in users */}
+            {isLoggedIn && showReviewForm && (
+              <div className="bg-gray-50 p-4 rounded-lg mb-6">
+                <h3 className="text-lg font-medium mb-3">Your Review</h3>
+
+                {submissionSuccess && (
+                  <div className="bg-green-100 text-green-700 p-3 rounded mb-4">
+                    Review submitted successfully! Thank you for your feedback.
+                  </div>
+                )}
+
+                {submissionError && (
+                  <div className="bg-red-100 text-red-700 p-3 rounded mb-4">
+                    {submissionError}
+                  </div>
+                )}
+
+                <form onSubmit={handleReviewSubmit}>
+                  <div className="mb-4">
+                    <label className="block text-gray-700 mb-2">Rating</label>
+                    <div className="flex">
+                      {[1, 2, 3, 4, 5].map((star) => (
+                        <button
+                          key={star}
+                          type="button"
+                          className="text-2xl text-yellow-400 focus:outline-none"
+                          onMouseEnter={() => setHoveredRating(star)}
+                          onMouseLeave={() => setHoveredRating(0)}
+                          onClick={() => handleRatingClick(star)}
+                        >
+                          {star <= (hoveredRating || userReview.rating) ? (
+                            <FaStar />
+                          ) : (
+                            <FaRegStar />
+                          )}
+                        </button>
+                      ))}
+                    </div>
+                  </div>
+                  <div className="mb-4">
+                    <label className="block text-gray-700 mb-2">Comment</label>
+                    <textarea
+                      className="w-full p-2 border rounded focus:ring-2 focus:ring-[#6A5631] focus:outline-none"
+                      rows={4}
+                      value={userReview.comment}
+                      onChange={handleCommentChange}
+                      placeholder="Share your experience..."
+                    />
+                  </div>
+                  <button
+                    type="submit"
+                    className="bg-[#6A5631] text-white px-4 py-2 rounded hover:bg-[#5A4728] transition flex items-center"
+                    disabled={isSubmitting || !userReview.rating}
+                  >
+                    {isSubmitting ? (
+                      <>
+                        <span className="inline-block w-4 h-4 border-2 border-white border-t-transparent rounded-full animate-spin mr-2"></span>
+                        Submitting...
+                      </>
+                    ) : (
+                      "Submit Review"
+                    )}
+                  </button>
+                </form>
+              </div>
+            )}
+
+            {/* Login prompt for non-logged-in users */}
+            {!isLoggedIn && (
+              <div className="bg-gray-50 p-4 rounded-lg mb-6 text-center">
+                <p className="text-gray-700 mb-3">
+                  Share your experience with other travelers! Sign in to leave a
+                  review.
+                </p>
+                <button
+                  className="bg-[#6A5631] text-white px-6 py-2 rounded hover:bg-[#5A4728] transition mx-auto"
+                  onClick={handleLoginRedirect}
+                >
+                  Sign In to Review
+                </button>
+              </div>
+            )}
+
+            {/* Display reviews */}
+            {reviews.length > 0 ? (
+              <div className="space-y-4">
+                {reviews.map((review, index) => {
+                  return (
+                    <div
+                      key={review.id || index}
+                      className="border-b pb-4 last:border-b-0"
+                    >
+                      <div className="flex justify-between items-start">
+                        <div>
+                          <h4 className="font-medium">{review.userName}</h4>
+                          <div className="flex items-center">
+                            {Array.from({ length: 5 }).map((_, i) => (
+                              <span key={i} className="text-yellow-400">
+                                {i < review.rating ? <FaStar /> : <FaRegStar />}
+                              </span>
+                            ))}
+                            <span className="ml-2 text-sm text-gray-500">
+                              {new Date(review.createdAt).toLocaleDateString()}
+                            </span>
+                          </div>
+                        </div>
+                      </div>
+                      <p className="mt-2 text-gray-700">{review.comment}</p>
+                    </div>
+                  );
+                })}
+              </div>
+            ) : (
+              <div className="text-center py-6 text-gray-500">
+                No reviews yet. Be the first to review this hotel!
               </div>
             )}
           </div>
