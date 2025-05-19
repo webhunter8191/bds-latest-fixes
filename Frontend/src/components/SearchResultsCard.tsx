@@ -12,38 +12,128 @@ const SearchResultsCard = ({ hotel }: Props) => {
 
   // Helper function to check room availability and get price for the selected date
   const getRoomAvailabilityAndPrice = () => {
-    const checkInDate = search.checkIn.toISOString().split("T")[0]; // Get check-in date in YYYY-MM-DD format
-    const requiredRooms = search.roomCount;
+    // Format the date in YYYY-MM-DD, ensuring no timezone issues
+    let formattedDate = "";
+
+    if (search.checkIn) {
+      // The critical part: use local date values instead of ISO strings to avoid timezone issues
+      const checkIn = search.checkIn;
+      formattedDate = `${checkIn.getFullYear()}-${String(
+        checkIn.getMonth() + 1
+      ).padStart(2, "0")}-${String(checkIn.getDate()).padStart(2, "0")}`;
+    } else {
+      const today = new Date();
+      formattedDate = `${today.getFullYear()}-${String(
+        today.getMonth() + 1
+      ).padStart(2, "0")}-${String(today.getDate()).padStart(2, "0")}`;
+    }
+
+    // Debug the search date being used
+    console.log("🔍 Searching for price on date:", formattedDate);
+    console.log("🗓️ Original search.checkIn:", search.checkIn);
+
+    const requiredRooms = search.roomCount || 1;
 
     let availableRooms = 0;
-    let priceForDate: string | number = "N/A";
+    let pricesForDate: number[] = [];
+
+    // Add logging for the hotel rooms data
+    console.log(
+      "🏨 Processing hotel:",
+      hotel.name,
+      "with",
+      hotel.rooms?.length || 0,
+      "rooms"
+    );
 
     // Ensure hotel.rooms is an array and loop through each room
     for (const room of hotel.rooms || []) {
-      // Find the price and availability entry that matches the check-in date
-      const calendarEntry = room.priceCalendar?.find(
-        (entry) =>
-          new Date(entry.date).toISOString().split("T")[0] === checkInDate
+      console.log("🛏️ Room category:", room.category);
+      console.log(
+        "📅 Price calendar entries:",
+        room.priceCalendar?.length || 0
       );
+
+      // Find the price and availability entry that matches the check-in date
+      const calendarEntry = room.priceCalendar?.find((entry) => {
+        if (!entry || !entry.date) {
+          return false;
+        }
+
+        let entryDate = "";
+        try {
+          // Handle both string and Date object formats
+          if (typeof entry.date === "string") {
+            // Parse date string, handling various formats
+            const dateStr = entry.date as string; // Type assertion
+            if (dateStr.includes("T")) {
+              // If it's an ISO format with time
+              entryDate = dateStr.split("T")[0];
+            } else if (dateStr.includes("-")) {
+              // If it's already YYYY-MM-DD
+              entryDate = dateStr.substring(0, 10);
+            } else {
+              // Try to parse other formats
+              const date = new Date(dateStr);
+              entryDate = `${date.getFullYear()}-${String(
+                date.getMonth() + 1
+              ).padStart(2, "0")}-${String(date.getDate()).padStart(2, "0")}`;
+            }
+          } else {
+            // It's a Date object or timestamp
+            const dateObj = new Date(entry.date);
+            entryDate = `${dateObj.getFullYear()}-${String(
+              dateObj.getMonth() + 1
+            ).padStart(2, "0")}-${String(dateObj.getDate()).padStart(2, "0")}`;
+          }
+
+          const isMatch = entryDate === formattedDate;
+          if (isMatch) {
+            console.log(
+              "✅ MATCH FOUND! Entry date:",
+              entryDate,
+              "Price:",
+              entry.price
+            );
+          }
+          return isMatch;
+        } catch (error) {
+          console.error("⚠️ Error parsing date:", error);
+          return false;
+        }
+      });
 
       if (calendarEntry) {
         // If we have a calendar entry for this date, use its price and availability
         if (calendarEntry.availableRooms > 0) {
           availableRooms += calendarEntry.availableRooms;
-          priceForDate = calendarEntry.price;
+          pricesForDate.push(calendarEntry.price);
+          console.log("💰 Using calendar price:", calendarEntry.price);
         }
       } else {
         // If no calendar entry, check if the room is generally available
         if (room.availableRooms > 0) {
           availableRooms += room.availableRooms;
-          priceForDate = room.defaultPrice || "N/A";
+          if (room.defaultPrice) {
+            pricesForDate.push(room.defaultPrice);
+            console.log("💰 Using default price:", room.defaultPrice);
+          }
         }
       }
     }
 
+    // Sort prices to get the lowest available
+    pricesForDate.sort((a, b) => a - b);
+    console.log(
+      "💲 Final prices:",
+      pricesForDate,
+      "Selected:",
+      pricesForDate.length > 0 ? pricesForDate[0] : "N/A"
+    );
+
     return {
       hasEnoughRooms: availableRooms >= requiredRooms,
-      price: priceForDate,
+      price: pricesForDate.length > 0 ? pricesForDate[0] : "N/A",
     };
   };
 

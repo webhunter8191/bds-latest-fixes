@@ -81,6 +81,8 @@ const Detail = () => {
   const [submissionError, setSubmissionError] = useState("");
   const [submissionSuccess, setSubmissionSuccess] = useState(false);
 
+  const [showGuestFormOverlay, setShowGuestFormOverlay] = useState(false);
+
   // Auto-refresh data on initial load
   useEffect(() => {
     // Only run this effect once when the component mounts
@@ -407,6 +409,14 @@ const Detail = () => {
     });
   };
 
+  // Utility: Tax Calculation Function (if not present)
+  const calculateTax = (price: number) => {
+    const taxRate = price < 7000 ? 0.12 : 0.18;
+    return Math.round(price * taxRate);
+  };
+
+  // Function removed to eliminate unused code warning
+
   if (isLoading || isFetching) {
     return (
       <div className="flex justify-center items-center min-h-screen">
@@ -432,386 +442,651 @@ const Detail = () => {
   };
 
   return (
-    <div className="space-y-5 p-4 sm:p-6 mx-auto min-h-screen">
-      {/* Image Slider */}
-      <div className="relative mx-auto shadow-xl rounded-lg overflow-hidden">
+    <div className="space-y-8 p-4 sm:p-6 mx-auto min-h-screen bg-gray-50">
+      {/* Image Slider - Enhanced */}
+      <div className="relative mx-auto shadow-xl rounded-xl overflow-hidden">
         <Slider {...sliderSettings}>
           {hotel.imageUrls.map((image, index) => (
             <div
               key={index}
-              className="h-[250px] sm:h-[250px] md:h-[200px] lg:h-[600px]"
+              className="h-[280px] sm:h-[350px] md:h-[450px] lg:h-[600px]"
             >
               <img
                 src={image}
                 alt={hotel.name}
-                className="rounded-md w-full h-full object-cover object-center transition-transform duration-300 hover:scale-105"
+                className="w-full h-full object-cover object-center transition-transform duration-500 hover:scale-105"
               />
             </div>
           ))}
         </Slider>
       </div>
 
-      {/* Hotel Header */}
-      <div className="flex flex-col items-start gap-4">
-        <div className="flex items-center gap-1">
-          {Array.from({ length: hotel.starRating }).map((_, index) => (
-            <AiFillStar
-              key={index}
-              className="fill-yellow-400 text-xl transition transform hover:scale-125"
-            />
-          ))}
-          <span className="text-gray-500 text-sm">{hotel.type}</span>
+      {/* Hotel Header - Enhanced */}
+      <div className="bg-white p-6 rounded-xl shadow-md">
+        <div className="flex flex-col md:flex-row md:justify-between md:items-center gap-4 mb-4">
+          <div>
+            <div className="flex items-center gap-2 mb-2">
+              <div className="flex">
+                {Array.from({ length: hotel.starRating }).map((_, index) => (
+                  <AiFillStar
+                    key={index}
+                    className="fill-yellow-400 text-2xl"
+                  />
+                ))}
+              </div>
+              <span className="text-gray-500 text-sm px-3 py-1 bg-gray-100 rounded-full">
+                {hotel.type}
+              </span>
+              {reviews.length > 0 && (
+                <span className="text-sm text-white bg-[#6A5631] px-3 py-1 rounded-full flex items-center gap-1">
+                  <FaStar className="text-yellow-300" />
+                  {(
+                    reviews.reduce((sum, review) => sum + review.rating, 0) /
+                    reviews.length
+                  ).toFixed(1)}
+                </span>
+              )}
+            </div>
+            <h1 className="text-3xl sm:text-4xl lg:text-5xl font-bold text-gray-800">
+              {hotel.name}
+            </h1>
+            {hotel.nearbyTemple?.[0] && (
+              <div className="mt-2 text-gray-600 flex items-center gap-2">
+                <svg
+                  xmlns="http://www.w3.org/2000/svg"
+                  className="h-4 w-4"
+                  fill="none"
+                  viewBox="0 0 24 24"
+                  stroke="currentColor"
+                >
+                  <path
+                    strokeLinecap="round"
+                    strokeLinejoin="round"
+                    strokeWidth={2}
+                    d="M17.657 16.657L13.414 20.9a1.998 1.998 0 01-2.827 0l-4.244-4.243a8 8 0 1111.314 0z"
+                  />
+                  <path
+                    strokeLinecap="round"
+                    strokeLinejoin="round"
+                    strokeWidth={2}
+                    d="M15 11a3 3 0 11-6 0 3 3 0 016 0z"
+                  />
+                </svg>
+                Near {hotel.nearbyTemple[0]}
+              </div>
+            )}
+          </div>
+          {hotel.location && (
+            <a
+              href={`https://www.google.com/maps/search/?api=1&query=${encodeURIComponent(
+                hotel.location
+              )}`}
+              target="_blank"
+              rel="noopener noreferrer"
+              className="text-[#6A5631] hover:bg-[#6A5631] hover:text-white px-4 py-2 border border-[#6A5631] rounded-lg transition-colors duration-300 flex items-center gap-2 whitespace-nowrap text-sm font-medium"
+            >
+              <svg
+                xmlns="http://www.w3.org/2000/svg"
+                className="h-5 w-5"
+                fill="none"
+                viewBox="0 0 24 24"
+                stroke="currentColor"
+              >
+                <path
+                  strokeLinecap="round"
+                  strokeLinejoin="round"
+                  strokeWidth={2}
+                  d="M9 20l-5.447-2.724A1 1 0 013 16.382V5.618a1 1 0 011.447-.894L9 7m0 13l6-3m-6-3V7m6 10l4.553 2.276A1 1 0 0021 18.382V7.618a1 1 0 00-.553-.894L15 4m0 13V4m0 0L9 7"
+                />
+              </svg>
+              View on Map
+            </a>
+          )}
         </div>
-        <h1 className="text-2xl sm:text-3xl lg:text-4xl font-semibold text-black animate-fadeIn">
-          {hotel.name}{" "}
-          {hotel.nearbyTemple?.[0] ? `near ${hotel.nearbyTemple[0]}` : ""}
-        </h1>
       </div>
 
-      {/* Content Section */}
+      {/* Content Section - Enhanced Grid */}
       <div className="grid grid-cols-1 lg:grid-cols-[2fr_1fr] gap-8 items-start">
         <div className="space-y-8">
           {/* Hotel Description */}
-          <div className="bg-white shadow-md rounded-lg p-4 sm:p-6">
-            <h2 className="text-xl sm:text-2xl font-semibold text-gray-800 border-b pb-2 mb-4">
-              About the Hotel
+          <div className="bg-white shadow-md rounded-xl p-6">
+            <h2 className="text-2xl font-semibold text-gray-800 border-b pb-3 mb-4 flex items-center gap-2">
+              <svg
+                xmlns="http://www.w3.org/2000/svg"
+                className="h-6 w-6 text-[#6A5631]"
+                fill="none"
+                viewBox="0 0 24 24"
+                stroke="currentColor"
+              >
+                <path
+                  strokeLinecap="round"
+                  strokeLinejoin="round"
+                  strokeWidth={2}
+                  d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"
+                />
+              </svg>
+              About this Hotel
             </h2>
-            <p className="text-gray-700 leading-relaxed whitespace-pre-line">
+            <p className="text-gray-700 leading-relaxed whitespace-pre-line text-lg">
               {hotel.description}
             </p>
           </div>
 
-          {/* Facilities */}
-          <div className="bg-white shadow-md rounded-lg p-4 sm:p-6">
-            <h2 className="text-xl sm:text-2xl font-semibold text-gray-800 border-b pb-2 mb-4">
+          {/* Facilities - Enhanced */}
+          <div className="bg-white shadow-md rounded-xl p-6">
+            <h2 className="text-2xl font-semibold text-gray-800 border-b pb-3 mb-4 flex items-center gap-2">
+              <svg
+                xmlns="http://www.w3.org/2000/svg"
+                className="h-6 w-6 text-[#6A5631]"
+                fill="none"
+                viewBox="0 0 24 24"
+                stroke="currentColor"
+              >
+                <path
+                  strokeLinecap="round"
+                  strokeLinejoin="round"
+                  strokeWidth={2}
+                  d="M5 13l4 4L19 7"
+                />
+              </svg>
               Amenities
             </h2>
-            <div className="flex flex-wrap gap-2">
+            <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 gap-3">
               {hotel.facilities.map((facility, index) => (
                 <div
                   key={index}
-                  className="text-xs bg-gray-50 text-gray-700 px-3 py-1.5 rounded-full border border-gray-200"
+                  className="text-sm bg-gray-50 text-gray-700 px-4 py-2.5 rounded-lg border border-gray-200 flex items-center gap-2 hover:bg-gray-100 transition-colors"
                 >
+                  <div className="h-2 w-2 rounded-full bg-[#6A5631]"></div>
                   {facility}
                 </div>
               ))}
             </div>
           </div>
-          <div className="grid grid-rows-1 sm:grid-cols-2 gap-4 sm:gap-6">
-            {hotel.rooms.map((room: any, index) => (
-              <div
-                key={index}
-                className="bg-white p-4 sm:p-6 rounded-lg shadow-md grid grid-cols-1 gap-4"
-                onClick={(e) => {
-                  // Prevent any clicks on the card from propagating
-                  e.stopPropagation();
-                }}
+
+          {/* Rooms Section - Enhanced */}
+          <div className="space-y-6">
+            <h2 className="text-2xl font-semibold text-gray-800 flex items-center gap-2 bg-white p-4 rounded-xl shadow-md">
+              <svg
+                xmlns="http://www.w3.org/2000/svg"
+                className="h-6 w-6 text-[#6A5631]"
+                fill="none"
+                viewBox="0 0 24 24"
+                stroke="currentColor"
               >
-                {/* Room image */}
-                <div className="flex justify-center">
-                  <img
-                    src={room.images[0]}
-                    alt={`${room.type} Room`}
-                    className="rounded-md w-full h-60 sm:h-40 md:h-25 lg:h-50 object-cover"
-                    onLoad={() => {
-                      console.log("Room features:", room.features);
+                <path
+                  strokeLinecap="round"
+                  strokeLinejoin="round"
+                  strokeWidth={2}
+                  d="M3 12l2-2m0 0l7-7 7 7M5 10v10a1 1 0 001 1h3m10-11l2 2m-2-2v10a1 1 0 01-1 1h-3m-6 0a1 1 0 001-1v-4a1 1 0 011-1h2a1 1 0 011 1v4a1 1 0 001 1m-6 0h6"
+                />
+              </svg>
+              Select Your Room
+            </h2>
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+              {hotel.rooms.map((room: any, index) => {
+                // Enhanced debugging for priceCalendar
+                console.log(
+                  "Room:",
+                  room.category,
+                  "PriceCalendar:",
+                  room.priceCalendar,
+                  "Type:",
+                  room.priceCalendar ? typeof room.priceCalendar : "undefined",
+                  "Is Array:",
+                  Array.isArray(room.priceCalendar),
+                  "Length:",
+                  room.priceCalendar?.length
+                );
+
+                // Check if price calendar exists but don't create fake data
+                if (
+                  !Array.isArray(room.priceCalendar) ||
+                  room.priceCalendar.length === 0
+                ) {
+                  console.log(
+                    "No price calendar data available for room:",
+                    room.category
+                  );
+                  // Just leave it as is - don't generate sample data
+                }
+
+                return (
+                  <div
+                    key={index}
+                    className={`bg-white rounded-xl shadow-md overflow-hidden transition-all duration-300 ${
+                      selectedRooms[room.category]
+                        ? "ring-2 ring-[#6A5631] transform scale-[1.02]"
+                        : "hover:shadow-lg"
+                    }`}
+                    onClick={(e) => {
+                      e.stopPropagation();
                     }}
-                  />
-                </div>
-
-                {/* Room details */}
-                <div className="flex flex-col justify-start gap-4">
-                  <h3 className="text-base sm:text-lg md:text-xl font-semibold mb-2 sm:mb-4">
-                    {categories[room.category as keyof typeof categories]}
-                  </h3>
-                  <div className="text-gray-600 text-sm sm:text-base">
-                    <p>
-                      Price: ₹{" "}
-                      {
-                        getRoomInfoForDate(room, selectedDate || new Date())
-                          .price
-                      }
-                      /night
-                    </p>
-                    <p>Available Rooms: {room.availableRooms}</p>
-                    <p>Adults Allowed: {room.adultCount}</p>
-                    <p>Children Allowed: {room.childCount}</p>
-                  </div>
-
-                  {/* Room Features - Simplified and More Prominent */}
-                  <div className="mt-0  p-3 ">
-                    <h4 className="text-base font-semibold mb-2 text-[#6A5631]">
-                      Room Includes
-                    </h4>
-
-                    <div className="grid grid-cols-2 gap-2">
-                      {(() => {
-                        // Get processed features array
-                        const features = parseRoomFeatures(room);
-
-                        // Add default bed configuration as first feature
-                        const bedConfig = getDefaultBedConfiguration(
-                          room.category
-                        );
-
-                        if (features.length > 0 || bedConfig) {
-                          return (
-                            <>
-                              {bedConfig && (
-                                <div className="flex items-center gap-1 text-xs font-semibold text-gray-800 p-0">
-                                  {bedConfig}
-                                </div>
-                              )}
-                              {features.map((feature: string, idx: number) => (
-                                <div
-                                  key={idx}
-                                  className="flex items-center gap-1 text-xs text-gray-700 p-0"
-                                >
-                                  {feature}
-                                </div>
-                              ))}
-                            </>
-                          );
-                        } else {
-                          return (
-                            <div className="col-span-2 text-xs text-gray-500 italic">
-                              Standard features based on room type
-                            </div>
-                          );
-                        }
-                      })()}
-                    </div>
-                  </div>
-
-                  {/* Price-wise Calendar */}
-                  <div className="mt-4">
-                    <h4 className="text-sm font-semibold mb-2">
-                      Price Calendar:
-                    </h4>
-                    <div className="p-4 bg-gray-50 rounded-lg shadow-sm border border-gray-200">
-                      <div className="grid grid-cols-7 gap-1 text-center">
-                        {/* Weekday Headers */}
-                        {["Sun", "Mon", "Tue", "Wed", "Thu", "Fri", "Sat"].map(
-                          (day, idx) => (
-                            <div
-                              key={idx}
-                              className="font-bold text-gray-700 text-xs sm:text-sm py-2"
-                            >
-                              {day}
-                            </div>
-                          )
-                        )}
-
-                        {/* Dates with Prices */}
-                        {(() => {
-                          const currentDate = new Date();
-                          const year = currentDate.getFullYear();
-                          const month = currentDate.getMonth();
-
-                          // First day of the month
-                          const firstDay = new Date(year, month, 1);
-                          const firstDayOfWeek = firstDay.getDay();
-
-                          // Last day of the month
-                          const lastDay = new Date(year, month + 1, 0);
-                          const daysInMonth = lastDay.getDate();
-
-                          // Create array for calendar cells
-                          const calendarCells = [];
-
-                          // Add empty cells for days before the first day of month
-                          for (let i = 0; i < firstDayOfWeek; i++) {
-                            calendarCells.push(
-                              <div
-                                key={`empty-start-${i}`}
-                                className="h-16 sm:h-20 border border-gray-100 rounded-md opacity-0"
-                              ></div>
-                            );
-                          }
-
-                          // Add cells for days in month
-                          for (let day = 1; day <= daysInMonth; day++) {
-                            const date = new Date(year, month, day);
-                            const today = new Date();
-                            // Set hours to 0 for pure date comparison
-                            today.setHours(0, 0, 0, 0);
-                            const isPastDate = date < today;
-
-                            // Format date as YYYY-MM-DD for comparison
-                            const dateString = `${date.getFullYear()}-${String(
-                              date.getMonth() + 1
-                            ).padStart(2, "0")}-${String(
-                              date.getDate()
-                            ).padStart(2, "0")}`;
-
-                            const priceEntry = room.priceCalendar?.find(
-                              (entry: {
-                                date: string;
-                                price: number;
-                                availableRooms?: number;
-                              }) => {
-                                const entryDateString =
-                                  typeof entry.date === "string"
-                                    ? entry.date.substring(0, 10)
-                                    : new Date(entry.date)
-                                        .toISOString()
-                                        .substring(0, 10);
-                                return entryDateString === dateString;
-                              }
-                            );
-
-                            const priceToShow = priceEntry
-                              ? priceEntry.price
-                              : room.defaultPrice;
-
-                            // Get available rooms - use date-specific value if set, otherwise fall back to room's default
-                            const availableRoomsToShow =
-                              priceEntry?.availableRooms !== undefined
-                                ? priceEntry.availableRooms
-                                : room.availableRooms;
-
-                            const hasSpecialPrice =
-                              priceEntry &&
-                              priceEntry.price !== room.defaultPrice;
-
-                            // Highlight if this date matches the selected check-in date
-                            const isSelected =
-                              selectedDate &&
-                              date.toDateString() ===
-                                selectedDate.toDateString();
-
-                            calendarCells.push(
-                              <div
-                                key={`day-${day}`}
-                                className={`relative flex flex-col items-center justify-start p-1 border ${
-                                  hasSpecialPrice
-                                    ? "border-[#6A5631] border-opacity-40"
-                                    : "border-gray-200"
-                                } ${
-                                  isSelected
-                                    ? "bg-yellow-100 border-yellow-500"
-                                    : ""
-                                } ${
-                                  isPastDate ? "opacity-50 bg-gray-100" : ""
-                                } rounded-md overflow-hidden h-16 sm:h-20`}
-                              >
-                                <div
-                                  className={`font-bold text-xs w-full text-center py-1 ${
-                                    hasSpecialPrice
-                                      ? "bg-[#6A5631] text-white"
-                                      : "bg-gray-50 text-gray-700"
-                                  } ${
-                                    isPastDate
-                                      ? "bg-gray-200 text-gray-500"
-                                      : ""
-                                  }`}
-                                >
-                                  {day}
-                                </div>
-                                <div className="flex flex-col items-center justify-center w-full h-full">
-                                  <div
-                                    className={`text-xs font-semibold ${
-                                      hasSpecialPrice
-                                        ? "text-[#6A5631]"
-                                        : "text-gray-700"
-                                    } ${isPastDate ? "text-gray-500" : ""}`}
-                                  >
-                                    ₹{priceToShow}
-                                  </div>
-                                  <div
-                                    className={`text-[9px] mt-0.5 ${
-                                      isPastDate
-                                        ? "text-gray-500"
-                                        : availableRoomsToShow > 0
-                                        ? "text-blue-700"
-                                        : "text-red-500"
-                                    }`}
-                                  >
-                                    {availableRoomsToShow}{" "}
-                                    {availableRoomsToShow === 1
-                                      ? "room"
-                                      : "rooms"}
-                                  </div>
-                                </div>
-                              </div>
-                            );
-                          }
-
-                          // Add empty cells to complete the calendar grid if needed
-                          const totalCells = firstDayOfWeek + daysInMonth;
-                          const rowsNeeded = Math.ceil(totalCells / 7);
-                          const cellsNeeded = rowsNeeded * 7;
-                          const remainingCells = cellsNeeded - totalCells;
-
-                          for (let i = 0; i < remainingCells; i++) {
-                            calendarCells.push(
-                              <div
-                                key={`empty-end-${i}`}
-                                className="h-16 sm:h-20 border border-gray-100 rounded-md opacity-0"
-                              ></div>
-                            );
-                          }
-
-                          return calendarCells;
-                        })()}
+                  >
+                    {/* Room image */}
+                    <div className="relative">
+                      <img
+                        src={room.images[0]}
+                        alt={`${room.type} Room`}
+                        className="w-full h-60 object-cover"
+                      />
+                      <div className="absolute bottom-0 left-0 right-0 bg-gradient-to-t from-black to-transparent py-2 px-4">
+                        <h3 className="text-xl font-semibold text-white">
+                          {categories[room.category as keyof typeof categories]}
+                        </h3>
                       </div>
                     </div>
-                  </div>
 
-                  <button
-                    type="button"
-                    onClick={(e) => {
-                      // Pass the event to the handler
-                      console.log("Button clicked!"); // Debugging log
-                      handleRoomSelection(
-                        room.availableRooms,
-                        room.category,
-                        room._id,
-                        e
-                      );
-                    }}
-                    className="w-full bg-[#6A5631] text-white py-2 rounded-lg hover:bg-[#5A4728] transition duration-200"
-                  >
-                    {selectedRooms[room.category]
-                      ? "Unselect Room"
-                      : "Select Room"}
-                  </button>
-                </div>
-              </div>
-            ))}
+                    {/* Room details */}
+                    <div className="p-5 space-y-4">
+                      <div className="flex justify-between items-center">
+                        <div className="text-2xl font-bold text-[#6A5631]">
+                          ₹{" "}
+                          {
+                            getRoomInfoForDate(room, selectedDate || new Date())
+                              .price
+                          }
+                          <span className="text-sm font-normal text-gray-600">
+                            /night
+                          </span>
+                        </div>
+                        <div className="text-sm bg-gray-100 px-3 py-1 rounded-full text-gray-700">
+                          {room.availableRooms} rooms available
+                        </div>
+                      </div>
+
+                      <div className="grid grid-cols-2 gap-3 text-sm">
+                        <div className="flex items-center gap-2">
+                          <svg
+                            xmlns="http://www.w3.org/2000/svg"
+                            className="h-5 w-5 text-gray-600"
+                            fill="none"
+                            viewBox="0 0 24 24"
+                            stroke="currentColor"
+                          >
+                            <path
+                              strokeLinecap="round"
+                              strokeLinejoin="round"
+                              strokeWidth={2}
+                              d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z"
+                            />
+                          </svg>
+                          {room.adultCount} Adults
+                        </div>
+                        <div className="flex items-center gap-2">
+                          <svg
+                            xmlns="http://www.w3.org/2000/svg"
+                            className="h-5 w-5 text-gray-600"
+                            fill="none"
+                            viewBox="0 0 24 24"
+                            stroke="currentColor"
+                          >
+                            <path
+                              strokeLinecap="round"
+                              strokeLinejoin="round"
+                              strokeWidth={2}
+                              d="M12 4.354a4 4 0 110 5.292M15 21H3v-1a6 6 0 0112 0v1zm0 0h6v-1a6 6 0 00-9-5.197M13 7a4 4 0 11-8 0 4 4 0 018 0z"
+                            />
+                          </svg>
+                          {room.childCount} Children
+                        </div>
+                      </div>
+
+                      {/* Room Features */}
+                      <div className="border-t border-b py-4 my-2">
+                        <h4 className="text-base font-semibold mb-3 text-gray-800 flex items-center gap-2">
+                          <svg
+                            xmlns="http://www.w3.org/2000/svg"
+                            className="h-5 w-5 text-[#6A5631]"
+                            fill="none"
+                            viewBox="0 0 24 24"
+                            stroke="currentColor"
+                          >
+                            <path
+                              strokeLinecap="round"
+                              strokeLinejoin="round"
+                              strokeWidth={2}
+                              d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2"
+                            />
+                          </svg>
+                          Room Includes
+                        </h4>
+
+                        <div className="grid grid-cols-2 gap-2">
+                          {(() => {
+                            const features = parseRoomFeatures(room);
+                            const bedConfig = getDefaultBedConfiguration(
+                              room.category
+                            );
+
+                            if (features.length > 0 || bedConfig) {
+                              return (
+                                <>
+                                  {bedConfig && (
+                                    <div className="flex items-center gap-2 text-sm text-gray-800">
+                                      <svg
+                                        xmlns="http://www.w3.org/2000/svg"
+                                        className="h-4 w-4 text-[#6A5631]"
+                                        fill="none"
+                                        viewBox="0 0 24 24"
+                                        stroke="currentColor"
+                                      >
+                                        <path
+                                          strokeLinecap="round"
+                                          strokeLinejoin="round"
+                                          strokeWidth={2}
+                                          d="M5 13l4 4L19 7"
+                                        />
+                                      </svg>
+                                      {bedConfig}
+                                    </div>
+                                  )}
+                                  {features.map(
+                                    (feature: string, idx: number) => (
+                                      <div
+                                        key={idx}
+                                        className="flex items-center gap-2 text-sm text-gray-700"
+                                      >
+                                        <svg
+                                          xmlns="http://www.w3.org/2000/svg"
+                                          className="h-4 w-4 text-[#6A5631]"
+                                          fill="none"
+                                          viewBox="0 0 24 24"
+                                          stroke="currentColor"
+                                        >
+                                          <path
+                                            strokeLinecap="round"
+                                            strokeLinejoin="round"
+                                            strokeWidth={2}
+                                            d="M5 13l4 4L19 7"
+                                          />
+                                        </svg>
+                                        {feature}
+                                      </div>
+                                    )
+                                  )}
+                                </>
+                              );
+                            } else {
+                              return (
+                                <div className="col-span-2 text-sm text-gray-500 italic">
+                                  Standard features based on room type
+                                </div>
+                              );
+                            }
+                          })()}
+                        </div>
+                      </div>
+
+                      {/* Display price calendar if available */}
+                      {Array.isArray(room.priceCalendar) &&
+                      room.priceCalendar.length > 0 ? (
+                        <div className="mt-2">
+                          <div className="font-semibold text-sm text-gray-700 mb-1 flex items-center justify-between">
+                            <span>Price Calendar</span>
+                            <span className="text-xs text-green-600">
+                              {selectedDate
+                                ? `Showing prices for ${selectedDate.toLocaleDateString()}`
+                                : "Showing current prices"}
+                            </span>
+                          </div>
+                          <div className="flex overflow-x-auto gap-2 pb-1">
+                            {room.priceCalendar
+                              .slice(0, 14)
+                              .map((entry: any, idx: number) => {
+                                const entryDate = new Date(entry.date);
+                                const isSelectedDate =
+                                  selectedDate &&
+                                  entryDate.getDate() ===
+                                    selectedDate.getDate() &&
+                                  entryDate.getMonth() ===
+                                    selectedDate.getMonth() &&
+                                  entryDate.getFullYear() ===
+                                    selectedDate.getFullYear();
+
+                                return (
+                                  <div
+                                    key={idx}
+                                    className={`min-w-[70px] ${
+                                      isSelectedDate
+                                        ? "bg-[#6A5631] text-white"
+                                        : "bg-gray-50 text-gray-700"
+                                    } border border-gray-200 rounded p-1 flex flex-col items-center`}
+                                  >
+                                    <span
+                                      className={`text-xs ${
+                                        isSelectedDate
+                                          ? "text-white"
+                                          : "text-gray-500"
+                                      }`}
+                                    >
+                                      {new Date(entry.date).toLocaleDateString(
+                                        undefined,
+                                        {
+                                          month: "short",
+                                          day: "numeric",
+                                        }
+                                      )}
+                                    </span>
+                                    <span
+                                      className={`text-sm font-bold ${
+                                        isSelectedDate
+                                          ? "text-white"
+                                          : "text-[#6A5631]"
+                                      }`}
+                                    >
+                                      ₹{entry.price}
+                                    </span>
+                                    {entry.availableRooms > 0 && (
+                                      <span
+                                        className={`text-xs ${
+                                          isSelectedDate
+                                            ? "text-white"
+                                            : "text-gray-500"
+                                        }`}
+                                      >
+                                        {entry.availableRooms} left
+                                      </span>
+                                    )}
+                                  </div>
+                                );
+                              })}
+                          </div>
+                        </div>
+                      ) : (
+                        <div className="mt-2 border-t pt-2">
+                          <div className="text-sm text-[#6A5631] py-2 px-3 bg-amber-50 border border-amber-100 rounded flex items-center gap-2">
+                            <svg
+                              xmlns="http://www.w3.org/2000/svg"
+                              className="h-5 w-5"
+                              fill="none"
+                              viewBox="0 0 24 24"
+                              stroke="currentColor"
+                            >
+                              <path
+                                strokeLinecap="round"
+                                strokeLinejoin="round"
+                                strokeWidth={2}
+                                d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"
+                              />
+                            </svg>
+                            <div>
+                              <span className="font-medium">
+                                No calendar pricing available.
+                              </span>
+                              <span className="block text-xs text-gray-600">
+                                Base price of ₹{room.defaultPrice || "N/A"} per
+                                night will be used.
+                              </span>
+                            </div>
+                          </div>
+                        </div>
+                      )}
+
+                      <button
+                        type="button"
+                        onClick={(e) => {
+                          handleRoomSelection(
+                            room.availableRooms,
+                            room.category,
+                            room._id,
+                            e
+                          );
+                        }}
+                        className={`w-full py-3 rounded-lg text-center font-semibold transition-colors duration-300 ${
+                          selectedRooms[room.category]
+                            ? "bg-red-500 text-white hover:bg-red-600"
+                            : "bg-[#6A5631] text-white hover:bg-[#5A4728]"
+                        }`}
+                      >
+                        {selectedRooms[room.category] ? (
+                          <span className="flex items-center justify-center gap-2">
+                            <svg
+                              xmlns="http://www.w3.org/2000/svg"
+                              className="h-5 w-5"
+                              fill="none"
+                              viewBox="0 0 24 24"
+                              stroke="currentColor"
+                            >
+                              <path
+                                strokeLinecap="round"
+                                strokeLinejoin="round"
+                                strokeWidth={2}
+                                d="M6 18L18 6M6 6l12 12"
+                              />
+                            </svg>
+                            Cancel Selection
+                          </span>
+                        ) : (
+                          <span className="flex items-center justify-center gap-2">
+                            <svg
+                              xmlns="http://www.w3.org/2000/svg"
+                              className="h-5 w-5"
+                              fill="none"
+                              viewBox="0 0 24 24"
+                              stroke="currentColor"
+                            >
+                              <path
+                                strokeLinecap="round"
+                                strokeLinejoin="round"
+                                strokeWidth={2}
+                                d="M5 13l4 4L19 7"
+                              />
+                            </svg>
+                            Select Room
+                          </span>
+                        )}
+                      </button>
+                    </div>
+                  </div>
+                );
+              })}
+            </div>
           </div>
 
+          {/* Hotel Policies */}
           {hotel?.policies && hotel?.policies.length > 0 && (
-            <div className="bg-white shadow-md rounded-lg p-4 sm:p-6">
-              <h2 className="text-xl sm:text-2xl font-semibold text-gray-800 border-b pb-2 mb-4">
+            <div className="bg-white shadow-md rounded-xl p-6">
+              <h2 className="text-2xl font-semibold text-gray-800 border-b pb-3 mb-4 flex items-center gap-2">
+                <svg
+                  xmlns="http://www.w3.org/2000/svg"
+                  className="h-6 w-6 text-[#6A5631]"
+                  fill="none"
+                  viewBox="0 0 24 24"
+                  stroke="currentColor"
+                >
+                  <path
+                    strokeLinecap="round"
+                    strokeLinejoin="round"
+                    strokeWidth={2}
+                    d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"
+                  />
+                </svg>
                 Hotel Policies
               </h2>
-              <div className="grid grid-cols-1 sm:grid-cols-2 gap-2">
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-x-6 gap-y-3">
                 {hotel.policies.map((policy: string, index: number) => (
-                  <p key={index} className="text-sm text-gray-700 py-1">
-                    {policy}
-                  </p>
+                  <div
+                    key={index}
+                    className="flex items-start gap-2 text-gray-700"
+                  >
+                    <svg
+                      xmlns="http://www.w3.org/2000/svg"
+                      className="h-5 w-5 min-w-[20px] text-[#6A5631] mt-0.5"
+                      fill="none"
+                      viewBox="0 0 24 24"
+                      stroke="currentColor"
+                    >
+                      <path
+                        strokeLinecap="round"
+                        strokeLinejoin="round"
+                        strokeWidth={2}
+                        d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"
+                      />
+                    </svg>
+                    <span>{policy}</span>
+                  </div>
                 ))}
               </div>
             </div>
           )}
 
+          {/* Temple Distances */}
           {hotel?.temples?.length > 0 && (
-            <div className="bg-white shadow-md rounded-lg p-4 sm:p-6 my-4">
-              <h2 className="text-xl sm:text-2xl font-semibold text-gray-800 border-b pb-2 mb-4">
-                Distance from Temples
+            <div className="bg-white shadow-md rounded-xl p-6">
+              <h2 className="text-2xl font-semibold text-gray-800 border-b pb-3 mb-4 flex items-center gap-2">
+                <svg
+                  xmlns="http://www.w3.org/2000/svg"
+                  className="h-6 w-6 text-[#6A5631]"
+                  fill="none"
+                  viewBox="0 0 24 24"
+                  stroke="currentColor"
+                >
+                  <path
+                    strokeLinecap="round"
+                    strokeLinejoin="round"
+                    strokeWidth={2}
+                    d="M3 12l2-2m0 0l7-7 7 7M5 10v10a1 1 0 001 1h3m10-11l2 2m-2-2v10a1 1 0 01-1 1h-3m-6 0a1 1 0 001-1v-4a1 1 0 011-1h2a1 1 0 011 1v4a1 1 0 001 1m-6 0h6"
+                  />
+                </svg>
+                Nearby Temples
               </h2>
-              <div className="grid grid-cols-1 sm:grid-cols-2 gap-x-4 gap-y-1">
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-x-4 gap-y-3">
                 {hotel.temples.map(
                   (
                     temple: { name: string; distance: number },
                     index: number
                   ) => (
-                    <div key={index} className="flex justify-between py-1">
-                      <span className="text-sm text-gray-700">
-                        {temple.name}
-                      </span>
-                      <span className="text-sm text-gray-600">
+                    <div
+                      key={index}
+                      className="flex justify-between items-center py-2 border-b border-dashed"
+                    >
+                      <div className="flex items-center gap-2">
+                        <svg
+                          xmlns="http://www.w3.org/2000/svg"
+                          className="h-5 w-5 text-[#6A5631]"
+                          fill="none"
+                          viewBox="0 0 24 24"
+                          stroke="currentColor"
+                        >
+                          <path
+                            strokeLinecap="round"
+                            strokeLinejoin="round"
+                            strokeWidth={2}
+                            d="M17.657 16.657L13.414 20.9a1.998 1.998 0 01-2.827 0l-4.244-4.243a8 8 0 1111.314 0z"
+                          />
+                          <path
+                            strokeLinecap="round"
+                            strokeLinejoin="round"
+                            strokeWidth={2}
+                            d="M15 11a3 3 0 11-6 0 3 3 0 016 0z"
+                          />
+                        </svg>
+                        <span className="text-gray-800 font-medium">
+                          {temple.name}
+                        </span>
+                      </div>
+                      <span className="text-gray-600 bg-gray-100 px-3 py-1 rounded-full text-sm">
                         {temple.distance} km
                       </span>
                     </div>
@@ -820,54 +1095,80 @@ const Detail = () => {
               </div>
             </div>
           )}
+
           {/* Location Section */}
-          <div className="bg-white shadow-md rounded-lg p-4 sm:p-6">
-            <h2 className="text-xl sm:text-2xl font-semibold text-gray-800 border-b pb-2 mb-4">
+          <div className="bg-white shadow-md rounded-xl p-6">
+            <h2 className="text-2xl font-semibold text-gray-800 border-b pb-3 mb-4 flex items-center gap-2">
+              <svg
+                xmlns="http://www.w3.org/2000/svg"
+                className="h-6 w-6 text-[#6A5631]"
+                fill="none"
+                viewBox="0 0 24 24"
+                stroke="currentColor"
+              >
+                <path
+                  strokeLinecap="round"
+                  strokeLinejoin="round"
+                  strokeWidth={2}
+                  d="M17.657 16.657L13.414 20.9a1.998 1.998 0 01-2.827 0l-4.244-4.243a8 8 0 1111.314 0z"
+                />
+                <path
+                  strokeLinecap="round"
+                  strokeLinejoin="round"
+                  strokeWidth={2}
+                  d="M15 11a3 3 0 11-6 0 3 3 0 016 0z"
+                />
+              </svg>
               Location
             </h2>
-            <div className="mb-4">
-              <p className="text-gray-700 leading-relaxed whitespace-pre-line">
-                {hotel.location ? (
-                  <>
-                    <p className="mb-2">Address: {hotel.location}</p>
-                    <a
-                      href={`https://www.google.com/maps/search/?api=1&query=${encodeURIComponent(
-                        hotel.location
-                      )}`}
-                      target="_blank"
-                      rel="noopener noreferrer"
-                      className="text-[#6A5631] hover:underline inline-flex items-center gap-2"
+            <div className="mb-6">
+              {hotel.location ? (
+                <div className="p-4 bg-gray-50 rounded-lg border border-gray-100">
+                  <h3 className="text-sm uppercase text-gray-500 mb-1">
+                    Address
+                  </h3>
+                  <p className="text-gray-800 font-medium mb-3">
+                    {hotel.location}
+                  </p>
+                  <a
+                    href={`https://www.google.com/maps/search/?api=1&query=${encodeURIComponent(
+                      hotel.location
+                    )}`}
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    className="text-[#6A5631] hover:text-[#5A4728] inline-flex items-center gap-2 font-medium"
+                  >
+                    View on Google Maps
+                    <svg
+                      xmlns="http://www.w3.org/2000/svg"
+                      className="h-4 w-4"
+                      fill="none"
+                      viewBox="0 0 24 24"
+                      stroke="currentColor"
                     >
-                      View on Google Maps
-                      <svg
-                        xmlns="http://www.w3.org/2000/svg"
-                        className="h-4 w-4"
-                        fill="none"
-                        viewBox="0 0 24 24"
-                        stroke="currentColor"
-                      >
-                        <path
-                          strokeLinecap="round"
-                          strokeLinejoin="round"
-                          strokeWidth={2}
-                          d="M10 6H6a2 2 0 00-2 2v10a2 2 0 002 2h10a2 2 0 002-2v-4M14 4h6m0 0v6m0-6L10 14"
-                        />
-                      </svg>
-                    </a>
-                  </>
-                ) : (
-                  "No location available."
-                )}
-              </p>
+                      <path
+                        strokeLinecap="round"
+                        strokeLinejoin="round"
+                        strokeWidth={2}
+                        d="M10 6H6a2 2 0 00-2 2v10a2 2 0 002 2h10a2 2 0 002-2v-4M14 4h6m0 0v6m0-6L10 14"
+                      />
+                    </svg>
+                  </a>
+                </div>
+              ) : (
+                <div className="text-gray-500 italic">
+                  No location available.
+                </div>
+              )}
             </div>
             {/* Google Maps Embed */}
             {hotel.location && (
-              <div className="w-full h-80 sm:h-96 mt-4">
+              <div className="rounded-xl overflow-hidden shadow border border-gray-200">
                 <iframe
                   src={`https://www.google.com/maps/embed/v1/place?q=${encodeURIComponent(
                     hotel.location
                   )}&key=AIzaSyBfdU1HrvqgUUy-rsXNbvqCJRdQGMshjEE`}
-                  className="w-full h-full border-none rounded-lg shadow-md"
+                  className="w-full h-96 border-none"
                   allowFullScreen
                   loading="lazy"
                   referrerPolicy="no-referrer-when-downgrade"
@@ -877,31 +1178,74 @@ const Detail = () => {
           </div>
 
           {/* Reviews Section */}
-          <div className="bg-white shadow-md rounded-lg p-4 sm:p-6">
-            <div className="flex justify-between items-center border-b pb-4 mb-4">
-              <h2 className="text-xl sm:text-2xl font-semibold text-gray-800">
-                Guest Reviews
-              </h2>
+          <div className="bg-white shadow-md rounded-xl p-6">
+            <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center border-b pb-4 mb-6">
+              <div className="mb-3 sm:mb-0">
+                <h2 className="text-xl sm:text-2xl font-semibold text-gray-800">
+                  Guest Reviews
+                </h2>
+                <p className="text-sm text-gray-500 mt-1">
+                  {reviews.length > 0
+                    ? `${reviews.length} reviews from our guests`
+                    : "No reviews yet"}
+                </p>
+              </div>
               {isLoggedIn ? (
                 hasUserAlreadyReviewed ? (
-                  <div className="text-sm text-gray-600">
+                  <div className="text-sm bg-gray-100 text-gray-600 px-4 py-2 rounded-lg">
                     You have already reviewed this hotel
                   </div>
                 ) : (
                   <button
-                    className="bg-[#6A5631] text-white px-4 py-2 rounded-lg hover:bg-[#5A4728] transition"
+                    className="bg-[#6A5631] text-white px-5 py-2.5 rounded-lg hover:bg-[#5A4728] transition-colors duration-300 shadow-sm flex items-center gap-2"
                     onClick={() => setShowReviewForm((prev) => !prev)}
                   >
-                    {showReviewForm ? "Cancel" : "Write a Review"}
+                    {showReviewForm ? (
+                      <>
+                        <svg
+                          xmlns="http://www.w3.org/2000/svg"
+                          className="h-5 w-5"
+                          fill="none"
+                          viewBox="0 0 24 24"
+                          stroke="currentColor"
+                        >
+                          <path
+                            strokeLinecap="round"
+                            strokeLinejoin="round"
+                            strokeWidth={2}
+                            d="M6 18L18 6M6 6l12 12"
+                          />
+                        </svg>
+                        Cancel
+                      </>
+                    ) : (
+                      <>
+                        <svg
+                          xmlns="http://www.w3.org/2000/svg"
+                          className="h-5 w-5"
+                          fill="none"
+                          viewBox="0 0 24 24"
+                          stroke="currentColor"
+                        >
+                          <path
+                            strokeLinecap="round"
+                            strokeLinejoin="round"
+                            strokeWidth={2}
+                            d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z"
+                          />
+                        </svg>
+                        Write a Review
+                      </>
+                    )}
                   </button>
                 )
               ) : (
-                <div className="flex items-center">
-                  <span className="text-sm text-gray-600 mr-3">
+                <div className="flex flex-col sm:flex-row items-center gap-3">
+                  <span className="text-sm text-gray-600 text-center sm:text-left mb-2 sm:mb-0">
                     Sign in to leave a review
                   </span>
                   <button
-                    className="bg-[#6A5631] text-white px-4 py-2 rounded-lg hover:bg-[#5A4728] transition"
+                    className="bg-[#6A5631] text-white px-5 py-2 rounded-lg hover:bg-[#5A4728] transition-colors duration-300 shadow-sm w-full sm:w-auto"
                     onClick={handleLoginRedirect}
                   >
                     Sign In
@@ -912,80 +1256,156 @@ const Detail = () => {
 
             {/* Review Form for logged-in users */}
             {isLoggedIn && showReviewForm && (
-              <div className="bg-gray-50 p-4 rounded-lg mb-6">
-                <h3 className="text-lg font-medium mb-3">Your Review</h3>
+              <div className="bg-gray-50 p-5 rounded-lg mb-8 shadow-sm border border-gray-200 transition-all duration-300">
+                <h3 className="text-lg font-semibold mb-4 text-gray-800">
+                  Share Your Experience
+                </h3>
 
                 {submissionSuccess && (
-                  <div className="bg-green-100 text-green-700 p-3 rounded mb-4">
+                  <div className="bg-green-50 text-green-700 p-4 rounded-lg mb-4 flex items-center border border-green-200">
+                    <svg
+                      className="w-5 h-5 mr-2"
+                      fill="currentColor"
+                      viewBox="0 0 20 20"
+                    >
+                      <path
+                        fillRule="evenodd"
+                        d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z"
+                        clipRule="evenodd"
+                      />
+                    </svg>
                     Review submitted successfully! Thank you for your feedback.
                   </div>
                 )}
 
                 {submissionError && (
-                  <div className="bg-red-100 text-red-700 p-3 rounded mb-4">
+                  <div className="bg-red-50 text-red-700 p-4 rounded-lg mb-4 flex items-center border border-red-200">
+                    <svg
+                      className="w-5 h-5 mr-2"
+                      fill="currentColor"
+                      viewBox="0 0 20 20"
+                    >
+                      <path
+                        fillRule="evenodd"
+                        d="M18 10a8 8 0 11-16 0 8 8 0 0116 0zm-7 4a1 1 0 11-2 0 1 1 0 012 0zm-1-9a1 1 0 00-1 1v4a1 1 0 102 0V6a1 1 0 00-1-1z"
+                        clipRule="evenodd"
+                      />
+                    </svg>
                     {submissionError}
                   </div>
                 )}
 
-                <form onSubmit={handleReviewSubmit}>
+                <form onSubmit={handleReviewSubmit} className="space-y-5">
                   <div className="mb-4">
-                    <label className="block text-gray-700 mb-2">Rating</label>
-                    <div className="flex">
+                    <label className="block text-gray-700 font-medium mb-2">
+                      Your Rating
+                    </label>
+                    <div className="flex items-center gap-1">
                       {[1, 2, 3, 4, 5].map((star) => (
                         <button
                           key={star}
                           type="button"
-                          className="text-2xl text-yellow-400 focus:outline-none"
+                          className="text-3xl focus:outline-none transition-transform hover:scale-110"
                           onMouseEnter={() => setHoveredRating(star)}
                           onMouseLeave={() => setHoveredRating(0)}
                           onClick={() => handleRatingClick(star)}
                         >
                           {star <= (hoveredRating || userReview.rating) ? (
-                            <FaStar />
+                            <FaStar className="text-yellow-400" />
                           ) : (
-                            <FaRegStar />
+                            <FaRegStar className="text-yellow-400" />
                           )}
                         </button>
                       ))}
+                      <span className="ml-3 text-sm text-gray-500">
+                        {userReview.rating
+                          ? `${userReview.rating} out of 5 stars`
+                          : "Select a rating"}
+                      </span>
                     </div>
                   </div>
                   <div className="mb-4">
-                    <label className="block text-gray-700 mb-2">Comment</label>
+                    <label className="block text-gray-700 font-medium mb-2">
+                      Your Review
+                    </label>
                     <textarea
-                      className="w-full p-2 border rounded focus:ring-2 focus:ring-[#6A5631] focus:outline-none"
+                      className="w-full p-3 border rounded-lg focus:ring-2 focus:ring-[#6A5631] focus:outline-none transition-colors duration-200 text-gray-700 resize-none"
                       rows={4}
                       value={userReview.comment}
                       onChange={handleCommentChange}
-                      placeholder="Share your experience..."
+                      placeholder="Share details about your stay to help other travelers..."
                     />
                   </div>
-                  <button
-                    type="submit"
-                    className="bg-[#6A5631] text-white px-4 py-2 rounded hover:bg-[#5A4728] transition flex items-center"
-                    disabled={isSubmitting || !userReview.rating}
-                  >
-                    {isSubmitting ? (
-                      <>
-                        <span className="inline-block w-4 h-4 border-2 border-white border-t-transparent rounded-full animate-spin mr-2"></span>
-                        Submitting...
-                      </>
-                    ) : (
-                      "Submit Review"
-                    )}
-                  </button>
+                  <div className="flex justify-end">
+                    <button
+                      type="submit"
+                      className="bg-[#6A5631] text-white px-6 py-2.5 rounded-lg hover:bg-[#5A4728] transition-colors duration-300 flex items-center gap-2 shadow-sm"
+                      disabled={isSubmitting || !userReview.rating}
+                    >
+                      {isSubmitting ? (
+                        <>
+                          <span className="inline-block w-5 h-5 border-2 border-white border-t-transparent rounded-full animate-spin"></span>
+                          Submitting...
+                        </>
+                      ) : (
+                        <>
+                          <svg
+                            xmlns="http://www.w3.org/2000/svg"
+                            className="h-5 w-5"
+                            fill="none"
+                            viewBox="0 0 24 24"
+                            stroke="currentColor"
+                          >
+                            <path
+                              strokeLinecap="round"
+                              strokeLinejoin="round"
+                              strokeWidth={2}
+                              d="M5 13l4 4L19 7"
+                            />
+                          </svg>
+                          Submit Review
+                        </>
+                      )}
+                    </button>
+                  </div>
                 </form>
               </div>
             )}
 
             {/* Login prompt for non-logged-in users */}
             {!isLoggedIn && (
-              <div className="bg-gray-50 p-4 rounded-lg mb-6 text-center">
-                <p className="text-gray-700 mb-3">
-                  Share your experience with other travelers! Sign in to leave a
-                  review.
+              <div className="bg-gray-50 p-6 rounded-lg mb-8 text-center border border-gray-200 shadow-sm">
+                <div className="mb-4">
+                  <svg
+                    xmlns="http://www.w3.org/2000/svg"
+                    className="h-12 w-12 mx-auto text-gray-400 mb-3"
+                    fill="none"
+                    viewBox="0 0 24 24"
+                    stroke="currentColor"
+                  >
+                    <path
+                      strokeLinecap="round"
+                      strokeLinejoin="round"
+                      strokeWidth={1.5}
+                      d="M15 12a3 3 0 11-6 0 3 3 0 016 0z"
+                    />
+                    <path
+                      strokeLinecap="round"
+                      strokeLinejoin="round"
+                      strokeWidth={1.5}
+                      d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z"
+                    />
+                  </svg>
+                  <h4 className="text-lg font-semibold text-gray-800 mb-2">
+                    Share Your Experience
+                  </h4>
+                </div>
+                <p className="text-gray-600 mb-4">
+                  Your review helps other travelers make better choices. Sign in
+                  to leave your feedback about this hotel.
                 </p>
                 <button
-                  className="bg-[#6A5631] text-white px-6 py-2 rounded hover:bg-[#5A4728] transition mx-auto"
+                  className="bg-[#6A5631] text-white px-6 py-2.5 rounded-lg hover:bg-[#5A4728] transition-colors duration-300 mx-auto shadow-sm"
                   onClick={handleLoginRedirect}
                 >
                   Sign In to Review
@@ -993,87 +1413,353 @@ const Detail = () => {
               </div>
             )}
 
-            {/* Display reviews */}
-            {reviews.length > 0 ? (
-              <div className="space-y-4">
-                {reviews.map((review, index) => {
-                  return (
-                    <div
-                      key={review.id || index}
-                      className="border-b pb-4 last:border-b-0"
-                    >
-                      <div className="flex justify-between items-start">
-                        <div>
-                          <h4 className="font-medium">{review.userName}</h4>
-                          <div className="flex items-center">
-                            {Array.from({ length: 5 }).map((_, i) => (
-                              <span key={i} className="text-yellow-400">
-                                {i < review.rating ? <FaStar /> : <FaRegStar />}
-                              </span>
-                            ))}
-                            <span className="ml-2 text-sm text-gray-500">
-                              {new Date(review.createdAt).toLocaleDateString()}
-                            </span>
+            {/* Average Rating Summary */}
+            {reviews.length > 0 && (
+              <div className="mb-8">
+                <div className="flex flex-col sm:flex-row items-start sm:items-center gap-4 mb-6">
+                  <div className="bg-[#faf6eb] p-4 rounded-lg text-center min-w-[120px]">
+                    <div className="text-3xl font-bold text-[#6A5631] mb-1">
+                      {(
+                        reviews.reduce(
+                          (sum, review) => sum + review.rating,
+                          0
+                        ) / reviews.length
+                      ).toFixed(1)}
+                    </div>
+                    <div className="flex justify-center mb-1">
+                      {Array.from({ length: 5 }).map((_, i) => {
+                        const avgRating =
+                          reviews.reduce(
+                            (sum, review) => sum + review.rating,
+                            0
+                          ) / reviews.length;
+                        return (
+                          <span key={i} className="text-yellow-400 text-sm">
+                            {i < Math.round(avgRating) ? (
+                              <FaStar />
+                            ) : (
+                              <FaRegStar />
+                            )}
+                          </span>
+                        );
+                      })}
+                    </div>
+                    <div className="text-xs text-gray-500">
+                      {reviews.length} reviews
+                    </div>
+                  </div>
+
+                  <div className="flex-1">
+                    <h4 className="text-base font-semibold text-gray-700 mb-2">
+                      Rating Breakdown
+                    </h4>
+                    {[5, 4, 3, 2, 1].map((rating) => {
+                      const count = reviews.filter(
+                        (review) => review.rating === rating
+                      ).length;
+                      const percentage = (count / reviews.length) * 100;
+                      return (
+                        <div key={rating} className="flex items-center mb-1">
+                          <div className="text-sm text-gray-600 w-12">
+                            {rating} stars
+                          </div>
+                          <div className="flex-1 mx-2 bg-gray-200 rounded-full h-2.5">
+                            <div
+                              className="bg-yellow-400 h-2.5 rounded-full"
+                              style={{ width: `${percentage}%` }}
+                            ></div>
+                          </div>
+                          <div className="text-sm text-gray-500 w-10">
+                            {count}
                           </div>
                         </div>
-                      </div>
-                      <p className="mt-2 text-gray-700">{review.comment}</p>
-                    </div>
-                  );
-                })}
-              </div>
-            ) : (
-              <div className="text-center py-6 text-gray-500">
-                No reviews yet. Be the first to review this hotel!
+                      );
+                    })}
+                  </div>
+                </div>
               </div>
             )}
+
+            {/* Display reviews */}
+            <div className="space-y-6">
+              {reviews.length > 0 ? (
+                <>
+                  <h3 className="text-lg font-semibold text-gray-800 mb-4">
+                    Guest Feedback
+                  </h3>
+                  {reviews.map((review, index) => (
+                    <div
+                      key={review.id || index}
+                      className="bg-white border border-gray-100 rounded-lg p-5 shadow-sm hover:shadow-md transition-shadow duration-300 mb-4"
+                    >
+                      <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center mb-3">
+                        <div className="flex items-center mb-2 sm:mb-0">
+                          <div className="w-10 h-10 rounded-full bg-[#6A5631] text-white flex items-center justify-center mr-3 uppercase font-semibold">
+                            {review.userName.charAt(0)}
+                          </div>
+                          <div>
+                            <h4 className="font-semibold text-gray-800">
+                              {review.userName}
+                            </h4>
+                            <div className="text-xs text-gray-500">
+                              {new Date(review.createdAt).toLocaleDateString(
+                                "en-US",
+                                {
+                                  year: "numeric",
+                                  month: "long",
+                                  day: "numeric",
+                                }
+                              )}
+                            </div>
+                          </div>
+                        </div>
+                        <div className="flex items-center bg-gray-50 px-3 py-1 rounded-full">
+                          {Array.from({ length: 5 }).map((_, i) => (
+                            <span
+                              key={i}
+                              className="text-yellow-400 text-sm mx-0.5"
+                            >
+                              {i < review.rating ? <FaStar /> : <FaRegStar />}
+                            </span>
+                          ))}
+                        </div>
+                      </div>
+                      <div className="pt-2 border-t border-gray-100">
+                        <p className="text-gray-700 leading-relaxed">
+                          {review.comment || (
+                            <span className="text-gray-400 italic">
+                              No comment provided
+                            </span>
+                          )}
+                        </p>
+                      </div>
+                    </div>
+                  ))}
+                </>
+              ) : (
+                <div className="text-center py-12 bg-gray-50 rounded-lg border border-gray-200">
+                  <svg
+                    xmlns="http://www.w3.org/2000/svg"
+                    className="h-16 w-16 mx-auto text-gray-300 mb-4"
+                    fill="none"
+                    viewBox="0 0 24 24"
+                    stroke="currentColor"
+                  >
+                    <path
+                      strokeLinecap="round"
+                      strokeLinejoin="round"
+                      strokeWidth={1}
+                      d="M8 10h.01M12 10h.01M16 10h.01M9 16H5a2 2 0 01-2-2V6a2 2 0 012-2h14a2 2 0 012 2v8a2 2 0 01-2 2h-5l-5 5v-5z"
+                    />
+                  </svg>
+                  <h4 className="text-xl font-semibold text-gray-700 mb-2">
+                    No Reviews Yet
+                  </h4>
+                  <p className="text-gray-500 max-w-md mx-auto">
+                    Be the first to review this hotel and help other travelers
+                    make informed decisions!
+                  </p>
+                </div>
+              )}
+            </div>
           </div>
         </div>
 
-        {/* Guest Info Form Dialog */}
-        <div className="p-4 sm:p-6 border border-slate-200 rounded-lg shadow-lg bg-white">
-          <GuestInfoForm
-            pricePerNight={
-              selectedRoomId
+        {/* Guest Info Form - Enhanced */}
+        <div className="hidden sm:block lg:sticky lg:top-4">
+          <div className="bg-white border border-gray-200 rounded-xl shadow-lg p-6">
+            <h3 className="text-xl font-semibold text-gray-800 mb-4 pb-2 border-b flex items-center gap-2">
+              <svg
+                xmlns="http://www.w3.org/2000/svg"
+                className="h-5 w-5 text-[#6A5631]"
+                fill="none"
+                viewBox="0 0 24 24"
+                stroke="currentColor"
+              >
+                <path
+                  strokeLinecap="round"
+                  strokeLinejoin="round"
+                  strokeWidth={2}
+                  d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z"
+                />
+              </svg>
+              Booking Details
+            </h3>
+            <GuestInfoForm
+              pricePerNight={
+                selectedRoomId
+                  ? getRoomInfoForDate(
+                      hotel.rooms.find((room) => room._id === selectedRoomId) ||
+                        {},
+                      selectedDate || new Date()
+                    ).price
+                  : 0
+              }
+              availableRooms={availableRooms}
+              roomsId={selectedRoomId}
+              hotelId={hotel._id}
+              priceCalendar={
+                hotel.rooms
+                  .find((room) => room._id === selectedRoomId)
+                  ?.priceCalendar?.map(({ date, price, availableRooms }) => ({
+                    date:
+                      typeof date === "string"
+                        ? (date as string).substring(0, 10)
+                        : date instanceof Date
+                        ? `${date.getFullYear()}-${String(
+                            date.getMonth() + 1
+                          ).padStart(2, "0")}-${String(date.getDate()).padStart(
+                            2,
+                            "0"
+                          )}`
+                        : new Date().toISOString().substring(0, 10), // fallback
+                    price,
+                    availableRooms:
+                      availableRooms !== undefined ? availableRooms : 0,
+                  })) || []
+              }
+              defaultPrice={
+                hotel.rooms.find((room) => room._id === selectedRoomId)
+                  ?.defaultPrice || 0
+              }
+            />
+          </div>
+        </div>
+      </div>
+
+      {/* Sticky Bottom Bar for Mobile */}
+      <div className="fixed bottom-0 left-0 right-0 z-40 sm:hidden bg-white shadow-xl rounded-t-xl mx-2 mb-2 flex items-center justify-between px-4 py-3 border border-gray-200">
+        <div className="flex items-center gap-2">
+          <svg
+            className="w-7 h-7 text-black"
+            fill="none"
+            stroke="currentColor"
+            strokeWidth={2}
+            viewBox="0 0 24 24"
+          >
+            <path
+              strokeLinecap="round"
+              strokeLinejoin="round"
+              d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z"
+            />
+          </svg>
+          <div>
+            <div className="text-lg font-bold text-black">
+              ₹
+              {selectedRoomId
                 ? getRoomInfoForDate(
                     hotel.rooms.find((room) => room._id === selectedRoomId) ||
                       {},
                     selectedDate || new Date()
                   ).price
-                : 0
-            }
-            availableRooms={availableRooms}
-            roomsId={selectedRoomId}
-            hotelId={hotel._id}
-            priceCalendar={
-              hotel.rooms
-                .find((room) => room._id === selectedRoomId)
-                ?.priceCalendar?.map(({ date, price, availableRooms }) => ({
-                  date:
-                    typeof date === "string"
-                      ? (date as string).substring(0, 10)
-                      : date instanceof Date
-                      ? `${date.getFullYear()}-${String(
-                          date.getMonth() + 1
-                        ).padStart(2, "0")}-${String(date.getDate()).padStart(
-                          2,
-                          "0"
-                        )}`
-                      : new Date().toISOString().substring(0, 10), // fallback
-                  price,
-                  availableRooms:
-                    availableRooms !== undefined ? availableRooms : 0,
-                })) || []
-            }
-            defaultPrice={
-              hotel.rooms.find((room) => room._id === selectedRoomId)
-                ?.defaultPrice || 0
-            }
-          />
+                : 0}
+              <span className="text-xs text-gray-400 font-normal ml-2 line-through">
+                ₹
+                {selectedRoomId
+                  ? getRoomInfoForDate(
+                      hotel.rooms.find((room) => room._id === selectedRoomId) ||
+                        {},
+                      selectedDate || new Date()
+                    ).price * 2
+                  : 0}
+              </span>
+            </div>
+            <div className="text-[11px] text-gray-500 font-medium">
+              + ₹
+              {selectedRoomId
+                ? calculateTax(
+                    getRoomInfoForDate(
+                      hotel.rooms.find((room) => room._id === selectedRoomId) ||
+                        {},
+                      selectedDate || new Date()
+                    ).price
+                  )
+                : 0}{" "}
+              taxes & fees
+            </div>
+          </div>
         </div>
+        <button
+          className="flex items-center gap-2 bg-[#6A5631] text-white font-bold px-5 py-2 rounded-lg shadow hover:bg-[#5a4827] transition"
+          onClick={() => setShowGuestFormOverlay(true)}
+        >
+          <span>More Details</span>
+          <svg
+            className="w-5 h-5"
+            fill="none"
+            stroke="currentColor"
+            strokeWidth={2}
+            viewBox="0 0 24 24"
+          >
+            <path
+              strokeLinecap="round"
+              strokeLinejoin="round"
+              d="M9 5l7 7-7 7"
+            />
+          </svg>
+        </button>
       </div>
 
-      {/* Debugging: Modal state can be logged here if needed */}
+      {/* Guest Info Overlay for Mobile */}
+      {showGuestFormOverlay && (
+        <div className="fixed inset-0 z-50 flex items-end sm:hidden transition-all">
+          <div className="bg-white w-full rounded-t-2xl p-0 max-h-[92vh] overflow-y-auto relative shadow-2xl animate-slideUp">
+            {/* Custom Header */}
+            <div className="flex items-center justify-between px-4 py-3 border-b border-gray-200 bg-white rounded-t-2xl">
+              <span className="font-bold text-black text-lg">
+                Complete Your Booking
+              </span>
+              <button
+                className="text-2xl text-black font-bold"
+                onClick={() => setShowGuestFormOverlay(false)}
+                aria-label="Close"
+              >
+                &times;
+              </button>
+            </div>
+            <div className="p-3">
+              <GuestInfoForm
+                pricePerNight={
+                  selectedRoomId
+                    ? getRoomInfoForDate(
+                        hotel.rooms.find(
+                          (room) => room._id === selectedRoomId
+                        ) || {},
+                        selectedDate || new Date()
+                      ).price
+                    : 0
+                }
+                availableRooms={availableRooms}
+                roomsId={selectedRoomId}
+                hotelId={hotel._id}
+                priceCalendar={
+                  hotel.rooms
+                    .find((room) => room._id === selectedRoomId)
+                    ?.priceCalendar?.map(({ date, price, availableRooms }) => ({
+                      date:
+                        typeof date === "string"
+                          ? (date as string).substring(0, 10)
+                          : date instanceof Date
+                          ? `${date.getFullYear()}-${String(
+                              date.getMonth() + 1
+                            ).padStart(2, "0")}-${String(
+                              date.getDate()
+                            ).padStart(2, "0")}`
+                          : new Date().toISOString().substring(0, 10), // fallback
+                      price,
+                      availableRooms:
+                        availableRooms !== undefined ? availableRooms : 0,
+                    })) || []
+                }
+                defaultPrice={
+                  hotel.rooms.find((room) => room._id === selectedRoomId)
+                    ?.defaultPrice || 0
+                }
+              />
+            </div>
+          </div>
+        </div>
+      )}
     </div>
   );
 };

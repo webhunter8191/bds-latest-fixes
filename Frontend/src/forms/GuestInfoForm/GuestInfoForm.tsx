@@ -281,11 +281,11 @@ const GuestInfoForm = ({
   };
 
   return (
-    <div className="max-w-md mx-auto flex flex-col gap-4">
+    <div className="max-w-md mx-auto flex flex-col gap-2">
       {/* Header Section: Price, Discount, Taxes */}
-      <div className="flex flex-col gap-1 border-b pb-4">
+      <div className="flex flex-col gap-0.5 border-b pb-2">
         <div className="flex flex-col">
-          <div className="flex items-center gap-2">
+          <div className="flex items-center gap-1">
             <span className="text-3xl font-bold text-black">
               ₹{roomInfoForSelectedDate.price}
             </span>
@@ -293,7 +293,7 @@ const GuestInfoForm = ({
               + taxes & fees: ₹{calculateTax(roomInfoForSelectedDate.price)}
             </div>
           </div>
-          <div className="flex items-center gap-2">
+          <div className="flex items-center gap-1">
             <span className="text-lg text-gray-400 line-through">
               ₹{roomInfoForSelectedDate.price * 2}
             </span>
@@ -308,9 +308,9 @@ const GuestInfoForm = ({
           isLoggedIn ? handleSubmit(onSubmit) : handleSubmit(onSignInClick)
         }
       >
-        <div className="grid grid-cols-1 gap-4 items-center bg-white p-4">
+        <div className="grid grid-cols-1 gap-2 items-center bg-white p-2">
           <div>
-            <label className="block text-sm font-medium text-gray-700 mb-1">
+            <label className="block text-sm font-medium text-gray-700 mb-0.5">
               Check-in Date
             </label>
             <DatePicker
@@ -324,14 +324,14 @@ const GuestInfoForm = ({
               maxDate={maxDate}
               placeholderText="Check-in Date"
               renderDayContents={renderDayContents}
-              className="min-w-full bg-white p-2 border rounded focus:outline-none"
+              className="min-w-full bg-white p-1.5 border rounded focus:outline-none"
               wrapperClassName="min-w-full"
               dateFormat="dd/MM/yyyy"
               calendarClassName="custom-datepicker-calendar"
             />
           </div>
           <div>
-            <label className="block text-sm font-medium text-gray-700 mb-1">
+            <label className="block text-sm font-medium text-gray-700 mb-0.5">
               Check-out Date
             </label>
             <DatePicker
@@ -345,17 +345,17 @@ const GuestInfoForm = ({
               maxDate={maxDate}
               placeholderText="Check-out Date"
               renderDayContents={renderDayContents}
-              className="min-w-full bg-white p-2 border rounded focus:outline-none"
+              className="min-w-full bg-white p-1.5 border rounded focus:outline-none"
               wrapperClassName="min-w-full"
               dateFormat="dd/MM/yyyy"
               calendarClassName="custom-datepicker-calendar"
             />
           </div>
-          <div className="flex bg-white px-2 py-1 gap-2 border rounded items-center">
+          <div className="flex bg-white px-2 py-1 gap-1 border rounded items-center">
             <label className="items-center flex">
               Rooms:
               <input
-                className="w-full p-1 focus:outline-none font-bold ml-2"
+                className="w-full p-1 focus:outline-none font-bold ml-1"
                 type="number"
                 min={1}
                 max={minAvailableRooms}
@@ -380,15 +380,15 @@ const GuestInfoForm = ({
               </span>
             )}
           </div>
-          <div className="text-sm text-gray-600 mt-1">
+          <div className="text-sm text-gray-600">
             {minAvailableRooms} rooms available for selected dates
           </div>
           {/* Payment Options */}
-          <div className="mt-4 mb-2">
-            <h3 className="font-medium text-gray-700 mb-2">Payment Option</h3>
-            <div className="flex flex-col gap-2">
+          <div className="mt-2">
+            <h3 className="font-medium text-gray-700 mb-1">Payment Option</h3>
+            <div className="flex flex-col gap-1">
               <div className="relative">
-                <label className="flex items-center gap-2">
+                <label className="flex items-center gap-1">
                   <input
                     type="radio"
                     value="full"
@@ -414,9 +414,11 @@ const GuestInfoForm = ({
                   </button>
                 </label>
                 {showFullPaymentPolicy && (
-                  <div className="absolute left-0 mt-1 p-3 bg-white border border-[#6A5631]/20 rounded-md shadow-md z-10 text-sm text-gray-700 max-w-xs">
-                    <strong className="block mb-1">Cancellation Policy:</strong>
-                    <ul className="list-disc pl-5 space-y-1">
+                  <div className="absolute left-0 mt-1 p-2 bg-white border border-[#6A5631]/20 rounded-md shadow-md z-10 text-sm text-gray-700 max-w-xs">
+                    <strong className="block mb-0.5">
+                      Cancellation Policy:
+                    </strong>
+                    <ul className="list-disc pl-4 space-y-0.5">
                       <li>
                         If you cancel at least 12 hours before check-in: 100%
                         refund.
@@ -431,7 +433,7 @@ const GuestInfoForm = ({
               </div>
 
               <div className="relative">
-                <label className="flex items-center gap-2">
+                <label className="flex items-center gap-1">
                   <input
                     type="radio"
                     value="partial"
@@ -459,8 +461,10 @@ const GuestInfoForm = ({
                   </button>
                 </label>
                 {showPartialPaymentPolicy && (
-                  <div className="absolute left-0 mt-1 p-3 bg-white border border-[#6A5631]/20 rounded-md shadow-md z-10 text-sm text-gray-700 max-w-xs">
-                    <strong className="block mb-1">Cancellation Policy:</strong>
+                  <div className="absolute left-0 mt-1 p-2 bg-white border border-[#6A5631]/20 rounded-md shadow-md z-10 text-sm text-gray-700 max-w-xs">
+                    <strong className="block mb-0.5">
+                      Cancellation Policy:
+                    </strong>
                     <p>
                       No cancellations allowed under any circumstances. No
                       refund will be issued for the 30% booking amount.
@@ -470,7 +474,7 @@ const GuestInfoForm = ({
               </div>
 
               {paymentOption === "partial" && (
-                <div className="text-sm text-gray-600 mt-1 pl-6">
+                <div className="text-sm text-gray-600 pl-6">
                   Remaining amount of ₹{calculateRemainingAmount().toFixed(2)}{" "}
                   to be paid at check-in
                 </div>
@@ -478,7 +482,7 @@ const GuestInfoForm = ({
             </div>
           </div>
           {/* Price Details */}
-          <div className="p-3 bg-gray-50 rounded-lg space-y-2 mt-4">
+          <div className="p-2 bg-gray-50 rounded-lg space-y-1 mt-2">
             <div className="font-semibold">Price Details</div>
             <div className="flex justify-between text-sm">
               <span>Subtotal:</span>
@@ -490,7 +494,7 @@ const GuestInfoForm = ({
               </span>
               <span>₹{calculateTax(calculateTotalCost()).toFixed(2)}</span>
             </div>
-            <div className="flex justify-between font-bold text-xl mt-2 border-t pt-2">
+            <div className="flex justify-between font-bold text-xl mt-1 border-t pt-1">
               <span>
                 {paymentOption === "partial" ? "Pay Now (30%):" : "Total:"}
               </span>
@@ -516,7 +520,7 @@ const GuestInfoForm = ({
           </div>
 
           {/* Terms and conditions agreement */}
-          <div className="text-xs text-gray-600 text-center px-2">
+          <div className="text-xs text-gray-600 text-center px-1">
             By clicking "Book Now", you agree to our{" "}
             <a
               href="/terms-and-conditions"
@@ -537,7 +541,7 @@ const GuestInfoForm = ({
 
           {isLoggedIn ? (
             <button
-              className="bg-[#6A5631] text-white h-full p-2 font-bold hover:bg-[#6A5631] rounded-lg text-xl disabled:bg-gray-400 disabled:cursor-not-allowed"
+              className="bg-[#6A5631] text-white h-full p-1.5 font-bold hover:bg-[#6A5631] rounded-lg text-xl disabled:bg-gray-400 disabled:cursor-not-allowed"
               disabled={
                 !roomInfoForSelectedDate.price ||
                 roomInfoForSelectedDate.price === 0
@@ -547,7 +551,7 @@ const GuestInfoForm = ({
             </button>
           ) : (
             <button
-              className="bg-[#6A5631] text-white h-full p-2 font-bold hover:bg-[#6A5631] text-xl disabled:bg-gray-400 disabled:cursor-not-allowed"
+              className="bg-[#6A5631] text-white h-full p-1.5 font-bold hover:bg-[#6A5631] text-xl disabled:bg-gray-400 disabled:cursor-not-allowed"
               disabled={
                 !roomInfoForSelectedDate.price ||
                 roomInfoForSelectedDate.price === 0
