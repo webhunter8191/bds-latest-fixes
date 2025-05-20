@@ -81,6 +81,15 @@ const ManageHotelForm = ({ onSave, isLoading, hotel }: Props) => {
   const onSubmit = handleSubmit((formDataJson: HotelFormData) => {
     console.log("in handle submit", formDataJson);
 
+    // Log the imageFiles specifically
+    if (formDataJson.imageFiles) {
+      console.log("ImageFiles in submission:", {
+        length: formDataJson.imageFiles.length,
+        type: formDataJson.imageFiles.item(0)?.type,
+        name: formDataJson.imageFiles.item(0)?.name,
+      });
+    }
+
     const formData = new FormData();
     if (hotel) {
       formData.append("hotelId", hotel._id);
@@ -128,6 +137,46 @@ const ManageHotelForm = ({ onSave, isLoading, hotel }: Props) => {
       formDataJson.imageUrls.forEach((url, index) => {
         formData.append(`imageUrls[${index}]`, url);
       });
+    }
+
+    // Append imageFiles for hotel images
+    if (formDataJson.imageFiles && formDataJson.imageFiles.length > 0) {
+      console.log("Adding imageFiles to FormData:", formDataJson.imageFiles);
+
+      try {
+        // Check if imageFiles is valid
+        console.log(
+          "imageFiles type:",
+          Object.prototype.toString.call(formDataJson.imageFiles)
+        );
+        console.log("imageFiles length:", formDataJson.imageFiles.length);
+        console.log("First file type:", formDataJson.imageFiles[0]?.type);
+        console.log("First file name:", formDataJson.imageFiles[0]?.name);
+        console.log("First file size:", formDataJson.imageFiles[0]?.size);
+
+        for (let i = 0; i < formDataJson.imageFiles.length; i++) {
+          console.log(`Adding file ${i + 1} to FormData`);
+          formData.append("imageFiles", formDataJson.imageFiles[i]);
+        }
+
+        // Log all formData entries to verify
+        console.log("FormData entries after adding files:");
+        for (const pair of formData.entries()) {
+          const value = pair[1];
+          const displayValue =
+            typeof value === "object" && value instanceof File
+              ? `File: ${value.name}`
+              : value;
+          console.log(`${pair[0]}: ${displayValue}`);
+        }
+      } catch (error) {
+        console.error("Error adding image files to FormData:", error);
+      }
+    } else {
+      console.log(
+        "No imageFiles found in formDataJson:",
+        formDataJson.imageFiles
+      );
     }
 
     // Append policies

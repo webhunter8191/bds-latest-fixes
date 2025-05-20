@@ -1,7 +1,9 @@
 import { useFormContext } from "react-hook-form";
 import { HotelFormData } from "./ManageHotelForm";
+import { useState, useEffect } from "react";
 
 const ImagesSection = () => {
+  const [selectedFileNames, setSelectedFileNames] = useState<string[]>([]);
   const {
     register,
     formState: { errors },
@@ -10,6 +12,17 @@ const ImagesSection = () => {
   } = useFormContext<HotelFormData>();
 
   const existingImageUrls = watch("imageUrls");
+  const imageFiles = watch("imageFiles");
+
+  // Update selected file names when the imageFiles change
+  useEffect(() => {
+    if (imageFiles && imageFiles.length > 0) {
+      const fileNames = Array.from(imageFiles).map((file) => file.name);
+      setSelectedFileNames(fileNames);
+    } else {
+      setSelectedFileNames([]);
+    }
+  }, [imageFiles]);
 
   const handleDelete = (
     event: React.MouseEvent<HTMLButtonElement, MouseEvent>,
@@ -20,6 +33,26 @@ const ImagesSection = () => {
       "imageUrls",
       existingImageUrls.filter((url) => url !== imageUrl)
     );
+  };
+
+  const handleFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const files = e.target.files;
+    if (files && files.length > 0) {
+      const fileNames = Array.from(files).map((file) => file.name);
+      setSelectedFileNames(fileNames);
+      console.log("Files selected:", files);
+
+      // Log selected files details
+      Array.from(files).forEach((file, index) => {
+        console.log(
+          `File ${index + 1}: ${file.name}, Size: ${file.size}, Type: ${
+            file.type
+          }`
+        );
+      });
+    } else {
+      setSelectedFileNames([]);
+    }
   };
 
   return (
@@ -55,7 +88,13 @@ const ImagesSection = () => {
           <label className="block text-sm font-medium text-gray-700 mb-2">
             Upload New Images
           </label>
-          <div className="mt-1 flex justify-center px-6 pt-5 pb-6 border-2 border-gray-300 border-dashed rounded-lg hover:border-[#6A5631] transition-colors duration-200">
+          <div
+            className={`mt-1 flex justify-center px-6 pt-5 pb-6 border-2 ${
+              selectedFileNames.length > 0
+                ? "border-[#6A5631]"
+                : "border-gray-300"
+            } border-dashed rounded-lg hover:border-[#6A5631] transition-colors duration-200`}
+          >
             <div className="space-y-1 text-center">
               <svg
                 className="mx-auto h-12 w-12 text-gray-400"
@@ -84,9 +123,11 @@ const ImagesSection = () => {
                     accept="image/*"
                     className="sr-only"
                     {...register("imageFiles", {
+                      onChange: handleFileChange,
                       validate: (imageFiles) => {
                         const totalLength =
-                          imageFiles.length + (existingImageUrls?.length || 0);
+                          (imageFiles?.length || 0) +
+                          (existingImageUrls?.length || 0);
 
                         if (totalLength === 0) {
                           return "At least one image should be added";
@@ -108,6 +149,18 @@ const ImagesSection = () => {
               </p>
             </div>
           </div>
+          {selectedFileNames.length > 0 && (
+            <div className="mt-2">
+              <p className="text-sm font-medium text-gray-600">
+                Selected files: {selectedFileNames.length}
+              </p>
+              <ul className="list-disc pl-5 text-sm text-gray-600 mt-2">
+                {selectedFileNames.map((name, index) => (
+                  <li key={index}>{name}</li>
+                ))}
+              </ul>
+            </div>
+          )}
         </div>
       </div>
 
