@@ -225,7 +225,7 @@ const ManageHotelForm = ({ onSave, isLoading, hotel }: Props) => {
 
                 <FacilitiesSection />
 
-                <div className="bg-gray-50 rounded-xl p-6">
+                <div className="bg-gray-50 rounded-xl p-0">
                   <h2 className="text-xl font-semibold text-gray-800 mb-4">
                     Room Management
                   </h2>
