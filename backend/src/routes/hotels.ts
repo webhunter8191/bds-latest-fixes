@@ -269,13 +269,22 @@ router.get("/", async (req: Request, res: Response) => {
     const hotels = await Hotel.aggregate([
       { $match: { status: "active" } },
       { $sort: { createdAt: -1 } }, // Sort by latest created hotels
-      { $limit: 5 }, // Get only the last 5 added hotels
+      { $limit: 50 }, // Increased from 5 to 50 hotels for better price analysis
       {
         $project: {
           name: 1,
           status: 1,
           imageUrls: 1,
-          createdAt: 1, // Ensure this field is returned for debugging
+          city: 1,
+          location: 1,
+          facilities: 1,
+          rooms: {
+            _id: 1,
+            defaultPrice: 1, // Include price data for comparison
+            availableRooms: 1,
+          },
+          temples: 1, // Include temple proximity data
+          createdAt: 1, 
         },
       },
     ]);

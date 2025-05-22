@@ -12,6 +12,7 @@ import SearchBar from "../components/SearchBar";
 import room1img from "../assets/room1.jpg";
 import room2img from "../assets/room2.jpg";
 import room3img from "../assets/room3.jpg";
+import PriceComparisonContainer from "../components/PriceComparisonContainer";
 
 const Home = () => {
   const { data: hotels, error } = useQuery(
@@ -51,7 +52,7 @@ const Home = () => {
   useEffect(() => {
     const timeout = setTimeout(() => {
       setLoading(false);
-    }, 2000); // Fallback after 5 seconds
+    }, 2000); // Fallback after 2 seconds
 
     return () => clearTimeout(timeout);
   }, [limitedHotels.length]);
@@ -66,8 +67,13 @@ const Home = () => {
         </div>
       </div>
 
+      {/* Price Comparison Section */}
+      <section className="container mx-auto px-4 pt-32 pb-8 mt-[80px] w-[100%] md:w-[80%] lg:w-[80%]">
+        <PriceComparisonContainer />
+      </section>
+
       {/* Latest Destinations Section */}
-      <section className="container mx-auto px-4 py-8 space-y-6 mt-[80px] w-[100%] md:w-[80%] lg:w-[80%] relative">
+      <section className="container mx-auto px-4 py-8 space-y-6 w-[100%] md:w-[80%] lg:w-[80%] relative">
         <h2 className="text-4xl font-bold text-gray-800 text-center">
           Latest Hotels
         </h2>
