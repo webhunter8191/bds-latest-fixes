@@ -679,6 +679,11 @@ const Detail = () => {
 
                     {/* Room details */}
                     <div className="p-5 space-y-4">
+                      <span className="text-xs text-green-600">
+                        {selectedDate
+                          ? `Showing prices for ${selectedDate.toLocaleDateString()}`
+                          : "Showing current prices"}
+                      </span>
                       <div className="flex justify-between items-center">
                         <div className="text-2xl font-bold text-[#6A5631]">
                           ₹{" "}
@@ -824,11 +829,6 @@ const Detail = () => {
                         <div className="mt-2">
                           <div className="font-semibold text-sm text-gray-700 mb-1 flex items-center justify-between">
                             <span>Price Calendar</span>
-                            <span className="text-xs text-green-600">
-                              {selectedDate
-                                ? `Showing prices for ${selectedDate.toLocaleDateString()}`
-                                : "Showing current prices"}
-                            </span>
                           </div>
                           <div className="flex overflow-x-auto gap-2 pb-1">
                             {room.priceCalendar
