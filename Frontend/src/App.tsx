@@ -161,9 +161,11 @@ const App = () => {
             <Route
               path="/add-hotel"
               element={
-                <Layout>
+                <>
+                  <Header />
                   <AddHotel />
-                </Layout>
+                  <Footer />
+                </>
               }
             />
             <Route
@@ -177,9 +179,11 @@ const App = () => {
             <Route
               path="/edit-hotel/:hotelId"
               element={
-                <Layout>
+                <>
+                  <Header />
                   <EditHotel />
-                </Layout>
+                  <Footer />
+                </>
               }
             />
           </>

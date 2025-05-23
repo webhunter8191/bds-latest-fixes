@@ -11,7 +11,7 @@ const storage = multer.memoryStorage();
 const upload = multer({
   storage: storage,
   limits: {
-    fileSize: 5 * 1024 * 1024, // 5MB
+    fileSize: 10 * 1024 * 1024, // Increase to 10MB
   },
 }).any();
 
@@ -68,54 +68,57 @@ router.post(
       const imageUrls = await uploadImages(hotelImages);
 
       // Upload room images
-      const roomImageUrls: Record<string, string[]> = {};
-      
-      // Process uploaded room images
-      for (const file of roomImages) {
-        const category = file.fieldname.split("roomImages")[1];
-        if (!roomImageUrls[category]) {
-          roomImageUrls[category] = [];
-        }
-        const imageUrl = await uploadImages([file]);
-        roomImageUrls[category] = roomImageUrls[category].concat(imageUrl);
-      }
+      const roomImageUrls = await Promise.all(
+        roomImages.map(async (file) => {
+          const roomImage = await uploadImages([file]);
+          return {
+            category: file.fieldname.split("roomImages")[1],
+            images: roomImage,
+          };
+        })
+      );
 
       // Parse rooms data
-      const roomsData = JSON.parse(req.body.rooms);
-      let rooms = roomsData.map((room: any) => ({
-        ...room,
-        price: room.defaultPrice || room.price,
-        defaultPrice: room.defaultPrice || room.price, // Ensure defaultPrice is set
-        // Make sure features is always an array
-        features: Array.isArray(room.features) ? room.features : [],
-        // Set other defaults
-        availableRooms: Number(room.totalRooms) || 0,
-        adultCount: Number(room.adultCount) || 0,
-        childCount: Number(room.childCount) || 0,
-      }));
-
-      console.log("Rooms data with features:", rooms.map((room: any) => ({
-        category: room.category,
-        features: room.features
-      })));
+      newHotel.rooms = JSON.parse(newHotel.rooms);
 
       // Process rooms
-      rooms = rooms.map((room: any) => {
+      const rooms = newHotel.rooms.map((room: any) => {
         // Assign room images
-        const categoryKey = room.category.toString();
-        room.images = roomImageUrls[categoryKey] || [];
+        room.images =
+          roomImageUrls.find(
+            (roomImage: any) => roomImage.category == room.category
+          )?.images || [];
 
-        // Ensure priceCalendar entries are properly formatted
-        if (room.priceCalendar && Array.isArray(room.priceCalendar)) {
+        // Set availableRooms to totalRooms
+        room.availableRooms = room.totalRooms;
+
+        // Ensure adultCount and childCount are numbers
+        room.adultCount = Number(room.adultCount) || 0;
+        room.childCount = Number(room.childCount) || 0;
+
+        // Handle priceCalendar
+        if (room.priceCalendar) {
+          if (typeof room.priceCalendar === "string") {
+            try {
+              room.priceCalendar = JSON.parse(room.priceCalendar);
+            } catch {
+              return res
+                .status(400)
+                .json({ message: "Invalid priceCalendar format" });
+            }
+          }
+
+          // Validate priceCalendar entries
           room.priceCalendar = room.priceCalendar.map((entry: any) => ({
-            ...entry,
-            date: new Date(entry.date),
-            price: Number(entry.price) || 0,
-            availableRooms: Number(entry.availableRooms) || 0,
+            date: new Date(entry.date), // Convert to Date object
+            price: Number(entry.price), // Ensure price is a number
           }));
         } else {
           room.priceCalendar = []; // Default to empty array
         }
+
+        // Ensure defaultPrice is present
+        room.defaultPrice = Number(room.defaultPrice) || 0;
 
         return room;
       });
@@ -209,71 +212,147 @@ router.put(
   upload,
   async (req: Request, res: Response) => {
     try {
-      console.log("Updated hotel body received", req.body);
+      console.log("Starting hotel update process");
       const updatedHotel = req.body;
-      updatedHotel.lastUpdated = new Date();
+      console.log("Request body received:", Object.keys(updatedHotel));
       
-      // Parse the rooms JSON string
-      if (updatedHotel.rooms && typeof updatedHotel.rooms === 'string') {
-        try {
-          updatedHotel.rooms = JSON.parse(updatedHotel.rooms);
-          console.log("Parsed rooms data:", JSON.stringify(updatedHotel.rooms.map((r: any) => ({
-            category: r.category,
-            priceCalendarCount: r.priceCalendar ? r.priceCalendar.length : 0
-          })), null, 2));
-          
-          // Ensure each room's priceCalendar is properly formatted
-          updatedHotel.rooms = updatedHotel.rooms.map((room: any) => {
-            if (room.priceCalendar) {
-              room.priceCalendar = room.priceCalendar.map((entry: any) => ({
-                date: new Date(entry.date),
-                price: Number(entry.price) || 0,
-                availableRooms: Number(entry.availableRooms) || 0
-              }));
-            } else {
-              room.priceCalendar = [];
-            }
-            return room;
-          });
-        } catch (error) {
-          console.error("Error parsing rooms data:", error);
-          return res.status(400).json({ message: "Invalid rooms data format" });
+      try {
+        console.log("Parsing rooms JSON");
+        updatedHotel.rooms = JSON.parse(updatedHotel.rooms);
+        console.log("Rooms parsed successfully");
+      } catch (parseError: unknown) {
+        console.error("Error parsing rooms JSON:", parseError);
+        const errorMessage = parseError instanceof Error ? parseError.message : 'Unknown JSON parsing error';
+        return res.status(400).json({ message: "Invalid rooms data format", error: errorMessage });
+      }
+      
+      updatedHotel.lastUpdated = new Date();
+
+      const files = req.files as Express.Multer.File[];
+      console.log("Files received:", files.length, "files");
+      console.log("File field names:", files.map(f => f.fieldname));
+      
+      const hotelImages = files.filter((file: Express.Multer.File) =>
+        file.fieldname.startsWith("imageFiles")
+      );
+      console.log("Hotel images count:", hotelImages.length);
+      
+      const roomImages = files.filter((file: Express.Multer.File) =>
+        file.fieldname.startsWith("roomImages")
+      );
+      console.log("Room images count:", roomImages.length);
+
+      try {
+        console.log("Uploading hotel images to Cloudinary");
+        const updatedImageUrls = await uploadImages(hotelImages);
+        console.log("Hotel images uploaded successfully:", updatedImageUrls.length);
+        
+        updatedHotel.imageUrls = [
+          ...updatedImageUrls,
+          ...(updatedHotel.imageUrls || []),
+        ];
+      } catch (uploadError: unknown) {
+        console.error("Error uploading hotel images:", uploadError);
+        const errorMessage = uploadError instanceof Error ? uploadError.message : 'Unknown upload error';
+        return res.status(500).json({ message: "Error uploading hotel images", error: errorMessage });
+      }
+
+      if (updatedHotel.policies) {
+        console.log("Processing policies");
+        if (typeof updatedHotel.policies === "string") {
+          try {
+            const parsed = JSON.parse(updatedHotel.policies);
+            updatedHotel.policies = Array.isArray(parsed) ? parsed : [parsed];
+          } catch (policyError) {
+            console.error("Error parsing policies:", policyError);
+            updatedHotel.policies = [updatedHotel.policies];
+          }
+        } else if (!Array.isArray(updatedHotel.policies)) {
+          updatedHotel.policies = [updatedHotel.policies];
+        }
+      
+        // Fetch existing hotel to preserve existing policies
+        const existingHotel = await Hotel.findOne({ _id: req.params.hotelId, userId: req.userId });
+        if (existingHotel) {
+          console.log("Existing hotel found, replacing policies");
+          // Don't merge, just replace
+          updatedHotel.policies = updatedHotel.policies;
         }
       }
       
-      console.log("Processing update for hotel ID:", req.params.hotelId);
-      
-      const hotel = await Hotel.findOneAndUpdate(
-        {
-          _id: req.params.hotelId,
-          userId: req.userId,
-        },
-        updatedHotel,
-        { new: true }
-      );
+      try {
+        console.log("Processing room images");
+        const roomImageUrls = await Promise.all(
+          roomImages.map(async (file) => {
+            const roomImage = await uploadImages([file]);
+            return {
+              category: file.fieldname.split("roomImages")[1],
+              images: roomImage,
+            };
+          })
+        );
+        console.log("Room images processed successfully");
+        
+        updatedHotel.rooms = updatedHotel.rooms.map((room: any) => {
+          room.images =
+            roomImageUrls.find(
+              (roomImage: any) => roomImage.category == room.category
+            )?.images ||
+            updatedHotel.rooms.find(
+              (existingRoom: any) => existingRoom.category == room.category
+            )?.images ||
+            [];
 
-      if (!hotel) {
-        console.log("Hotel not found:", req.params.hotelId);
-        return res.status(404).json({ message: "Hotel not found" });
+          // Ensure adultCount and childCount are included
+          room.adultCount = Number(room.adultCount) || 0;
+          room.childCount = Number(room.childCount) || 0;
+
+          return room;
+        });
+      } catch (roomImageError: unknown) {
+        console.error("Error processing room images:", roomImageError);
+        const errorMessage = roomImageError instanceof Error ? roomImageError.message : 'Unknown room image processing error';
+        return res.status(500).json({ 
+          message: "Error processing room images", 
+          error: errorMessage 
+        });
       }
 
-      console.log("Hotel updated successfully");
+      try {
+        console.log("Updating hotel in database");
+        const hotel = await Hotel.findOneAndUpdate(
+          {
+            _id: req.params.hotelId,
+            userId: req.userId,
+          },
+          updatedHotel,
+          { new: true }
+        );
 
-      const files = req.files as Express.Multer.File[];
-      const updatedImageUrls = await uploadImages(files);
+        if (!hotel) {
+          console.log("Hotel not found or user not authorized");
+          return res.status(404).json({ message: "Hotel not found or you are not authorized to update it" });
+        }
 
-      hotel.imageUrls = [
-        ...updatedImageUrls,
-        ...(updatedHotel.imageUrls || []),
-      ];
-
-      await hotel.save();
-      console.log("Hotel images updated and saved");
-      
-      res.status(201).json(hotel);
-    } catch (error) {
-      console.error("Error updating hotel:", error);
-      res.status(500).json({ message: "Something went wrong" });
+        console.log("Hotel updated successfully");
+        return res.status(201).json(hotel);
+      } catch (dbError: unknown) {
+        console.error("Database error when updating hotel:", dbError);
+        const errorMessage = dbError instanceof Error ? dbError.message : 'Unknown database error';
+        return res.status(500).json({ 
+          message: "Database error when updating hotel", 
+          error: errorMessage 
+        });
+      }
+    } catch (error: unknown) {
+      console.error("Uncaught error in hotel update:", error);
+      const errorMessage = error instanceof Error ? error.message : 'Unknown error';
+      const errorStack = error instanceof Error ? error.stack : 'No stack trace available';
+      return res.status(500).json({ 
+        message: "Something went wrong", 
+        error: errorMessage,
+        stack: errorStack
+      });
     }
   }
 );
@@ -393,15 +472,39 @@ router.get("/admin/bookings",
   })
 
 async function uploadImages(imageFiles: Express.Multer.File[]) {
-  const uploadPromises = imageFiles.map(async (image) => {
-    const b64 = image.buffer.toString("base64");
-    let dataURI = "data:" + image.mimetype + ";base64," + b64;
-    const res = await cloudinary.v2.uploader.upload(dataURI);
-    return res.url;
+  if (!imageFiles || imageFiles.length === 0) {
+    console.log("No image files to upload");
+    return [];
+  }
+
+  console.log(`Preparing to upload ${imageFiles.length} images to Cloudinary`);
+  
+  const uploadPromises = imageFiles.map(async (image, index) => {
+    try {
+      console.log(`Processing image ${index + 1}: ${image.originalname}, size: ${image.size}, type: ${image.mimetype}`);
+      const b64 = image.buffer.toString("base64");
+      let dataURI = "data:" + image.mimetype + ";base64," + b64;
+      console.log(`Uploading image ${index + 1} to Cloudinary...`);
+      const res = await cloudinary.v2.uploader.upload(dataURI, {
+        resource_type: "auto",
+        folder: "hotel-images"
+      });
+      console.log(`Successfully uploaded image ${index + 1}, URL: ${res.url}`);
+      return res.url;
+    } catch (error) {
+      console.error(`Error uploading image ${index + 1} to Cloudinary:`, error);
+      throw error; // Re-throw to be caught by the caller
+    }
   });
 
-  const imageUrls = await Promise.all(uploadPromises);
-  return imageUrls;
+  try {
+    const imageUrls = await Promise.all(uploadPromises);
+    console.log(`Successfully uploaded ${imageUrls.length} images`);
+    return imageUrls;
+  } catch (error) {
+    console.error("Error in Promise.all for image uploads:", error);
+    throw error; // Re-throw to be caught by the caller
+  }
 }
 
 export default router;

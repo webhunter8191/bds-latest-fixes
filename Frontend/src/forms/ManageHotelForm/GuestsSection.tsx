@@ -280,7 +280,7 @@ const GuestsSection = ({
           {rooms.map((room, index) => (
             <div
               key={index}
-              className="bg-gray-50 rounded-xl p-6 border border-gray-200"
+              className="bg-gray-50 rounded-xl p-2 border border-gray-200"
             >
               <div className="flex flex-col md:flex-row md:items-center md:justify-between gap-4 mb-4">
                 <h3 className="text-xl font-semibold text-gray-800">
@@ -483,7 +483,7 @@ const GuestsSection = ({
       </div>
 
       {/* Hotel Policies Section */}
-      <div className="bg-white rounded-xl p-6 shadow-sm">
+      <div className="bg-white rounded-xl p-0 shadow-sm">
         <h3 className="text-xl font-semibold text-gray-800 mb-4">
           Hotel Policies
         </h3>
