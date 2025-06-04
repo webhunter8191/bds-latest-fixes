@@ -4,7 +4,7 @@ import * as apiClient from "../api-client";
 import { useState, useEffect } from "react";
 import SearchResultsCard from "../components/SearchResultsCard";
 import Pagination from "../components/Pagination";
-import StarRatingFilter from "../components/StarRatingFilter";
+// import StarRatingFilter from "../components/StarRatingFilter";
 import HotelTypesFilter from "../components/HotelTypesFilter";
 import FacilitiesFilter from "../components/FacilitiesFilter";
 import PriceFilter from "../components/PriceFilter";
@@ -64,15 +64,15 @@ const Search = () => {
     }
   }, [isLoading, hotelData]);
 
-  const handleStarsChange = (event: React.ChangeEvent<HTMLInputElement>) => {
-    const starRating = event.target.value;
-    setSelectedStars((prevStars) =>
-      event.target.checked
-        ? [...prevStars, starRating]
-        : prevStars.filter((star) => star !== starRating)
-    );
-    setPage(1); // Reset to first page when filter changes
-  };
+  // const handleStarsChange = (event: React.ChangeEvent<HTMLInputElement>) => {
+  //   const starRating = event.target.value;
+  //   setSelectedStars((prevStars) =>
+  //     event.target.checked
+  //       ? [...prevStars, starRating]
+  //       : prevStars.filter((star) => star !== starRating)
+  //   );
+  //   setPage(1); // Reset to first page when filter changes
+  // };
 
   const handleHotelTypeChange = (
     event: React.ChangeEvent<HTMLInputElement>
@@ -204,7 +204,7 @@ const Search = () => {
                     )}
                   </div>
 
-                  <div className="pt-1">
+                  {/* <div className="pt-1">
                     <h4 className="font-semibold text-gray-700 mb-3">
                       Star Rating
                     </h4>
@@ -212,7 +212,7 @@ const Search = () => {
                       selectedStars={selectedStars}
                       onChange={handleStarsChange}
                     />
-                  </div>
+                  </div> */}
 
                   <div className="border-t border-gray-100 pt-4">
                     <h4 className="font-semibold text-gray-700 mb-3">
@@ -313,7 +313,7 @@ const Search = () => {
             </div>
 
             <div className="space-y-5 max-h-[70vh] overflow-y-auto pr-2">
-              <div>
+              {/* <div>
                 <h4 className="font-semibold text-gray-700 mb-3">
                   Star Rating
                 </h4>
@@ -321,7 +321,7 @@ const Search = () => {
                   selectedStars={selectedStars}
                   onChange={handleStarsChange}
                 />
-              </div>
+              </div> */}
 
               <div className="border-t border-gray-100 pt-4">
                 <h4 className="font-semibold text-gray-700 mb-3">
