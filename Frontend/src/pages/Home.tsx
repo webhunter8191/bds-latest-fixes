@@ -59,9 +59,11 @@ const Home = () => {
   return (
     <div className="bg-[#f0efed]">
       {/* Hero Section */}
-      <div className="relative">
-        <Hero />
-        <div className="absolute left-1/2 transform -translate-x-1/2 z-10 w-[85%] md:w-[80%] lg:w-[80%] bottom-[-100px] md:bottom-[-60px] lg:bottom-[-40px]">
+      <div className="relative ">
+        <div className="md:mb-20">
+          <Hero />
+        </div>
+        <div className="absolute left-1/2 transform -translate-x-1/2 z-10 w-[85%] md:w-[80%] lg:w-[80%] bottom-[-100px]  lg:bottom-[-40px]">
           <SearchBar />
         </div>
       </div>
