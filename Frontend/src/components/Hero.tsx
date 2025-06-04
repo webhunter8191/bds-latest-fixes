@@ -31,16 +31,16 @@ const Hero = () => {
       }}
     >
       {/* Hero Content */}
-      <div className="text-center p-4 sm:p-6 md:p-8 max-w-xs sm:max-w-md md:max-w-lg lg:max-w-2xl mx-auto">
-        <h1 className="text-2xl sm:text-3xl md:text-4xl lg:text-5xl font-bold text-white leading-tight md:leading-snug">
+      <div className="text-center p-4 sm:p-6 md:p-8 max-w-lg sm:max-w-xl md:max-w-2xl lg:max-w-2xl ">
+        <h1 className="text-xl sm:text-2xl md:text-2xl lg:text-5xl font-bold text-white leading-tight md:leading-snug md:mt-[-100px] ">
           Hotel for Every Moment Rich in Emotion
         </h1>
-        <p className="text-sm sm:text-base md:text-lg text-white mt-3 md:mt-4">
+        <p className="text-sm sm:text-base md:text-lg text-white mt-3  ">
           Book a Divine stay with Brij Divine Stay
         </p>
-        <div className="mt-6 mb-6 md:mb-0">
+        <div className="mt-3 md:mb-10">
           <button
-            className="bg-gray-100 rounded-lg border-2 text-black px-5 py-2.5 text-sm sm:text-base md:text-lg font-medium hover:bg-opacity-90 transition-all duration-300 shadow-lg inline-block"
+            className="bg-gray-100 rounded-lg border-2 text-black px-5 py-2.5 text-sm sm:text-base md:text-lg font-medium hover:bg-opacity-90 transition-all duration-300 shadow-lg inline-block  "
             onClick={() => navigate("/search")}
           >
             Book Now

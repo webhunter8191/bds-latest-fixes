@@ -167,6 +167,13 @@ router.get("/search", async (req: Request, res: Response) => {
           }
         }
       },
+      ...(req.query.maxPrice
+        ? [{
+            $match: {
+              pricePerNight: { $lte: parseInt(req.query.maxPrice as string) }
+            }
+          }]
+        : []),
       { $sort: sortOptions },
       { $skip: skip },
       { $limit: pageSize },
@@ -483,12 +490,6 @@ const constructSearchQuery = (queryParams: any) => {
       ? queryParams.stars.map((star: string) => parseInt(star))
       : parseInt(queryParams.stars);
     constructedQuery.starRating = { $in: starRatings };
-  }
-
-  if (queryParams.maxPrice) {
-    constructedQuery.pricePerNight = {
-      $lte: parseInt(queryParams.maxPrice).toString(),
-    };
   }
 
   return constructedQuery;

@@ -64,10 +64,32 @@ const Footer: React.FC = () => {
         <div>
           <h3 className="font-semibold text-lg">Connect With Us</h3>
           <ul className="mt-2 space-y-1 text-sm">
-            <li className="cursor-pointer hover:underline">Facebook</li>
-            <li className="cursor-pointer hover:underline">Instagram</li>
             <li className="cursor-pointer hover:underline">
-              <Link to="https://wa.me/message/HRXXOHRS5OYCC1">WhatsApp </Link>
+              <Link
+                to="https://www.facebook.com/share/1BX2LzHXdg/"
+                target="_blank"
+                rel="noopener noreferrer"
+              >
+                Facebook
+              </Link>
+            </li>
+            <li className="cursor-pointer hover:underline">
+              <Link
+                to="https://www.instagram.com/brijdivinestay/"
+                target="_blank"
+                rel="noopener noreferrer"
+              >
+                Instagram
+              </Link>
+            </li>
+            <li className="cursor-pointer hover:underline">
+              <Link
+                to="https://wa.me/message/HRXXOHRS5OYCC1"
+                target="_blank"
+                rel="noopener noreferrer"
+              >
+                WhatsApp{" "}
+              </Link>
             </li>
           </ul>
         </div>

@@ -22,19 +22,24 @@ type Props = {
 
 const TempleFilter = ({ selectedTemples, onChange }: Props) => {
   return (
-    <div className="border-b border-slate-300 pb-5">
-      <h4 className="text-md font-semibold mb-2">Nearby Places</h4>
-      <div className="max-h-40 overflow-y-auto pr-2">
+    <div className="border-b border-slate-200 pb-6">
+      {/* <h4 className=\"text-base font-semibold mb-3 text-gray-800\">Nearby Places</h4> */}
+      <div className="max-h-40 overflow-y-auto pr-2 flex flex-col gap-2">
         {templesList.map((temple) => (
-          <label key={temple} className="flex items-center space-x-2 mb-2">
+          <label
+            key={temple}
+            className="flex items-center gap-3 cursor-pointer group transition"
+          >
             <input
               type="checkbox"
-              className="rounded text-[#6A5631] focus:ring-[#6A5631]"
+              className="rounded border-slate-300 focus:ring-2 focus:ring-brand text-brand w-4 h-4 transition duration-150"
               value={temple}
               checked={selectedTemples.includes(temple)}
               onChange={onChange}
             />
-            <span className="text-sm">{temple}</span>
+            <span className="text-gray-700 text-sm group-hover:text-brand transition font-medium">
+              {temple}
+            </span>
           </label>
         ))}
       </div>
