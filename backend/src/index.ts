@@ -33,17 +33,17 @@ const app = express();
 app.use(cookieParser());
 app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
-app.options(
-  "*",
-  cors({
-    // origin: ["http://localhost:5173", "http://localhost:5174"],
-    origin: process.env.FRONTEND_URL,
-    methods: ["POST", "GET", "PUT", "DELETE"],
-    allowedHeaders: ["Content-Type", "Authorization"],
-    credentials: true,
-    preflightContinue: true,
-  })
-);
+// app.options(
+//   "*",
+//   cors({
+//     // origin: ["http://localhost:5173", "http://localhost:5174"],
+//     origin: process.env.FRONTEND_URL,
+//     methods: ["POST", "GET", "PUT", "DELETE"],
+//     allowedHeaders: ["Content-Type", "Authorization"],
+//     credentials: true,
+//     preflightContinue: true,
+//   })
+// );
 
 const corsOptions =Object.freeze({
   origin: process.env.FRONTEND_URL,

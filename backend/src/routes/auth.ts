@@ -6,6 +6,23 @@ import jwt from "jsonwebtoken";
 import verifyToken from "../middleware/auth";
 
 const router = express.Router();
+// test cookie
+router.get("/test-cookie", (req: Request, res: Response) => {
+  res.cookie("test_cookie", "test_value", {
+    httpOnly: true,
+    secure: process.env.NODE_ENV === "production",
+    sameSite: "none",
+    maxAge: 60000,
+  });
+  res.send("Test cookie has been set.");
+});
+
+router.get("/check-cookie", (req: Request, res: Response) => {
+  const value = req.cookies["test_cookie"];
+  res.send({ cookieValue: value || "No cookie received" });
+});
+
+
 
 router.post(
   "/login",
