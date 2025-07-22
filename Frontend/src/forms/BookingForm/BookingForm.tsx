@@ -55,10 +55,6 @@ const BookingForm = ({
   const statePaymentOption = location.state?.paymentOption || paymentOption;
   const stateFullAmount = location.state?.fullAmount || fullAmount || totalCost;
 
-  // Calculate remaining amount for partial payments
-  const remainingAmount =
-    statePaymentOption === "partial" ? stateFullAmount * 0.7 : 0;
-
   // Helper function to calculate number of days between check-in and check-out
   // const calculateDays = (checkIn: Date, checkOut: Date) => {
   //   const checkInDate = new Date(checkIn);
@@ -247,49 +243,8 @@ const BookingForm = ({
                 ).toLocaleString()}
               </div>
             </div>
-            <div className="flex justify-between items-center text-sm sm:text-base">
-              <div className="text-gray-600">
-                Taxes & Fees (
-                {stateFullAmount / search.roomCount > 7000 ? "18%" : "12%"})
-              </div>
-              <div className="font-medium">
-                ₹
-                {Math.round(
-                  stateFullAmount -
-                    stateFullAmount /
-                      (stateFullAmount / search.roomCount > 7000 ? 1.18 : 1.12)
-                ).toLocaleString()}
-              </div>
-            </div>
-
-            {/* Payment option information */}
-            {statePaymentOption === "partial" && (
-              <>
-                <div className="flex justify-between items-center text-sm sm:text-base text-[#6A5631]">
-                  <div className="font-medium">Total Price</div>
-                  <div className="font-medium">
-                    ₹{Math.round(stateFullAmount).toLocaleString()}
-                  </div>
-                </div>
-                <div className="pt-2">
-                  <div className="flex justify-between items-center text-sm sm:text-base">
-                    <div className="font-medium">Payment Now (30%)</div>
-                    <div className="font-medium">
-                      ₹{Math.round(totalCost).toLocaleString()}
-                    </div>
-                  </div>
-                  <div className="flex justify-between items-center text-sm mt-1">
-                    <div className="text-gray-600">
-                      Pay Later at Check-in (70%)
-                    </div>
-                    <div className="text-gray-600">
-                      ₹{Math.round(remainingAmount).toLocaleString()}
-                    </div>
-                  </div>
-                </div>
-              </>
-            )}
-
+            {/* Remove tax breakdown from price summary */}
+            {/* In the price summary section, remove the Taxes & Fees row and any calculation for tax. Only show subtotal and total as the same value. */}
             <div className="border-t border-[#6A5631]/10 pt-3 mt-3">
               <div className="flex justify-between items-center">
                 <div className="text-sm sm:text-base text-gray-600">

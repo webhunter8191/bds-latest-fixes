@@ -154,18 +154,12 @@ const GuestInfoForm = ({
     return totalCost * watch("roomCount");
   };
 
-  // Calculate tax based on room price
-  const calculateTax = (price: number) => {
-    const taxRate = price < 7000 ? 0.12 : 0.18;
-    return Math.round(price * taxRate);
-  };
+  // Remove calculateTax function and all tax logic
 
   const onSignInClick = (data: GuestInfoFormData) => {
     const subtotal = calculateTotalCost();
-    const tax = calculateTax(subtotal);
-    const totalWithTax = subtotal + tax;
     const finalAmount =
-      data.paymentOption === "partial" ? totalWithTax * 0.3 : totalWithTax;
+      data.paymentOption === "partial" ? subtotal * 0.3 : subtotal;
 
     search.saveSearchValues(
       "",
@@ -179,17 +173,15 @@ const GuestInfoForm = ({
         from: location,
         totalCost: finalAmount,
         paymentOption: data.paymentOption,
-        fullAmount: totalWithTax,
+        fullAmount: subtotal,
       },
     });
   };
 
   const onSubmit = (data: GuestInfoFormData) => {
     const subtotal = calculateTotalCost();
-    const tax = calculateTax(subtotal);
-    const totalWithTax = subtotal + tax;
     const finalAmount =
-      data.paymentOption === "partial" ? totalWithTax * 0.3 : totalWithTax;
+      data.paymentOption === "partial" ? subtotal * 0.3 : subtotal;
 
     search.saveSearchValues(
       "",
@@ -203,10 +195,9 @@ const GuestInfoForm = ({
       state: {
         totalCost: finalAmount,
         subtotal: subtotal,
-        tax: tax,
         roomsId,
         paymentOption: data.paymentOption,
-        fullAmount: totalWithTax,
+        fullAmount: subtotal,
       },
     });
   };
@@ -272,12 +263,10 @@ const GuestInfoForm = ({
     );
   };
 
-  // Calculate remaining amount for partial payment
+  // Remove all references to tax in onSignInClick, onSubmit, calculateRemainingAmount, and UI display
   const calculateRemainingAmount = () => {
     const subtotal = calculateTotalCost();
-    const tax = calculateTax(subtotal);
-    const totalWithTax = subtotal + tax;
-    return totalWithTax * 0.7; // 70% remaining
+    return subtotal * 0.7; // 70% remaining
   };
 
   return (
@@ -289,9 +278,7 @@ const GuestInfoForm = ({
             <span className="text-3xl font-bold text-black">
               ₹{roomInfoForSelectedDate.price}
             </span>
-            <div className="text-sm text-gray-500">
-              + taxes & fees: ₹{calculateTax(roomInfoForSelectedDate.price)}
-            </div>
+            <div className="text-sm text-gray-500">+ fees: ₹0</div>
           </div>
           <div className="flex items-center gap-1">
             <span className="text-lg text-gray-400 line-through">
@@ -397,10 +384,7 @@ const GuestInfoForm = ({
                   />
                   <span>
                     Pay full amount (₹
-                    {(
-                      calculateTotalCost() + calculateTax(calculateTotalCost())
-                    ).toFixed(2)}
-                    )
+                    {calculateTotalCost().toFixed(2)})
                   </span>
                   <button
                     type="button"
@@ -442,12 +426,7 @@ const GuestInfoForm = ({
                   />
                   <span>
                     Pay 30% now (₹
-                    {(
-                      (calculateTotalCost() +
-                        calculateTax(calculateTotalCost())) *
-                      0.3
-                    ).toFixed(2)}
-                    )
+                    {(calculateTotalCost() * 0.3).toFixed(2)})
                   </span>
                   <button
                     type="button"
@@ -488,12 +467,6 @@ const GuestInfoForm = ({
               <span>Subtotal:</span>
               <span>₹{calculateTotalCost().toFixed(2)}</span>
             </div>
-            <div className="flex justify-between text-sm">
-              <span>
-                Tax ({roomInfoForSelectedDate.price < 7000 ? "12%" : "18%"}):
-              </span>
-              <span>₹{calculateTax(calculateTotalCost()).toFixed(2)}</span>
-            </div>
             <div className="flex justify-between font-bold text-xl mt-1 border-t pt-1">
               <span>
                 {paymentOption === "partial" ? "Pay Now (30%):" : "Total:"}
@@ -501,14 +474,8 @@ const GuestInfoForm = ({
               <span>
                 ₹
                 {paymentOption === "partial"
-                  ? (
-                      (calculateTotalCost() +
-                        calculateTax(calculateTotalCost())) *
-                      0.3
-                    ).toFixed(2)
-                  : (
-                      calculateTotalCost() + calculateTax(calculateTotalCost())
-                    ).toFixed(2)}
+                  ? (calculateTotalCost() * 0.3).toFixed(2)
+                  : calculateTotalCost().toFixed(2)}
               </span>
             </div>
             {paymentOption === "partial" && (

@@ -410,11 +410,6 @@ const Detail = () => {
   };
 
   // Utility: Tax Calculation Function (if not present)
-  const calculateTax = (price: number) => {
-    const taxRate = price < 7000 ? 0.12 : 0.18;
-    return Math.round(price * taxRate);
-  };
-
   // Function removed to eliminate unused code warning
 
   if (isLoading || isFetching) {
@@ -1653,29 +1648,6 @@ const Detail = () => {
                     selectedDate || new Date()
                   ).price
                 : 0}
-              <span className="text-xs text-gray-400 font-normal ml-2 line-through">
-                ₹
-                {selectedRoomId
-                  ? getRoomInfoForDate(
-                      hotel.rooms.find((room) => room._id === selectedRoomId) ||
-                        {},
-                      selectedDate || new Date()
-                    ).price * 2
-                  : 0}
-              </span>
-            </div>
-            <div className="text-[11px] text-gray-500 font-medium">
-              + ₹
-              {selectedRoomId
-                ? calculateTax(
-                    getRoomInfoForDate(
-                      hotel.rooms.find((room) => room._id === selectedRoomId) ||
-                        {},
-                      selectedDate || new Date()
-                    ).price
-                  )
-                : 0}{" "}
-              taxes & fees
             </div>
           </div>
         </div>
