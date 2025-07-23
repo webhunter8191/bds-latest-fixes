@@ -156,27 +156,27 @@ const GuestInfoForm = ({
 
   // Remove calculateTax function and all tax logic
 
-  const onSignInClick = (data: GuestInfoFormData) => {
-    const subtotal = calculateTotalCost();
-    const finalAmount =
-      data.paymentOption === "partial" ? subtotal * 0.3 : subtotal;
+  // const onSignInClick = (data: GuestInfoFormData) => {
+  //   const subtotal = calculateTotalCost();
+  //   const finalAmount =
+  //     data.paymentOption === "partial" ? subtotal * 0.3 : subtotal;
 
-    search.saveSearchValues(
-      "",
-      data.checkIn,
-      data.checkOut,
-      data.roomCount,
-      finalAmount
-    );
-    navigate("/sign-in", {
-      state: {
-        from: location,
-        totalCost: finalAmount,
-        paymentOption: data.paymentOption,
-        fullAmount: subtotal,
-      },
-    });
-  };
+  //   search.saveSearchValues(
+  //     "",
+  //     data.checkIn,
+  //     data.checkOut,
+  //     data.roomCount,
+  //     finalAmount
+  //   );
+  //   navigate("/sign-in", {
+  //     state: {
+  //       from: location,
+  //       totalCost: finalAmount,
+  //       paymentOption: data.paymentOption,
+  //       fullAmount: subtotal,
+  //     },
+  //   });
+  // };
 
   const onSubmit = (data: GuestInfoFormData) => {
     const subtotal = calculateTotalCost();
@@ -191,15 +191,28 @@ const GuestInfoForm = ({
       finalAmount
     );
 
-    navigate(`/hotel/${hotelId}/booking`, {
-      state: {
-        totalCost: finalAmount,
-        subtotal: subtotal,
-        roomsId,
-        paymentOption: data.paymentOption,
-        fullAmount: subtotal,
-      },
-    });
+    if (isLoggedIn) {
+      navigate(`/hotel/${hotelId}/booking`, {
+        state: {
+          totalCost: finalAmount,
+          subtotal: subtotal,
+          roomsId,
+          paymentOption: data.paymentOption,
+          fullAmount: subtotal,
+        },
+      });
+    } else {
+      navigate("/auth-choice", {
+        state: {
+          from: location,
+          totalCost: finalAmount,
+          paymentOption: data.paymentOption,
+          fullAmount: subtotal,
+          hotelId,
+          roomsId,
+        },
+      });
+    }
   };
 
   // Function to set check-out date to next day
@@ -290,11 +303,7 @@ const GuestInfoForm = ({
           </div>
         </div>
       </div>
-      <form
-        onSubmit={
-          isLoggedIn ? handleSubmit(onSubmit) : handleSubmit(onSignInClick)
-        }
-      >
+      <form onSubmit={handleSubmit(onSubmit)}>
         <div className="grid grid-cols-1 gap-2 items-center bg-white p-2">
           <div>
             <label className="block text-sm font-medium text-gray-700 mb-0.5">
@@ -506,27 +515,16 @@ const GuestInfoForm = ({
             </a>
           </div>
 
-          {isLoggedIn ? (
-            <button
-              className="bg-[#6A5631] text-white h-full p-1.5 font-bold hover:bg-[#6A5631] rounded-lg text-xl disabled:bg-gray-400 disabled:cursor-not-allowed"
-              disabled={
-                !roomInfoForSelectedDate.price ||
-                roomInfoForSelectedDate.price === 0
-              }
-            >
-              Book Now
-            </button>
-          ) : (
-            <button
-              className="bg-[#6A5631] text-white h-full p-1.5 font-bold hover:bg-[#6A5631] text-xl disabled:bg-gray-400 disabled:cursor-not-allowed"
-              disabled={
-                !roomInfoForSelectedDate.price ||
-                roomInfoForSelectedDate.price === 0
-              }
-            >
-              Sign in to Book
-            </button>
-          )}
+          <button
+            type="submit"
+            className="bg-[#6A5631] text-white h-full p-1.5 font-bold hover:bg-[#6A5631] rounded-lg text-xl disabled:bg-gray-400 disabled:cursor-not-allowed"
+            disabled={
+              !roomInfoForSelectedDate.price ||
+              roomInfoForSelectedDate.price === 0
+            }
+          >
+            Book Now
+          </button>
         </div>
       </form>
     </div>

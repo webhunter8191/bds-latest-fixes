@@ -26,6 +26,7 @@ import PrivacyPolicy from "./components/PrivacyPolicy";
 import ContactUs from "./components/Contact";
 import AgreementTwoStep from "./pages/AgreementFrom";
 import TermsAndConditions from "./pages/Terms&Conditions";
+import AuthChoice from "./pages/AuthChoice";
 
 const App = () => {
   const { isLoggedIn, isAdmin } = useAppContext();
@@ -115,6 +116,14 @@ const App = () => {
           element={
             <Layout>
               <AgreementTwoStep />
+            </Layout>
+          }
+        />
+        <Route
+          path="/auth-choice"
+          element={
+            <Layout>
+              <AuthChoice />
             </Layout>
           }
         />

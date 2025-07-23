@@ -236,11 +236,7 @@ const BookingForm = ({
             <div className="flex justify-between items-center text-sm sm:text-base">
               <div className="text-gray-600">Subtotal</div>
               <div className="font-medium">
-                ₹
-                {Math.round(
-                  stateFullAmount /
-                    (stateFullAmount / search.roomCount > 7000 ? 1.18 : 1.12)
-                ).toLocaleString()}
+                ₹{Math.round(totalCost).toLocaleString()}
               </div>
             </div>
             {/* Remove tax breakdown from price summary */}

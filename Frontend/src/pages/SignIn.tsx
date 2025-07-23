@@ -246,7 +246,7 @@ export type SignInFormData = {
   password: string;
 };
 
-const SignIn = () => {
+const SignIn = ({ redirectState }: { redirectState?: any }) => {
   const navigate = useNavigate();
   const queryClient = useQueryClient();
   const location = useLocation();
@@ -267,7 +267,12 @@ const SignIn = () => {
         confirmButtonColor: "#8B5DFF",
       });
       await queryClient.invalidateQueries("validateToken");
-      navigate(location.state?.from?.pathname || "/");
+      const state = redirectState || location.state;
+      if (state && state.hotelId) {
+        navigate(`/hotel/${state.hotelId}/booking`, { state });
+      } else {
+        navigate("/");
+      }
     },
     onError: (error: Error) => {
       Swal.fire({
