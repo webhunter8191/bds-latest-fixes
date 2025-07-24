@@ -6,7 +6,8 @@ import jwt from "jsonwebtoken";
 import verifyToken from "../middleware/auth";
 
 const router = express.Router();
-// test cookie
+
+// Test cookie route
 router.get("/test-cookie", (req: Request, res: Response) => {
   res.cookie("test_cookie", "test_value", {
     httpOnly: true,

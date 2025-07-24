@@ -95,7 +95,7 @@ const Register = ({ redirectState }: { redirectState?: any }) => {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         credentials: "include",
-        body: JSON.stringify({ otp, email: data.email }),
+        body: JSON.stringify({ otp, phoneNumber: data.mobNo }),
       });
 
       const result = await response.json();
@@ -133,25 +133,27 @@ const Register = ({ redirectState }: { redirectState?: any }) => {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         credentials: "include",
-        body: JSON.stringify({ email: watch("email") }),
+        body: JSON.stringify({ phoneNumber: watch("mobNo") }),
       });
-      Swal.fire("OTP Sent!", "Check your email.", "info");
+      Swal.fire("OTP Sent!", "Check your WhatsApp messages.", "info");
       setTimeout(() => setShowResendButton(true), 10000);
     } finally {
       setIsLoading(false);
     }
   };
 
-  const sendOtp = async ({ email }: { email: any }) => {
+  const sendOtp = async (data: any) => {
+    console.log("Sending OTP to phone number:", data.mobNo);
     const response = await fetch(`${baseUrl}/api/otp/send`, {
       method: "POST",
       headers: { "Content-Type": "application/json" },
       credentials: "include",
-      body: JSON.stringify({ email }),
+      body: JSON.stringify({ phoneNumber: data.mobNo }),
     });
-    const data = await response.json();
-    if (!response.ok) throw new Error(data.message || "Failed to send OTP");
-    return data;
+    const responseData = await response.json();
+    console.log("OTP API response:", responseData);
+    if (!response.ok) throw new Error(responseData.message || "Failed to send OTP");
+    return responseData;
   };
 
   const onSubmit = handleSubmit(async (data, event) => {
@@ -159,18 +161,18 @@ const Register = ({ redirectState }: { redirectState?: any }) => {
     event?.stopPropagation();
     setIsLoading(true);
     try {
+      console.log("Form data for OTP:", data);
       await sendOtp(data);
       setIsOtpModalOpen(true);
     } catch (error: any) {
       setIsOtpModalOpen(false);
+      console.error("Error sending OTP:", error);
       Swal.fire({
-        title: "User already exists",
-        text: "Please sign in instead.",
+        title: "Error",
+        text: error.message || "Failed to send OTP. Please try again.",
         icon: "error",
-        confirmButtonText: "Go to Sign In",
+        confirmButtonText: "Try Again",
         confirmButtonColor: "#6a5631",
-      }).then(() => {
-        navigate("/sign-in");
       });
     } finally {
       setIsLoading(false);
@@ -327,8 +329,14 @@ const Register = ({ redirectState }: { redirectState?: any }) => {
           <AiOutlineClose />
         </button>
         <h2 className="text-xl font-bold text-[#6a5631] mb-2 text-center">
-          Enter OTP
+          Enter WhatsApp OTP
         </h2>
+        <p className="text-center text-sm text-gray-600 mb-2">
+          We've sent an OTP to your WhatsApp number: {watch("mobNo")}
+        </p>
+        <p className="text-center text-xs text-gray-500 mb-2">
+          (For testing, check the server console for the OTP)
+        </p>
         <p className="text-center text-sm text-gray-600 mb-4">
           Time Remaining: {formatTime(timer)}
         </p>

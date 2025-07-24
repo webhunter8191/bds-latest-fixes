@@ -2,7 +2,7 @@ import mongoose from "mongoose";
 
 
 const otpSchema = new mongoose.Schema({
-    email: {
+    phoneNumber: {
         type: String,
         required: true,
     },
@@ -13,7 +13,7 @@ const otpSchema = new mongoose.Schema({
     createdAt: {
         type: Date,
         required: true,
-        index: { expires: "1m" },
+        index: { expires: "5m" },
     },
     });
 

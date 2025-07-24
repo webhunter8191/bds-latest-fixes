@@ -45,13 +45,13 @@ app.use(express.urlencoded({ extended: true }));
 //   })
 // );
 
-const corsOptions =Object.freeze({
-  origin: process.env.FRONTEND_URL,
+const corsOptions = {
+  origin: true, // Allow all origins during development
   methods: ["POST", "GET", "PUT", "DELETE", "PATCH"],
   allowedHeaders: ["Content-Type", "Authorization"],
   credentials: true,
   maxAge: 86400,
-})
+}
 app.use(
   cors(corsOptions)
 );

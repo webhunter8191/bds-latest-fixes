@@ -41,12 +41,20 @@ router.post(
          return res.status(400).json({ message: "Passwords do not match" });
        }
     try {
+      // Check if user exists with either email or mobile number
       let user = await User.findOne({
-        email: req.body.email,
+        $or: [
+          { email: req.body.email },
+          { mobNo: req.body.mobNo }
+        ]
       });
 
       if (user) {
-        return res.status(400).json({ message: "User already exists" });
+        if (user.email === req.body.email) {
+          return res.status(400).json({ message: "Email already registered" });
+        } else {
+          return res.status(400).json({ message: "Phone number already registered" });
+        }
       }
 
       
