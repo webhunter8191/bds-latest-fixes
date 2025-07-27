@@ -2,16 +2,13 @@ import { useMutation } from "react-query";
 import * as apiClient from "../api-client";
 import { useNavigate, useLocation } from "react-router-dom";
 import { useState, useEffect } from "react";
-import {
-  AiOutlineEye,
-  AiOutlineEyeInvisible,
-  AiOutlineClose,
-} from "react-icons/ai";
+import { AiOutlineClose } from "react-icons/ai";
 import Swal from "sweetalert2";
 import Modal from "react-modal";
 import { useForm } from "react-hook-form";
 import { SignInFormData } from "./SignIn";
 import { useQueryClient } from "react-query";
+import { FaEye, FaEyeSlash } from "react-icons/fa";
 
 export type RegisterFormData = {
   firstName: string;
@@ -45,7 +42,7 @@ const Register = ({ redirectState }: { redirectState?: any }) => {
   } = useForm<RegisterFormData>();
 
   const mutation = useMutation(apiClient.register, {
-    onSuccess: async (data, variables) => {
+    onSuccess: async (_, variables) => {
       // Automatically sign in after registration
       const signInData: SignInFormData = {
         email: variables.email,
@@ -152,7 +149,8 @@ const Register = ({ redirectState }: { redirectState?: any }) => {
     });
     const responseData = await response.json();
     console.log("OTP API response:", responseData);
-    if (!response.ok) throw new Error(responseData.message || "Failed to send OTP");
+    if (!response.ok)
+      throw new Error(responseData.message || "Failed to send OTP");
     return responseData;
   };
 
@@ -199,121 +197,144 @@ const Register = ({ redirectState }: { redirectState?: any }) => {
     }`;
 
   return (
-    <>
-      <form
-        className="max-w-lg w-full mx-auto mt-10 bg-white p-6 md:p-10 rounded-lg shadow-xl flex flex-col gap-6"
-        onSubmit={onSubmit}
-      >
-        <h2 className="text-2xl md:text-3xl font-bold text-center text-[#6a5631]">
+    <div className="flex items-center justify-center min-h-screen px-2">
+      <div className="w-full max-w-md bg-white shadow-xl rounded-2xl p-8 sm:p-10">
+        <h2 className="text-3xl sm:text-4xl font-bold text-center text-[#6A5631] mb-6">
           Create an Account
         </h2>
-        <div className="flex flex-col md:flex-row gap-4">
-          <label className="flex-1 text-sm text-[#6a5631]">
-            First Name
-            <input
-              {...register("firstName", { required: "This field is required" })}
-              className="w-full mt-1 p-2 border border-gray-300 rounded-md focus:outline-none focus:border-[#6a5631]"
-            />
-            {errors.firstName && (
-              <span className="text-red-500 text-xs">
-                {errors.firstName.message}
-              </span>
-            )}
-          </label>
-          <label className="flex-1 text-sm text-[#6a5631]">
-            Last Name
-            <input
-              {...register("lastName", { required: "This field is required" })}
-              className="w-full mt-1 p-2 border border-gray-300 rounded-md focus:outline-none focus:border-[#6a5631]"
-            />
-            {errors.lastName && (
-              <span className="text-red-500 text-xs">
-                {errors.lastName.message}
-              </span>
-            )}
-          </label>
-        </div>
-        <label className="text-sm text-[#6a5631]">
-          Mobile No.
-          <input
-            {...register("mobNo", { required: "This field is required" })}
-            className="w-full mt-1 p-2 border border-gray-300 rounded-md focus:outline-none focus:border-[#6a5631]"
-          />
-        </label>
-        <label className="text-sm text-[#6a5631]">
-          Email
-          <input
-            type="email"
-            {...register("email", { required: "This field is required" })}
-            className="w-full mt-1 p-2 border border-gray-300 rounded-md focus:outline-none focus:border-[#6a5631]"
-          />
-          {errors.email && (
-            <span className="text-red-500 text-xs">{errors.email.message}</span>
-          )}
-        </label>
-        <label className="text-sm text-[#6a5631]">
-          Password
-          <div className="relative">
-            <input
-              type={showPassword ? "text" : "password"}
-              {...register("password", {
-                required: "This field is required",
-                minLength: { value: 6, message: "Minimum 6 characters" },
-              })}
-              className="w-full mt-1 p-2 border border-gray-300 rounded-md focus:outline-none focus:border-[#6a5631]"
-            />
-            <span
-              onClick={() => setShowPassword(!showPassword)}
-              className="absolute right-3 top-3 text-lg cursor-pointer"
-            >
-              {showPassword ? <AiOutlineEyeInvisible /> : <AiOutlineEye />}
-            </span>
-          </div>
-          {errors.password && (
-            <span className="text-red-500 text-xs">
-              {errors.password.message}
-            </span>
-          )}
-        </label>
-        <label className="text-sm text-[#6a5631]">
-          Confirm Password
-          <div className="relative">
-            <input
-              type={showConfirmPassword ? "text" : "password"}
-              {...register("confirmPassword", {
-                validate: (val) => {
-                  if (!val) return "This field is required";
-                  if (watch("password") !== val)
-                    return "Passwords do not match";
-                },
-              })}
-              className="w-full mt-1 p-2 border border-gray-300 rounded-md focus:outline-none focus:border-[#6a5631]"
-            />
-            <span
-              onClick={() => setShowConfirmPassword(!showConfirmPassword)}
-              className="absolute right-3 top-3 text-lg cursor-pointer"
-            >
-              {showConfirmPassword ? (
-                <AiOutlineEyeInvisible />
-              ) : (
-                <AiOutlineEye />
+        <form onSubmit={onSubmit} className="space-y-5">
+          <div className="flex flex-col md:flex-row gap-4">
+            <label className="flex-1 text-sm text-[#6A5631]">
+              First Name
+              <input
+                {...register("firstName", {
+                  required: "This field is required",
+                })}
+                className="w-full mt-1 p-2 border border-gray-300 rounded-md focus:outline-none focus:border-[#6A5631]"
+              />
+              {errors.firstName && (
+                <span className="text-red-500 text-xs">
+                  {errors.firstName.message}
+                </span>
               )}
-            </span>
+            </label>
+            <label className="flex-1 text-sm text-[#6A5631]">
+              Last Name
+              <input
+                {...register("lastName", {
+                  required: "This field is required",
+                })}
+                className="w-full mt-1 p-2 border border-gray-300 rounded-md focus:outline-none focus:border-[#6A5631]"
+              />
+              {errors.lastName && (
+                <span className="text-red-500 text-xs">
+                  {errors.lastName.message}
+                </span>
+              )}
+            </label>
           </div>
-          {errors.confirmPassword && (
-            <span className="text-red-500 text-xs">
-              {errors.confirmPassword.message}
-            </span>
-          )}
-        </label>
-        <button
-          type="submit"
-          className="w-full bg-[#6a5631] text-white py-2 px-4 rounded-md font-medium hover:bg-[#5b4a2a] transition-colors"
-          disabled={isLoading}
-        >
-          {isLoading ? "Loading..." : "Create Account"}
-        </button>
-      </form>
+          <label className="text-sm text-[#6A5631]">
+            Mobile No.
+            <input
+              {...register("mobNo", { required: "This field is required" })}
+              className="w-full mt-1 p-2 border border-gray-300 rounded-md focus:outline-none focus:border-[#6A5631]"
+            />
+            {errors.mobNo && (
+              <span className="text-red-500 text-xs">
+                {errors.mobNo.message}
+              </span>
+            )}
+          </label>
+          <label className="text-sm text-[#6A5631]">
+            Email
+            <input
+              type="email"
+              {...register("email", { required: "This field is required" })}
+              className="w-full mt-1 p-2 border border-gray-300 rounded-md focus:outline-none focus:border-[#6A5631]"
+            />
+            {errors.email && (
+              <span className="text-red-500 text-xs">
+                {errors.email.message}
+              </span>
+            )}
+          </label>
+          <label className="text-sm text-[#6A5631] w-full">
+            Password
+            <div className="flex items-center border border-gray-300 rounded-md focus-within:border-[#6A5631] bg-white mt-1">
+              <input
+                type={showPassword ? "text" : "password"}
+                {...register("password", {
+                  required: "This field is required",
+                  minLength: { value: 6, message: "Minimum 6 characters" },
+                })}
+                className="flex-1 p-2 bg-transparent focus:outline-none rounded-md"
+                autoComplete="new-password"
+              />
+              <button
+                type="button"
+                className="ml-2 mr-3 text-lg text-gray-400 hover:text-[#6A5631] focus:outline-none"
+                tabIndex={-1}
+                onClick={() => setShowPassword((prev) => !prev)}
+                aria-label={showPassword ? "Hide password" : "Show password"}
+              >
+                {showPassword ? <FaEyeSlash /> : <FaEye />}
+              </button>
+            </div>
+            {errors.password && (
+              <span className="text-red-500 text-xs">
+                {errors.password.message}
+              </span>
+            )}
+          </label>
+          <label className="text-sm text-[#6A5631] w-full">
+            Confirm Password
+            <div className="flex items-center border border-gray-300 rounded-md focus-within:border-[#6A5631] bg-white mt-1">
+              <input
+                type={showConfirmPassword ? "text" : "password"}
+                {...register("confirmPassword", {
+                  required: "This field is required",
+                })}
+                className="flex-1 p-2 bg-transparent focus:outline-none rounded-md"
+                autoComplete="new-password"
+              />
+              <button
+                type="button"
+                className="ml-2 mr-3 text-lg text-gray-400 hover:text-[#6A5631] focus:outline-none"
+                tabIndex={-1}
+                onClick={() => setShowConfirmPassword((prev) => !prev)}
+                aria-label={
+                  showConfirmPassword ? "Hide password" : "Show password"
+                }
+              >
+                {showConfirmPassword ? <FaEyeSlash /> : <FaEye />}
+              </button>
+            </div>
+            {errors.confirmPassword && (
+              <span className="text-red-500 text-xs">
+                {errors.confirmPassword.message}
+              </span>
+            )}
+          </label>
+          <button
+            type="submit"
+            className="w-full py-3 bg-[#6A5631] hover:bg-[#9e8047] text-white font-semibold rounded-lg transition duration-300 text-lg shadow-md mt-2"
+            disabled={isLoading}
+          >
+            {isLoading ? "Creating Account..." : "Create Account"}
+          </button>
+        </form>
+        <div className="mt-6 text-center">
+          <p className="text-sm text-gray-600">
+            Already have an account?{" "}
+            <a
+              href="/sign-in"
+              className="font-semibold text-[#6A5631] hover:underline"
+            >
+              Sign In
+            </a>
+          </p>
+        </div>
+      </div>
 
       <Modal
         isOpen={isOtpModalOpen}
@@ -328,6 +349,10 @@ const Register = ({ redirectState }: { redirectState?: any }) => {
         >
           <AiOutlineClose />
         </button>
+        <div className="mb-4 mt-4 text-green-700 bg-green-50 border border-green-200 rounded px-3 py-2 text-center text-sm font-medium">
+          OTP has been sent to{" "}
+          <span className="font-semibold">{watch("email")}</span>
+        </div>
         <h2 className="text-xl font-bold text-[#6a5631] mb-2 text-center">
           Enter WhatsApp OTP
         </h2>
@@ -367,7 +392,7 @@ const Register = ({ redirectState }: { redirectState?: any }) => {
           )}
         </div>
       </Modal>
-    </>
+    </div>
   );
 };
 

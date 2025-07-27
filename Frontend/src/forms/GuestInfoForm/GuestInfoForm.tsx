@@ -291,7 +291,6 @@ const GuestInfoForm = ({
             <span className="text-3xl font-bold text-black">
               ₹{roomInfoForSelectedDate.price}
             </span>
-            <div className="text-sm text-gray-500">+ fees: ₹0</div>
           </div>
           <div className="flex items-center gap-1">
             <span className="text-lg text-gray-400 line-through">
@@ -471,6 +470,13 @@ const GuestInfoForm = ({
           </div>
           {/* Price Details */}
           <div className="p-2 bg-gray-50 rounded-lg space-y-1 mt-2">
+            {paymentOption === "partial" && (
+              <div className="mb-2 p-2 bg-yellow-50 border-l-4 border-yellow-400 text-yellow-800 rounded">
+                <strong>Partial Payment:</strong> You are paying <b>30%</b> now
+                to confirm your booking. The remaining <b>70%</b> will be paid
+                at check-in.
+              </div>
+            )}
             <div className="font-semibold">Price Details</div>
             <div className="flex justify-between text-sm">
               <span>Subtotal:</span>
