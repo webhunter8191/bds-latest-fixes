@@ -85,7 +85,17 @@ router.post("/send", async (req: Request, res: Response) => {
     from: `"Brij Divine Stay" <${EMAIL_USER}>`,
     to: email,
     subject: "Your OTP Code",
-    html: `<h1>Your OTP code is ${otp}</h1>`,
+    html: `<div style="font-family: Arial, sans-serif; color: #333;">
+      <p>Your One-Time Password (OTP) is:</p>
+      <div style="font-size: 2em; font-weight: bold; margin: 10px 0; color: #7B3F00;">${otp}</div>
+      <p>Please use this code to complete your action. For your security, do not share this code with anyone.</p>
+      <hr style="border: none; border-top: 1px solid #eee; margin: 30px 0;">
+      <div style="text-align: center; margin-top: 20px;">
+        <img src="https://res.cloudinary.com/dhsycku8t/image/upload/v1753526435/logo_bds_round_uwoqmw.png" alt="Brij Divine Stay Logo" style="height: 60px; border-radius: 50%;">
+        <h3 style="color: #7B3F00; margin: 10px 0;">Brij Divine Stay</h3>
+        <p style="font-style: italic; color: #7B3F00; margin: 0;">Live The Divine, Love the Stay</p>
+      </div>
+    </div>`,
   };
 
   try {
