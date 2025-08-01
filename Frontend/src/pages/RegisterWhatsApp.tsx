@@ -6,22 +6,21 @@ import { AiOutlineClose } from "react-icons/ai";
 import Swal from "sweetalert2";
 import Modal from "react-modal";
 import { useForm } from "react-hook-form";
-import { SignInFormData } from "./SignIn";
 import { useQueryClient } from "react-query";
-import { FaEye, FaEyeSlash } from "react-icons/fa";
+import { FaEye, FaEyeSlash, FaWhatsapp } from "react-icons/fa";
 
-export type RegisterFormData = {
+export type RegisterWhatsAppFormData = {
   firstName: string;
   lastName: string;
-  email: string;
+  phoneNumber: string;
   password: string;
   confirmPassword: string;
-  mobNo: string;
+  email?: string;
 };
 
 const baseUrl = import.meta.env.VITE_API_BASE_URL || "";
 
-const Register = ({ redirectState }: { redirectState?: any }) => {
+const RegisterWhatsApp = ({ redirectState }: { redirectState?: any }) => {
   const navigate = useNavigate();
   const location = useLocation();
   const queryClient = useQueryClient();
@@ -30,7 +29,7 @@ const Register = ({ redirectState }: { redirectState?: any }) => {
   const [showConfirmPassword, setShowConfirmPassword] = useState(false);
   const [isOtpModalOpen, setIsOtpModalOpen] = useState(false);
   const [otp, setOtp] = useState("");
-  const [timer, setTimer] = useState(300);
+  const [timer, setTimer] = useState(60); // 1 minute for WhatsApp OTP
   const [showResendButton, setShowResendButton] = useState(true);
   const [isLoading, setIsLoading] = useState(false);
 
@@ -39,41 +38,24 @@ const Register = ({ redirectState }: { redirectState?: any }) => {
     watch,
     handleSubmit,
     formState: { errors },
-  } = useForm<RegisterFormData>();
+  } = useForm<RegisterWhatsAppFormData>();
 
-  const mutation = useMutation(apiClient.register, {
+  const mutation = useMutation(apiClient.registerPhone, {
     onSuccess: async (_, variables) => {
-      // Automatically sign in after registration
-      const signInData: SignInFormData = {
-        email: variables.email,
-        password: variables.password,
-      };
-      try {
-        await apiClient.signIn(signInData);
-        await queryClient.invalidateQueries("validateToken");
-        Swal.fire({
-          title: "Success!",
-          text: "Your account has been created and you are now signed in.",
-          icon: "success",
-          confirmButtonText: "OK",
-          confirmButtonColor: "#6a5631",
-        }).then(() => {
-          const state = redirectState || location.state;
-          if (state && state.hotelId) {
-            navigate(`/hotel/${state.hotelId}/booking`, { state });
-          } else {
-            navigate("/");
-          }
-        });
-      } catch (err) {
-        Swal.fire({
-          title: "Account created, but sign in failed.",
-          text: "Please sign in manually.",
-          icon: "warning",
-          confirmButtonText: "OK",
-          confirmButtonColor: "#6a5631",
-        }).then(() => navigate("/sign-in"));
-      }
+      Swal.fire({
+        title: "Success!",
+        text: "Your account has been created successfully!",
+        icon: "success",
+        confirmButtonText: "OK",
+        confirmButtonColor: "#6a5631",
+      }).then(() => {
+        const state = redirectState || location.state;
+        if (state && state.hotelId) {
+          navigate(`/hotel/${state.hotelId}/booking`, { state });
+        } else {
+          navigate("/");
+        }
+      });
     },
     onError: (error: Error) => {
       Swal.fire({
@@ -86,13 +68,16 @@ const Register = ({ redirectState }: { redirectState?: any }) => {
     },
   });
 
-  const handleOtpValidation = async (data: RegisterFormData, otp: string) => {
+  const handleOtpValidation = async (
+    data: RegisterWhatsAppFormData,
+    otp: string
+  ) => {
     try {
       const response = await fetch(`${baseUrl}/api/otp/verify`, {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         credentials: "include",
-        body: JSON.stringify({ otp, email: data.email }),
+        body: JSON.stringify({ otp, phoneNumber: data.phoneNumber }),
       });
 
       const result = await response.json();
@@ -124,27 +109,27 @@ const Register = ({ redirectState }: { redirectState?: any }) => {
     setIsLoading(true);
     try {
       setOtp("");
-      setTimer(300);
+      setTimer(60);
       setShowResendButton(false);
-      await fetch(`${baseUrl}/api/otp/send`, {
+      await fetch(`${baseUrl}/api/otp/send-whatsapp`, {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         credentials: "include",
-        body: JSON.stringify({ email: watch("email") }),
+        body: JSON.stringify({ phoneNumber: watch("phoneNumber") }),
       });
-      Swal.fire("OTP Sent!", "Check your email.", "info");
+      Swal.fire("OTP Sent!", "Check your WhatsApp.", "info");
       setTimeout(() => setShowResendButton(true), 10000);
     } finally {
       setIsLoading(false);
     }
   };
 
-  const sendOtp = async ({ email }: { email: any }) => {
-    const response = await fetch(`${baseUrl}/api/otp/send`, {
+  const sendOtp = async ({ phoneNumber }: { phoneNumber: string }) => {
+    const response = await fetch(`${baseUrl}/api/otp/send-whatsapp`, {
       method: "POST",
       headers: { "Content-Type": "application/json" },
       credentials: "include",
-      body: JSON.stringify({ email }),
+      body: JSON.stringify({ phoneNumber }),
     });
     const data = await response.json();
     if (!response.ok) throw new Error(data.message || "Failed to send OTP");
@@ -197,9 +182,12 @@ const Register = ({ redirectState }: { redirectState?: any }) => {
   return (
     <div className="flex items-center justify-center min-h-screen px-2">
       <div className="w-full max-w-md bg-white shadow-xl rounded-2xl p-8 sm:p-10">
-        <h2 className="text-3xl sm:text-4xl font-bold text-center text-[#6A5631] mb-6">
-          Create an Account
-        </h2>
+        <div className="flex items-center justify-center mb-6">
+          <FaWhatsapp className="text-4xl text-green-500 mr-3" />
+          <h2 className="text-3xl sm:text-4xl font-bold text-center text-[#6A5631]">
+            Create Account with WhatsApp
+          </h2>
+        </div>
         <form onSubmit={onSubmit} className="space-y-5">
           <div className="flex flex-col md:flex-row gap-4">
             <label className="flex-1 text-sm text-[#6A5631]">
@@ -232,22 +220,30 @@ const Register = ({ redirectState }: { redirectState?: any }) => {
             </label>
           </div>
           <label className="text-sm text-[#6A5631]">
-            Mobile No.
+            WhatsApp Number (with country code)
             <input
-              {...register("mobNo", { required: "This field is required" })}
+              {...register("phoneNumber", {
+                required: "This field is required",
+                pattern: {
+                  value: /^\+[1-9]\d{1,14}$/,
+                  message:
+                    "Please enter a valid phone number with country code (e.g., +1234567890)",
+                },
+              })}
+              placeholder="+1234567890"
               className="w-full mt-1 p-2 border border-gray-300 rounded-md focus:outline-none focus:border-[#6A5631]"
             />
-            {errors.mobNo && (
+            {errors.phoneNumber && (
               <span className="text-red-500 text-xs">
-                {errors.mobNo.message}
+                {errors.phoneNumber.message}
               </span>
             )}
           </label>
           <label className="text-sm text-[#6A5631]">
-            Email
+            Email (Optional)
             <input
               type="email"
-              {...register("email", { required: "This field is required" })}
+              {...register("email")}
               className="w-full mt-1 p-2 border border-gray-300 rounded-md focus:outline-none focus:border-[#6A5631]"
             />
             {errors.email && (
@@ -291,6 +287,8 @@ const Register = ({ redirectState }: { redirectState?: any }) => {
                 type={showConfirmPassword ? "text" : "password"}
                 {...register("confirmPassword", {
                   required: "This field is required",
+                  validate: (value) =>
+                    value === watch("password") || "Passwords do not match",
                 })}
                 className="flex-1 p-2 bg-transparent focus:outline-none rounded-md"
                 autoComplete="new-password"
@@ -315,10 +313,11 @@ const Register = ({ redirectState }: { redirectState?: any }) => {
           </label>
           <button
             type="submit"
-            className="w-full py-3 bg-[#6A5631] hover:bg-[#9e8047] text-white font-semibold rounded-lg transition duration-300 text-lg shadow-md mt-2"
+            className="w-full py-3 bg-green-500 hover:bg-green-600 text-white font-semibold rounded-lg transition duration-300 text-lg shadow-md mt-2 flex items-center justify-center"
             disabled={isLoading}
           >
-            {isLoading ? "Creating Account..." : "Create Account"}
+            <FaWhatsapp className="mr-2" />
+            {isLoading ? "Creating Account..." : "Create Account with WhatsApp"}
           </button>
         </form>
         <div className="mt-6 text-center">
@@ -334,10 +333,10 @@ const Register = ({ redirectState }: { redirectState?: any }) => {
           <p className="text-sm text-gray-500 mt-2">
             Or{" "}
             <a
-              href="/register-whatsapp"
-              className="font-semibold text-green-600 hover:underline"
+              href="/register"
+              className="font-semibold text-[#6A5631] hover:underline"
             >
-              register with WhatsApp
+              register with email
             </a>
           </p>
         </div>
@@ -357,8 +356,9 @@ const Register = ({ redirectState }: { redirectState?: any }) => {
           <AiOutlineClose />
         </button>
         <div className="mb-4 mt-4 text-green-700 bg-green-50 border border-green-200 rounded px-3 py-2 text-center text-sm font-medium">
+          <FaWhatsapp className="inline mr-2" />
           OTP has been sent to{" "}
-          <span className="font-semibold">{watch("email")}</span>
+          <span className="font-semibold">{watch("phoneNumber")}</span>
         </div>
         <h2 className="text-xl font-bold text-[#6a5631] mb-2 text-center">
           Enter OTP
@@ -397,4 +397,4 @@ const Register = ({ redirectState }: { redirectState?: any }) => {
   );
 };
 
-export default Register;
+export default RegisterWhatsApp;

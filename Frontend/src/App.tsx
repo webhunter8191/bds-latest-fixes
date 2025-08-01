@@ -6,6 +6,7 @@ import {
 } from "react-router-dom";
 import Layout from "./layouts/Layout";
 import Register from "./pages/Register";
+import RegisterWhatsApp from "./pages/RegisterWhatsApp";
 import SignIn from "./pages/SignIn";
 import AddHotel from "./pages/AddHotel";
 import { useAppContext } from "./contexts/AppContext";
@@ -66,6 +67,14 @@ const App = () => {
           element={
             <Layout>
               <Register />
+            </Layout>
+          }
+        />
+        <Route
+          path="/register-whatsapp"
+          element={
+            <Layout>
+              <RegisterWhatsApp />
             </Layout>
           }
         />
