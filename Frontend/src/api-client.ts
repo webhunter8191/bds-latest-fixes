@@ -1,5 +1,5 @@
 import { RegisterFormData } from "./pages/Register";
-import { RegisterWhatsAppFormData } from "./pages/RegisterWhatsApp";
+// import { RegisterWhatsAppFormData } from "./pages/RegisterWhatsApp";
 import { SignInFormData } from "./pages/SignIn";
 import {
   HotelType,
@@ -37,22 +37,22 @@ export const register = async (formData: RegisterFormData) => {
   }
 };
 
-export const registerPhone = async (formData: RegisterWhatsAppFormData) => {
-  const response = await fetch(`${API_BASE_URL}/api/auth/register-phone`, {
-    method: "POST",
-    credentials: "include",
-    headers: {
-      "Content-Type": "application/json",
-    },
-    body: JSON.stringify(formData),
-  });
+// export const registerPhone = async (formData: RegisterWhatsAppFormData) => {
+//   const response = await fetch(`${API_BASE_URL}/api/auth/register-phone`, {
+//     method: "POST",
+//     credentials: "include",
+//     headers: {
+//       "Content-Type": "application/json",
+//     },
+//     body: JSON.stringify(formData),
+//   });
 
-  const responseBody = await response.json();
+//   const responseBody = await response.json();
 
-  if (!response.ok) {
-    throw new Error(responseBody.message);
-  }
-};
+//   if (!response.ok) {
+//     throw new Error(responseBody.message);
+//   }
+// };
 
 export const signIn = async (formData: SignInFormData) => {
   const response = await fetch(`${API_BASE_URL}/api/auth/login`, {
