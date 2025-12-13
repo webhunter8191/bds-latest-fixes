@@ -3,7 +3,7 @@ import { useEffect, useState } from "react";
 const API_URL = import.meta.env.VITE_API_BASE_URL || "";
 
 const AdminBookingspage = () => {
-  const [bookings, setBookings] = useState([]);
+  const [bookings, setBookings] = useState<any[]>([]);
 
   const categories = {
     1: "Double Bed AC",
@@ -17,12 +17,24 @@ const AdminBookingspage = () => {
 
   useEffect(() => {
     const fetchBookings = async () => {
-      const response = await fetch(`${API_URL}/api/my-hotels/my-bookings/12`, {
-        method: "GET",
-        credentials: "include",
-      });
-      const data = await response.json();
-      setBookings(data);
+      try {
+        const response = await fetch(
+          `${API_URL}/api/my-hotels/my-bookings/12`,
+          {
+            method: "GET",
+            credentials: "include",
+          }
+        );
+        if (!response.ok) {
+          throw new Error(`HTTP error! status: ${response.status}`);
+        }
+        const data = await response.json();
+        // Ensure data is always an array
+        setBookings(Array.isArray(data) ? data : []);
+      } catch (error) {
+        console.error("Error fetching bookings:", error);
+        setBookings([]);
+      }
     };
     fetchBookings();
   }, []);
@@ -75,14 +87,18 @@ const AdminBookingspage = () => {
   }
 
   // Calculate booking summary stats
-  const totalBookings = bookings.reduce(
-    (total, hotel: any) => total + (hotel.bookings?.length || 0),
-    0
-  );
+  const totalBookings = Array.isArray(bookings)
+    ? bookings.reduce(
+        (total, hotel: any) => total + (hotel?.bookings?.length || 0),
+        0
+      )
+    : 0;
 
-  const hotelsWithBookings = bookings.filter(
-    (hotel: any) => hotel.bookings && hotel.bookings.length > 0
-  ).length;
+  const hotelsWithBookings = Array.isArray(bookings)
+    ? bookings.filter(
+        (hotel: any) => hotel?.bookings && hotel.bookings.length > 0
+      ).length
+    : 0;
 
   return (
     <div className="p-4 md:p-8 bg-gray-50 min-h-screen">
@@ -211,252 +227,128 @@ const AdminBookingspage = () => {
 
       <div className="max-w-7xl mx-auto">
         <div className="grid grid-cols-1 gap-10">
-          {bookings.map((hotel: any, hotelIndex: number) => (
-            <div
-              key={hotelIndex}
-              className="bg-white shadow-xl rounded-xl overflow-hidden border border-gray-100"
-            >
-              {/* Hotel Header with Image and Details */}
-              <div className="relative">
-                {/* Hotel Image with Overlay - Centered */}
-                <div className="flex flex-col items-center">
-                  <div className="w-full max-w-3xl h-64 overflow-hidden relative">
-                    <img
-                      src={
-                        hotel.imageUrl ||
-                        "https://placehold.co/1200x400?text=Hotel+Image"
-                      }
-                      alt={hotel.hotelName}
-                      className="w-full h-full object-cover"
-                    />
-                    <div className="absolute inset-0 bg-black/50 flex items-center justify-center">
-                      <div className="p-6 text-white z-10 text-center">
-                        <h2 className="text-3xl md:text-4xl font-bold mb-2">
-                          {hotel.hotelName}
-                        </h2>
-                        <p className="text-gray-200 text-lg">
-                          {hotel.location || "Location not specified"}
-                        </p>
+          {Array.isArray(bookings) &&
+            bookings.map((hotel: any, hotelIndex: number) => (
+              <div
+                key={hotelIndex}
+                className="bg-white shadow-xl rounded-xl overflow-hidden border border-gray-100"
+              >
+                {/* Hotel Header with Image and Details */}
+                <div className="relative">
+                  {/* Hotel Image with Overlay - Centered */}
+                  <div className="flex flex-col items-center">
+                    <div className="w-full max-w-3xl h-64 overflow-hidden relative">
+                      <img
+                        src={
+                          hotel.imageUrl ||
+                          "https://placehold.co/1200x400?text=Hotel+Image"
+                        }
+                        alt={hotel.hotelName}
+                        className="w-full h-full object-cover"
+                      />
+                      <div className="absolute inset-0 bg-black/50 flex items-center justify-center">
+                        <div className="p-6 text-white z-10 text-center">
+                          <h2 className="text-3xl md:text-4xl font-bold mb-2">
+                            {hotel.hotelName}
+                          </h2>
+                          <p className="text-gray-200 text-lg">
+                            {hotel.location || "Location not specified"}
+                          </p>
+                        </div>
                       </div>
                     </div>
                   </div>
                 </div>
-              </div>
 
-              {/* Hotel Info Section */}
-              <div className="px-6 py-4 border-b border-gray-100">
-                <div className="grid grid-cols-1 sm:grid-cols-3 gap-4 text-center">
-                  <div>
-                    <p className="text-sm text-gray-500 mb-1">Hotel Type</p>
-                    <p className="font-medium text-gray-800">
-                      {hotel.type || "Standard"}
-                    </p>
-                  </div>
-                  <div>
-                    <p className="text-sm text-gray-500 mb-1">Rating</p>
-                    <div className="flex items-center justify-center">
-                      <span className="flex">
-                        {Array.from({ length: hotel.starRating || 0 }).map(
-                          (_, i) => (
-                            <svg
-                              key={i}
-                              xmlns="http://www.w3.org/2000/svg"
-                              className="h-5 w-5 text-amber-400"
-                              viewBox="0 0 20 20"
-                              fill="currentColor"
-                            >
-                              <path d="M9.049 2.927c.3-.921 1.603-.921 1.902 0l1.07 3.292a1 1 0 00.95.69h3.462c.969 0 1.371 1.24.588 1.81l-2.8 2.034a1 1 0 00-.364 1.118l1.07 3.292c.3.921-.755 1.688-1.54 1.118l-2.8-2.034a1 1 0 00-1.175 0l-2.8 2.034c-.784.57-1.838-.197-1.539-1.118l1.07-3.292a1 1 0 00-.364-1.118l-2.8-2.034c-.783-.57-.38-1.81.588-1.81h3.462a1 1 0 00.95-.69l1.07-3.292z" />
-                            </svg>
-                          )
-                        )}
-                      </span>
+                {/* Hotel Info Section */}
+                <div className="px-6 py-4 border-b border-gray-100">
+                  <div className="grid grid-cols-1 sm:grid-cols-3 gap-4 text-center">
+                    <div>
+                      <p className="text-sm text-gray-500 mb-1">Hotel Type</p>
+                      <p className="font-medium text-gray-800">
+                        {hotel.type || "Standard"}
+                      </p>
+                    </div>
+                    <div>
+                      <p className="text-sm text-gray-500 mb-1">Rating</p>
+                      <div className="flex items-center justify-center">
+                        <span className="flex">
+                          {Array.from({ length: hotel.starRating || 0 }).map(
+                            (_, i) => (
+                              <svg
+                                key={i}
+                                xmlns="http://www.w3.org/2000/svg"
+                                className="h-5 w-5 text-amber-400"
+                                viewBox="0 0 20 20"
+                                fill="currentColor"
+                              >
+                                <path d="M9.049 2.927c.3-.921 1.603-.921 1.902 0l1.07 3.292a1 1 0 00.95.69h3.462c.969 0 1.371 1.24.588 1.81l-2.8 2.034a1 1 0 00-.364 1.118l1.07 3.292c.3.921-.755 1.688-1.54 1.118l-2.8-2.034a1 1 0 00-1.175 0l-2.8 2.034c-.784.57-1.838-.197-1.539-1.118l1.07-3.292a1 1 0 00-.364-1.118l-2.8-2.034c-.783-.57-.38-1.81.588-1.81h3.462a1 1 0 00.95-.69l1.07-3.292z" />
+                              </svg>
+                            )
+                          )}
+                        </span>
+                      </div>
+                    </div>
+                    <div>
+                      <p className="text-sm text-gray-500 mb-1">Address</p>
+                      <p className="font-medium text-gray-800">
+                        {hotel.address || hotel.location || "Not specified"}
+                      </p>
                     </div>
                   </div>
-                  <div>
-                    <p className="text-sm text-gray-500 mb-1">Address</p>
-                    <p className="font-medium text-gray-800">
-                      {hotel.address || hotel.location || "Not specified"}
-                    </p>
-                  </div>
                 </div>
-              </div>
 
-              {/* Booking Details */}
-              {hotel.bookings && hotel.bookings.length > 0 ? (
-                <div>
-                  {/* Desktop Table View */}
-                  <div className="hidden lg:block overflow-x-auto">
-                    <table className="w-full">
-                      <thead>
-                        <tr className="bg-gray-50 text-left text-gray-600 text-sm uppercase">
-                          <th className="py-4 px-5 font-semibold">Guest</th>
-                          <th className="py-4 px-5 font-semibold">Email</th>
-                          <th className="py-4 px-5 font-semibold">Check-In</th>
-                          <th className="py-4 px-5 font-semibold">Check-Out</th>
-                          <th className="py-4 px-5 font-semibold">Room Type</th>
-                          <th className="py-4 px-5 font-semibold">Rooms</th>
-                          <th className="py-4 px-5 font-semibold">Payment</th>
-                        </tr>
-                      </thead>
-                      <tbody>
-                        {hotel.bookings.map((booking: any, index: number) => (
-                          <tr
-                            key={index}
-                            className="border-b border-gray-100 hover:bg-gray-50/50 transition-colors"
-                          >
-                            <td className="py-4 px-5">
-                              <div className="flex items-center">
-                                <div className="w-10 h-10 rounded-full bg-gradient-to-br from-[#6A5631] to-[#8B7442] flex items-center justify-center text-white font-bold mr-3">
-                                  {(hotel.firstName?.[0] || "G").toUpperCase()}
-                                </div>
-                                <div>
-                                  <p className="font-medium text-gray-800">
-                                    {hotel.firstName} {hotel.lastName}
-                                  </p>
-                                </div>
-                              </div>
-                            </td>
-                            <td className="py-4 px-5">
-                              <p className="text-sm text-gray-600">
-                                {hotel.email}
-                              </p>
-                            </td>
-                            <td className="py-4 px-5">
-                              <div className="font-medium text-gray-800">
-                                {new Date(booking.checkIn).toLocaleDateString(
-                                  undefined,
-                                  {
-                                    month: "short",
-                                    day: "numeric",
-                                    year: "numeric",
-                                  }
-                                )}
-                              </div>
-                            </td>
-                            <td className="py-4 px-5">
-                              <div className="font-medium text-gray-800">
-                                {new Date(booking.checkOut).toLocaleDateString(
-                                  undefined,
-                                  {
-                                    month: "short",
-                                    day: "numeric",
-                                    year: "numeric",
-                                  }
-                                )}
-                              </div>
-                              <div className="text-xs text-gray-500">
-                                {Math.ceil(
-                                  (new Date(booking.checkOut).getTime() -
-                                    new Date(booking.checkIn).getTime()) /
-                                    (1000 * 60 * 60 * 24)
-                                )}{" "}
-                                nights
-                              </div>
-                            </td>
-                            <td className="py-4 px-5">
-                              <span className="inline-flex items-center">
-                                <span className="w-3 h-3 rounded-full bg-amber-500 mr-2"></span>
-                                <span className="font-medium text-gray-800">
-                                  {
-                                    categories[
-                                      booking.category as keyof typeof categories
-                                    ]
-                                  }
-                                </span>
-                              </span>
-                            </td>
-                            <td className="py-4 px-5">
-                              <span className="inline-flex items-center px-2.5 py-1 rounded-full text-xs font-medium bg-gray-100 text-gray-800">
-                                {booking.roomsCount}{" "}
-                                {Number(booking.roomsCount) > 1
-                                  ? "rooms"
-                                  : "room"}
-                              </span>
-                            </td>
-                            <td className="py-4 px-5">
-                              <div>
-                                <div className="flex items-center mb-1">
-                                  <span
-                                    className={`inline-block w-3 h-3 rounded-full mr-2 ${
-                                      booking.paymentOption === "partial"
-                                        ? "bg-yellow-500"
-                                        : "bg-green-500"
-                                    }`}
-                                  ></span>
-                                  <span className="font-bold text-gray-800">
-                                    ₹
-                                    {Math.round(
-                                      booking.totalCost
-                                    ).toLocaleString()}
-                                    <span
-                                      className={`ml-2 px-2 py-0.5 text-xs rounded-full ${
-                                        booking.paymentOption === "partial"
-                                          ? "bg-yellow-100 text-yellow-800"
-                                          : "bg-green-100 text-green-800"
-                                      }`}
-                                    >
-                                      {booking.paymentOption === "partial"
-                                        ? "30% Paid"
-                                        : "Full Payment"}
-                                    </span>
-                                  </span>
-                                </div>
-
-                                {booking.paymentOption === "partial" &&
-                                  booking.fullAmount && (
-                                    <div className="ml-5 mt-1">
-                                      <div className="text-sm text-gray-600">
-                                        Total: ₹
-                                        {Math.round(
-                                          booking.fullAmount
-                                        ).toLocaleString()}
-                                      </div>
-                                      <div className="text-sm font-medium text-[#6A5631]">
-                                        Due at check-in: ₹
-                                        {Math.round(
-                                          booking.fullAmount * 0.7
-                                        ).toLocaleString()}
-                                      </div>
-                                    </div>
-                                  )}
-                              </div>
-                            </td>
+                {/* Booking Details */}
+                {hotel.bookings && hotel.bookings.length > 0 ? (
+                  <div>
+                    {/* Desktop Table View */}
+                    <div className="hidden lg:block overflow-x-auto">
+                      <table className="w-full">
+                        <thead>
+                          <tr className="bg-gray-50 text-left text-gray-600 text-sm uppercase">
+                            <th className="py-4 px-5 font-semibold">Guest</th>
+                            <th className="py-4 px-5 font-semibold">Email</th>
+                            <th className="py-4 px-5 font-semibold">
+                              Check-In
+                            </th>
+                            <th className="py-4 px-5 font-semibold">
+                              Check-Out
+                            </th>
+                            <th className="py-4 px-5 font-semibold">
+                              Room Type
+                            </th>
+                            <th className="py-4 px-5 font-semibold">Rooms</th>
+                            <th className="py-4 px-5 font-semibold">Payment</th>
                           </tr>
-                        ))}
-                      </tbody>
-                    </table>
-                  </div>
-
-                  {/* Mobile/Tablet View - Card Based Layout */}
-                  <div className="lg:hidden">
-                    <div className="divide-y divide-gray-100">
-                      {hotel.bookings.map((booking: any, index: number) => (
-                        <div key={index} className="p-4">
-                          {/* Guest Info Row */}
-                          <div className="flex items-start justify-between mb-4">
-                            <div className="flex items-center">
-                              <div className="w-12 h-12 rounded-full bg-gradient-to-br from-[#6A5631] to-[#8B7442] flex items-center justify-center text-white font-bold mr-3">
-                                {(hotel.firstName?.[0] || "G").toUpperCase()}
-                              </div>
-                              <div>
-                                <p className="font-medium text-gray-800">
-                                  {hotel.firstName} {hotel.lastName}
-                                </p>
+                        </thead>
+                        <tbody>
+                          {hotel.bookings.map((booking: any, index: number) => (
+                            <tr
+                              key={index}
+                              className="border-b border-gray-100 hover:bg-gray-50/50 transition-colors"
+                            >
+                              <td className="py-4 px-5">
+                                <div className="flex items-center">
+                                  <div className="w-10 h-10 rounded-full bg-gradient-to-br from-[#6A5631] to-[#8B7442] flex items-center justify-center text-white font-bold mr-3">
+                                    {(
+                                      booking.firstName?.[0] || "G"
+                                    ).toUpperCase()}
+                                  </div>
+                                  <div>
+                                    <p className="font-medium text-gray-800">
+                                      {booking.firstName || "Guest"}{" "}
+                                      {booking.lastName || ""}
+                                    </p>
+                                  </div>
+                                </div>
+                              </td>
+                              <td className="py-4 px-5">
                                 <p className="text-sm text-gray-600">
-                                  {hotel.email}
+                                  {booking.email || "N/A"}
                                 </p>
-                              </div>
-                            </div>
-                          </div>
-
-                          {/* Booking Details */}
-                          <div className="bg-gray-50 rounded-lg p-3 mb-3">
-                            <div className="grid grid-cols-2 gap-3">
-                              <div>
-                                <p className="text-xs text-gray-500">
-                                  Check-In
-                                </p>
-                                <p className="font-medium text-gray-800">
+                              </td>
+                              <td className="py-4 px-5">
+                                <div className="font-medium text-gray-800">
                                   {new Date(booking.checkIn).toLocaleDateString(
                                     undefined,
                                     {
@@ -465,13 +357,10 @@ const AdminBookingspage = () => {
                                       year: "numeric",
                                     }
                                   )}
-                                </p>
-                              </div>
-                              <div>
-                                <p className="text-xs text-gray-500">
-                                  Check-Out
-                                </p>
-                                <p className="font-medium text-gray-800">
+                                </div>
+                              </td>
+                              <td className="py-4 px-5">
+                                <div className="font-medium text-gray-800">
                                   {new Date(
                                     booking.checkOut
                                   ).toLocaleDateString(undefined, {
@@ -479,145 +368,286 @@ const AdminBookingspage = () => {
                                     day: "numeric",
                                     year: "numeric",
                                   })}
-                                </p>
-                              </div>
-                              <div>
-                                <p className="text-xs text-gray-500">
-                                  Room Type
-                                </p>
-                                <div className="flex items-center">
-                                  <span className="w-2 h-2 rounded-full bg-amber-500 mr-1.5"></span>
-                                  <span className="font-medium text-gray-800 text-sm">
-                                    {
-                                      categories[
-                                        booking.category as keyof typeof categories
-                                      ]
-                                    }
-                                  </span>
                                 </div>
-                              </div>
-                              <div>
-                                <p className="text-xs text-gray-500">
-                                  Stay Duration
-                                </p>
-                                <p className="font-medium text-gray-800">
+                                <div className="text-xs text-gray-500">
                                   {Math.ceil(
                                     (new Date(booking.checkOut).getTime() -
                                       new Date(booking.checkIn).getTime()) /
                                       (1000 * 60 * 60 * 24)
                                   )}{" "}
                                   nights
-                                </p>
+                                </div>
+                              </td>
+                              <td className="py-4 px-5">
+                                <span className="inline-flex items-center">
+                                  <span className="w-3 h-3 rounded-full bg-amber-500 mr-2"></span>
+                                  <span className="font-medium text-gray-800">
+                                    {
+                                      categories[
+                                        booking.category as keyof typeof categories
+                                      ]
+                                    }
+                                  </span>
+                                </span>
+                              </td>
+                              <td className="py-4 px-5">
+                                <span className="inline-flex items-center px-2.5 py-1 rounded-full text-xs font-medium bg-gray-100 text-gray-800">
+                                  {booking.roomsCount}{" "}
+                                  {Number(booking.roomsCount) > 1
+                                    ? "rooms"
+                                    : "room"}
+                                </span>
+                              </td>
+                              <td className="py-4 px-5">
+                                <div>
+                                  <div className="flex items-center mb-1">
+                                    <span
+                                      className={`inline-block w-3 h-3 rounded-full mr-2 ${
+                                        booking.paymentOption === "partial"
+                                          ? "bg-yellow-500"
+                                          : "bg-green-500"
+                                      }`}
+                                    ></span>
+                                    <span className="font-bold text-gray-800">
+                                      ₹
+                                      {Math.round(
+                                        booking.totalCost
+                                      ).toLocaleString()}
+                                      <span
+                                        className={`ml-2 px-2 py-0.5 text-xs rounded-full ${
+                                          booking.paymentOption === "partial"
+                                            ? "bg-yellow-100 text-yellow-800"
+                                            : "bg-green-100 text-green-800"
+                                        }`}
+                                      >
+                                        {booking.paymentOption === "partial"
+                                          ? "30% Paid"
+                                          : "Full Payment"}
+                                      </span>
+                                    </span>
+                                  </div>
+
+                                  {booking.paymentOption === "partial" &&
+                                    booking.fullAmount && (
+                                      <div className="ml-5 mt-1">
+                                        <div className="text-sm text-gray-600">
+                                          Total: ₹
+                                          {Math.round(
+                                            booking.fullAmount
+                                          ).toLocaleString()}
+                                        </div>
+                                        <div className="text-sm font-medium text-[#6A5631]">
+                                          Due at check-in: ₹
+                                          {Math.round(
+                                            booking.fullAmount * 0.7
+                                          ).toLocaleString()}
+                                        </div>
+                                      </div>
+                                    )}
+                                </div>
+                              </td>
+                            </tr>
+                          ))}
+                        </tbody>
+                      </table>
+                    </div>
+
+                    {/* Mobile/Tablet View - Card Based Layout */}
+                    <div className="lg:hidden">
+                      <div className="divide-y divide-gray-100">
+                        {hotel.bookings.map((booking: any, index: number) => (
+                          <div key={index} className="p-4">
+                            {/* Guest Info Row */}
+                            <div className="flex items-start justify-between mb-4">
+                              <div className="flex items-center">
+                                <div className="w-12 h-12 rounded-full bg-gradient-to-br from-[#6A5631] to-[#8B7442] flex items-center justify-center text-white font-bold mr-3">
+                                  {(
+                                    booking.firstName?.[0] || "G"
+                                  ).toUpperCase()}
+                                </div>
+                                <div>
+                                  <p className="font-medium text-gray-800">
+                                    {booking.firstName || "Guest"}{" "}
+                                    {booking.lastName || ""}
+                                  </p>
+                                  <p className="text-sm text-gray-600">
+                                    {booking.email || "N/A"}
+                                  </p>
+                                </div>
                               </div>
                             </div>
-                          </div>
 
-                          {/* Booking Payment */}
-                          <div className="flex justify-between items-center">
-                            <div>
-                              <span className="inline-flex items-center px-2.5 py-1 rounded-full text-xs font-medium bg-gray-100 text-gray-800">
-                                {booking.roomsCount}{" "}
-                                {Number(booking.roomsCount) > 1
-                                  ? "rooms"
-                                  : "room"}
-                              </span>
+                            {/* Booking Details */}
+                            <div className="bg-gray-50 rounded-lg p-3 mb-3">
+                              <div className="grid grid-cols-2 gap-3">
+                                <div>
+                                  <p className="text-xs text-gray-500">
+                                    Check-In
+                                  </p>
+                                  <p className="font-medium text-gray-800">
+                                    {new Date(
+                                      booking.checkIn
+                                    ).toLocaleDateString(undefined, {
+                                      month: "short",
+                                      day: "numeric",
+                                      year: "numeric",
+                                    })}
+                                  </p>
+                                </div>
+                                <div>
+                                  <p className="text-xs text-gray-500">
+                                    Check-Out
+                                  </p>
+                                  <p className="font-medium text-gray-800">
+                                    {new Date(
+                                      booking.checkOut
+                                    ).toLocaleDateString(undefined, {
+                                      month: "short",
+                                      day: "numeric",
+                                      year: "numeric",
+                                    })}
+                                  </p>
+                                </div>
+                                <div>
+                                  <p className="text-xs text-gray-500">
+                                    Room Type
+                                  </p>
+                                  <div className="flex items-center">
+                                    <span className="w-2 h-2 rounded-full bg-amber-500 mr-1.5"></span>
+                                    <span className="font-medium text-gray-800 text-sm">
+                                      {
+                                        categories[
+                                          booking.category as keyof typeof categories
+                                        ]
+                                      }
+                                    </span>
+                                  </div>
+                                </div>
+                                <div>
+                                  <p className="text-xs text-gray-500">
+                                    Stay Duration
+                                  </p>
+                                  <p className="font-medium text-gray-800">
+                                    {Math.ceil(
+                                      (new Date(booking.checkOut).getTime() -
+                                        new Date(booking.checkIn).getTime()) /
+                                        (1000 * 60 * 60 * 24)
+                                    )}{" "}
+                                    nights
+                                  </p>
+                                </div>
+                              </div>
                             </div>
 
-                            <div>
-                              <div className="flex items-center">
-                                <span
-                                  className={`inline-block w-3 h-3 rounded-full mr-2 ${
-                                    booking.paymentOption === "partial"
-                                      ? "bg-yellow-500"
-                                      : "bg-green-500"
-                                  }`}
-                                ></span>
-                                <span
-                                  className={`px-2.5 py-1 text-xs rounded-full ${
-                                    booking.paymentOption === "partial"
-                                      ? "bg-yellow-100 text-yellow-800"
-                                      : "bg-green-100 text-green-800"
-                                  } font-medium`}
-                                >
-                                  {booking.paymentOption === "partial"
-                                    ? "30% Deposit"
-                                    : "Full Payment"}
+                            {/* Booking Payment */}
+                            <div className="flex justify-between items-center">
+                              <div>
+                                <span className="inline-flex items-center px-2.5 py-1 rounded-full text-xs font-medium bg-gray-100 text-gray-800">
+                                  {booking.roomsCount}{" "}
+                                  {Number(booking.roomsCount) > 1
+                                    ? "rooms"
+                                    : "room"}
                                 </span>
                               </div>
+
+                              <div>
+                                <div className="flex items-center">
+                                  <span
+                                    className={`inline-block w-3 h-3 rounded-full mr-2 ${
+                                      booking.paymentOption === "partial"
+                                        ? "bg-yellow-500"
+                                        : "bg-green-500"
+                                    }`}
+                                  ></span>
+                                  <span
+                                    className={`px-2.5 py-1 text-xs rounded-full ${
+                                      booking.paymentOption === "partial"
+                                        ? "bg-yellow-100 text-yellow-800"
+                                        : "bg-green-100 text-green-800"
+                                    } font-medium`}
+                                  >
+                                    {booking.paymentOption === "partial"
+                                      ? "30% Deposit"
+                                      : "Full Payment"}
+                                  </span>
+                                </div>
+                              </div>
+                            </div>
+
+                            {/* Payment Details */}
+                            <div className="mt-3 border-t border-gray-100 pt-3">
+                              <div className="flex justify-between items-center">
+                                <span className="text-sm text-gray-600">
+                                  Amount Paid:
+                                </span>
+                                <span className="font-bold text-gray-800">
+                                  ₹
+                                  {Math.round(
+                                    booking.totalCost
+                                  ).toLocaleString()}
+                                </span>
+                              </div>
+
+                              {booking.paymentOption === "partial" &&
+                                booking.fullAmount && (
+                                  <>
+                                    <div className="flex justify-between items-center mt-1">
+                                      <span className="text-sm text-gray-600">
+                                        Total Amount:
+                                      </span>
+                                      <span className="text-gray-800">
+                                        ₹
+                                        {Math.round(
+                                          booking.fullAmount
+                                        ).toLocaleString()}
+                                      </span>
+                                    </div>
+                                    <div className="flex justify-between items-center mt-1">
+                                      <span className="text-sm text-gray-600">
+                                        Due at check-in:
+                                      </span>
+                                      <span className="font-medium text-[#6A5631]">
+                                        ₹
+                                        {Math.round(
+                                          booking.fullAmount * 0.7
+                                        ).toLocaleString()}
+                                      </span>
+                                    </div>
+                                  </>
+                                )}
                             </div>
                           </div>
-
-                          {/* Payment Details */}
-                          <div className="mt-3 border-t border-gray-100 pt-3">
-                            <div className="flex justify-between items-center">
-                              <span className="text-sm text-gray-600">
-                                Amount Paid:
-                              </span>
-                              <span className="font-bold text-gray-800">
-                                ₹
-                                {Math.round(booking.totalCost).toLocaleString()}
-                              </span>
-                            </div>
-
-                            {booking.paymentOption === "partial" &&
-                              booking.fullAmount && (
-                                <>
-                                  <div className="flex justify-between items-center mt-1">
-                                    <span className="text-sm text-gray-600">
-                                      Total Amount:
-                                    </span>
-                                    <span className="text-gray-800">
-                                      ₹
-                                      {Math.round(
-                                        booking.fullAmount
-                                      ).toLocaleString()}
-                                    </span>
-                                  </div>
-                                  <div className="flex justify-between items-center mt-1">
-                                    <span className="text-sm text-gray-600">
-                                      Due at check-in:
-                                    </span>
-                                    <span className="font-medium text-[#6A5631]">
-                                      ₹
-                                      {Math.round(
-                                        booking.fullAmount * 0.7
-                                      ).toLocaleString()}
-                                    </span>
-                                  </div>
-                                </>
-                              )}
-                          </div>
-                        </div>
-                      ))}
+                        ))}
+                      </div>
                     </div>
                   </div>
-                </div>
-              ) : (
-                <div className="flex flex-col items-center justify-center py-12 bg-gray-50/50">
-                  <svg
-                    xmlns="http://www.w3.org/2000/svg"
-                    className="h-16 w-16 text-gray-300 mb-4"
-                    fill="none"
-                    viewBox="0 0 24 24"
-                    stroke="currentColor"
-                  >
-                    <path
-                      strokeLinecap="round"
-                      strokeLinejoin="round"
-                      strokeWidth={1.5}
-                      d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z"
-                    />
-                  </svg>
-                  <p className="text-gray-500 text-center font-medium text-lg">
-                    No bookings found for this hotel.
-                  </p>
-                  <p className="text-gray-400 text-center max-w-md mt-2">
-                    When guests book rooms at this hotel, they will appear here.
-                  </p>
-                </div>
-              )}
-            </div>
-          ))}
+                ) : (
+                  <div className="flex flex-col items-center justify-center py-12 bg-gray-50/50">
+                    <svg
+                      xmlns="http://www.w3.org/2000/svg"
+                      className="h-16 w-16 text-gray-300 mb-4"
+                      fill="none"
+                      viewBox="0 0 24 24"
+                      stroke="currentColor"
+                    >
+                      <path
+                        strokeLinecap="round"
+                        strokeLinejoin="round"
+                        strokeWidth={1.5}
+                        d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z"
+                      />
+                    </svg>
+                    <p className="text-gray-500 text-center font-medium text-lg">
+                      No bookings found for this hotel.
+                    </p>
+                    <p className="text-gray-400 text-center max-w-md mt-2">
+                      When guests book rooms at this hotel, they will appear
+                      here.
+                    </p>
+                  </div>
+                )}
+              </div>
+            ))}
         </div>
       </div>
     </div>
