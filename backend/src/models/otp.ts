@@ -1,10 +1,13 @@
 import mongoose from "mongoose";
 
-
 const otpSchema = new mongoose.Schema({
     email: {
         type: String,
-        required: true,
+        required: false,
+    },
+    phoneNumber: {
+        type: String,
+        required: false,
     },
     otp: {
         type: String,
@@ -15,8 +18,15 @@ const otpSchema = new mongoose.Schema({
         required: true,
         index: { expires: "1m" },
     },
-    });
+});
 
+// Ensure either email or phoneNumber is provided
+otpSchema.pre('save', function(next) {
+    if (!this.email && !this.phoneNumber) {
+        return next(new Error('Either email or phoneNumber is required'));
+    }
+    next();
+});
 
 const OTPModel = mongoose.model("otp-verify", otpSchema);
 
