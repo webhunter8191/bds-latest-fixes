@@ -45,13 +45,13 @@ app.use(express.urlencoded({ extended: true }));
 //   })
 // );
 
-const corsOptions =Object.freeze({
-  origin: process.env.FRONTEND_URL,
+const corsOptions = {
+  origin: [process.env.FRONTEND_URL as string, "https://n0qb09gl-5174.inc1.devtunnels.ms"],
   methods: ["POST", "GET", "PUT", "DELETE", "PATCH"],
   allowedHeaders: ["Content-Type", "Authorization"],
   credentials: true,
   maxAge: 86400,
-})
+};
 app.use(
   cors(corsOptions)
 );
