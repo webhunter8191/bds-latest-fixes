@@ -331,15 +331,6 @@ const Register = ({ redirectState }: { redirectState?: any }) => {
               Sign In
             </a>
           </p>
-          <p className="text-sm text-gray-500 mt-2">
-            Or{" "}
-            <a
-              href="/register-whatsapp"
-              className="font-semibold text-green-600 hover:underline"
-            >
-              register with WhatsApp
-            </a>
-          </p>
         </div>
       </div>
 
