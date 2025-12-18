@@ -400,11 +400,7 @@ const groupedBookings = bookings.reduce((acc: any, booking: any) => {
     roomsCount: booking.roomsId.length.toString(),
     totalCost: booking.totalCost,
     paymentOption: booking.paymentOption || 'full',
-    fullAmount: booking.fullAmount || booking.totalCost,
-    guestFirstName: booking.firstName,
-    guestLastName: booking.lastName,
-    guestEmail: booking.email,
-    guestPhone: user?.mobNo
+    fullAmount: booking.fullAmount || booking.totalCost
   });
 
   return acc;
@@ -424,84 +420,49 @@ router.get("/admin/bookings",
   verifyToken,
   async(req:Request,res:Response)=>{
   try{
-    const hotelData = await Hotel.find({},{name:1,rooms:1,imageUrls:1,userId:1,location:1,type:1,status:1}).lean();
-    if(!hotelData || hotelData.length === 0){
-      return res.status(200).json([]);
+    const hotelData = await Hotel.find({},{name:1,rooms:1,imageUrls:1});
+    if(!hotelData){
+      return res.status(404).json({ message: "Hotel not found" });
     }
     const hotelIds = hotelData.map((hotel:any)=>hotel._id.toString());
     const bookings = await BookingModel.find({hotelId:{$in:hotelIds},deletedAt:null},{hotelId:0, __v:0}).lean();
-    
-    // Get all user IDs (both booking guests and hotel owners)
-    const bookingUserIds = [...new Set(bookings.map((booking: any) => booking.userId))];
-    const hotelOwnerIds = [...new Set(hotelData.map((hotel: any) => hotel.userId))];
-    const allUserIds = [...new Set([...bookingUserIds, ...hotelOwnerIds])];
-    
-    const userData = await UserModel.find({_id:{$in:allUserIds}},{firstName:1,lastName:1,email:1,mobNo:1}).lean();
-    
-    // Only create hotel entries when they have bookings
-    const groupedBookings: any = {};
-    
-    bookings.forEach((booking: any) => {
-      if (!booking.roomsId || booking.roomsId.length === 0) {
-        return; // Skip bookings without rooms
-      }
-      const roomId = booking.roomsId[0];
-      const hotel = hotelData.find((h: any) => 
-        h.rooms && h.rooms.some((r: any) => r._id.toString() === roomId)
-      );
-      
-      if (!hotel) {
-        return; // Skip if hotel not found
-      }
-      
-      const bookingUser = userData.find((u: any) => {
-        const userId = u._id?.toString ? u._id.toString() : String(u._id);
-        const bookingUserId = booking.userId?.toString ? booking.userId.toString() : String(booking.userId);
-        return userId === bookingUserId;
-      });
-      
-      const hotelOwner = userData.find((u: any) => {
-        const userId = u._id?.toString ? u._id.toString() : String(u._id);
-        const hotelUserId = hotel.userId?.toString ? hotel.userId.toString() : String(hotel.userId);
-        return userId === hotelUserId;
-      });
-      
-      const room = hotel?.rooms?.find((r: any) => r._id.toString() === roomId);
-      
-      // Create hotel entry only if it doesn't exist yet
-      if (!groupedBookings[hotel.name]) {
-        groupedBookings[hotel.name] = {
-          hotelName: hotel.name,
-          firstName: hotelOwner?.firstName || '',
-          lastName: hotelOwner?.lastName || '',
-          email: hotelOwner?.email || '',
-          phone: hotelOwner?.mobNo || '',
-          location: hotel?.location || '',
-          type: hotel?.type || '',
-          status: hotel?.status || 'active',
-          imageUrl: hotel?.imageUrls?.[0] || '',
-          bookings: []
-        };
-      }
-      
-      // Add booking to the hotel
-      groupedBookings[hotel.name].bookings.push({
-        checkIn: booking.checkIn,
-        checkOut: booking.checkOut,
-        category: (room as any)?.category,
-        bookingId: booking._id.toString(),
-        roomsCount: booking.roomsId.length.toString(),
-        totalCost: booking.totalCost,
-        paymentOption: booking.paymentOption || 'full',
-        fullAmount: booking.fullAmount || booking.totalCost,
-        guestFirstName: booking.firstName,
-        guestLastName: booking.lastName,
-        guestEmail: booking.email,
-        guestPhone: bookingUser?.mobNo
-      });
+    const userIds = [...new Set(bookings.map((booking: any) => booking.userId))];
+    const userData = await UserModel.find({_id:{$in:userIds}},{mobNo:1});
+    const groupedBookings = bookings.reduce((acc: any, booking: any) => {
+    const roomId = booking.roomsId[0];
+    const hotel = hotelData.find((h: any) => 
+      h.rooms.some((r: any) => r._id.toString() === roomId)
+    );
+    const user = userData.find((u: any) => u._id.toString() === booking.userId);
+  
+    const hotelName = hotel?.name || '';
+    if (!acc[hotelName]) {
+      acc[hotelName] = {
+        hotelName,
+        firstName: booking.firstName,
+        lastName: booking.lastName,
+        email: booking.email,
+        phone: user?.mobNo,
+        imageUrl: hotel?.imageUrls?.[0] || '',
+        bookings: []
+      };
+    }
+    const room = hotel?.rooms.find((r: any) => r._id.toString() === roomId);  
+    acc[hotelName].bookings.push({
+      checkIn: booking.checkIn,
+      checkOut: booking.checkOut,
+      category: (room as any)?.category,
+      bookingId: booking._id.toString(),
+      roomsCount: booking.roomsId.length.toString(),
+      totalCost: booking.totalCost,
+      paymentOption: booking.paymentOption || 'full',
+      fullAmount: booking.fullAmount || booking.totalCost
     });
+  
+    return acc;
+}, {});
 
-// Transform the groupedBookings object into an array (only hotels with bookings)
+// Transform the groupedBookings object into an array
   const bookingsArray = Object.values(groupedBookings);
       return res.status(200).json(bookingsArray);
     }catch(error){

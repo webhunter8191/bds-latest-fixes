@@ -1,5 +1,4 @@
 import { RegisterFormData } from "./pages/Register";
-// import { RegisterWhatsAppFormData } from "./pages/RegisterWhatsApp";
 import { SignInFormData } from "./pages/SignIn";
 import {
   HotelType,
@@ -36,23 +35,6 @@ export const register = async (formData: RegisterFormData) => {
     throw new Error(responseBody.message);
   }
 };
-
-// export const registerPhone = async (formData: RegisterWhatsAppFormData) => {
-//   const response = await fetch(`${API_BASE_URL}/api/auth/register-phone`, {
-//     method: "POST",
-//     credentials: "include",
-//     headers: {
-//       "Content-Type": "application/json",
-//     },
-//     body: JSON.stringify(formData),
-//   });
-
-//   const responseBody = await response.json();
-
-//   if (!response.ok) {
-//     throw new Error(responseBody.message);
-//   }
-// };
 
 export const signIn = async (formData: SignInFormData) => {
   const response = await fetch(`${API_BASE_URL}/api/auth/login`, {
@@ -326,4 +308,59 @@ export const createPaymentOrder = async (
   }
 
   return response.json();
+};
+
+// WhatsApp OTP API functions
+export const sendWhatsAppOTP = async (phoneNumber: string) => {
+  const response = await fetch(`${API_BASE_URL}/api/whatsapp-otp/send`, {
+    method: "POST",
+    headers: {
+      "Content-Type": "application/json",
+    },
+    body: JSON.stringify({ phoneNumber }),
+  });
+
+  const responseBody = await response.json();
+
+  if (!response.ok) {
+    throw new Error(responseBody.message);
+  }
+
+  return responseBody;
+};
+
+export const verifyWhatsAppOTP = async (phoneNumber: string, otp: string) => {
+  const response = await fetch(`${API_BASE_URL}/api/whatsapp-otp/verify`, {
+    method: "POST",
+    headers: {
+      "Content-Type": "application/json",
+    },
+    body: JSON.stringify({ phoneNumber, otp }),
+  });
+
+  const responseBody = await response.json();
+
+  if (!response.ok) {
+    throw new Error(responseBody.message);
+  }
+
+  return responseBody;
+};
+
+export const resendWhatsAppOTP = async (phoneNumber: string) => {
+  const response = await fetch(`${API_BASE_URL}/api/whatsapp-otp/resend`, {
+    method: "POST",
+    headers: {
+      "Content-Type": "application/json",
+    },
+    body: JSON.stringify({ phoneNumber }),
+  });
+
+  const responseBody = await response.json();
+
+  if (!response.ok) {
+    throw new Error(responseBody.message);
+  }
+
+  return responseBody;
 };

@@ -69,7 +69,6 @@ const App = () => {
             </Layout>
           }
         />
-
         <Route
           path="/sign-in"
           element={

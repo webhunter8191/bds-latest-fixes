@@ -1,12 +1,11 @@
 export type UserType = {
   _id: string;
-  email?: string; // Made optional
-  phoneNumber?: string; // Added phone number support
+  email: string;
   password: string;
   firstName: string;
   lastName: string;
   isAdmin:boolean;
-  mobNo?: string; // Made optional for backward compatibility
+  mobNo : string;
 };
 
 

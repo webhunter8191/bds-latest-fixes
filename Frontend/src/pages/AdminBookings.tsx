@@ -362,7 +362,9 @@ const AdminBookings = () => {
                 <div className="absolute top-4 right-4 bg-white/90 backdrop-blur-sm py-2 px-4 rounded-lg shadow-md">
                   <div className="flex items-center text-sm">
                     <span className="font-medium text-gray-800">Owner:</span>
-                    <span className="ml-2 text-gray-600">Owner</span>
+                    <span className="ml-2 text-gray-600">
+                      {hotel.firstName || "N/A"}
+                    </span>
                   </div>
                 </div>
               </div>
@@ -432,13 +434,15 @@ const AdminBookings = () => {
                                 <div className="flex items-center">
                                   <div className="w-10 h-10 rounded-full bg-gradient-to-br from-[#6A5631] to-[#8B7442] flex items-center justify-center text-white font-bold mr-3">
                                     {(
-                                      booking.firstName?.[0] || "G"
+                                      booking.firstName?.[0] ||
+                                      hotel.firstName?.[0] ||
+                                      "G"
                                     ).toUpperCase()}
                                   </div>
                                   <div>
                                     <p className="font-medium text-gray-800">
-                                      {booking.firstName || "Guest"}{" "}
-                                      {booking.lastName || ""}
+                                      {booking.firstName || hotel.firstName}{" "}
+                                      {booking.lastName || hotel.lastName}
                                     </p>
                                     <p className="text-xs text-gray-500">
                                       ID:{" "}
@@ -450,7 +454,7 @@ const AdminBookings = () => {
                               </td>
                               <td className="py-4 px-5">
                                 <p className="text-sm text-gray-600">
-                                  {booking.email || "N/A"}
+                                  {booking.email || hotel.email}
                                 </p>
                               </td>
                               <td className="py-4 px-5">
@@ -577,11 +581,11 @@ const AdminBookings = () => {
                                 </div>
                                 <div>
                                   <p className="font-medium text-gray-800">
-                                    {booking.firstName || "Guest"}{" "}
-                                    {booking.lastName || ""}
+                                    {booking.firstName || hotel.firstName}{" "}
+                                    {booking.lastName || hotel.lastName}
                                   </p>
                                   <p className="text-sm text-gray-600">
-                                    {booking.email || "N/A"}
+                                    {booking.email || hotel.email}
                                   </p>
                                   <p className="text-xs text-gray-500">
                                     ID:{" "}
