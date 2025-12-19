@@ -4,17 +4,13 @@ import User from "../models/user";
 import bcrypt from "bcryptjs";
 import jwt from "jsonwebtoken";
 import verifyToken from "../middleware/auth";
+import { getAuthCookieOptions } from "../utils/cookies";
 
 const router = express.Router();
 // test cookie
 router.get("/test-cookie", (req: Request, res: Response) => {
-  res.cookie("test_cookie", "test_value", {
-    httpOnly: true,
-    secure: process.env.NODE_ENV === "production",
-    sameSite: process.env.NODE_ENV === "production" ? 'none' : 'lax',
-    domain: process.env.NODE_ENV === "production" ? undefined : 'localhost',
-    maxAge: 60000,
-  });
+  const cookieOptions = getAuthCookieOptions(60000);
+  res.cookie("test_cookie", "test_value", cookieOptions);
   res.send("Test cookie has been set.");
 });
 
@@ -59,13 +55,7 @@ router.post(
           expiresIn: "1d",
         }
       );
-      res.cookie("auth_token", token, {
-        httpOnly: true,
-        secure: process.env.NODE_ENV === "production",
-        maxAge: 86400000,
-        sameSite: process.env.NODE_ENV === "production" ? 'none' : 'lax',
-        domain: process.env.NODE_ENV === "production" ? undefined : 'localhost'
-      });
+      res.cookie("auth_token", token, getAuthCookieOptions());
       res.status(200).json({ userId: user._id });
     } catch (error) {
       console.log(error);
@@ -79,14 +69,9 @@ router.get("/validate-token", verifyToken, (req: Request, res: Response) => {
 });
 
 router.post("/logout", (req: Request, res: Response) => {
-  res.cookie("auth_token", "", {
-    httpOnly: true,
-    secure: process.env.NODE_ENV === "production",
-    maxAge: 0,
-    sameSite: process.env.NODE_ENV === "production" ? 'none' : 'lax',
-    domain: process.env.NODE_ENV === "production" ? undefined : 'localhost',
-    expires: new Date(0),
-  });
+  const cookieOptions = getAuthCookieOptions(0);
+  cookieOptions.expires = new Date(0);
+  res.cookie("auth_token", "", cookieOptions);
   res.send();
 });
 
