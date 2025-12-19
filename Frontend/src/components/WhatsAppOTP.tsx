@@ -1,41 +1,47 @@
-import React, { useState, useEffect } from 'react';
-import { sendWhatsAppOTP, verifyWhatsAppOTP, resendWhatsAppOTP } from '../api-client';
+import React, { useState, useEffect } from "react";
+import {
+  sendWhatsAppOTP,
+  verifyWhatsAppOTP,
+  resendWhatsAppOTP,
+} from "../api-client";
 
 interface WhatsAppOTPProps {
   onVerificationSuccess: (phoneNumber: string) => void;
   onCancel?: () => void;
 }
 
-const WhatsAppOTP: React.FC<WhatsAppOTPProps> = ({ onVerificationSuccess, onCancel }) => {
-  const [phoneNumber, setPhoneNumber] = useState('');
-  const [otp, setOtp] = useState('');
-  const [step, setStep] = useState<'phone' | 'otp'>('phone');
+const WhatsAppOTP: React.FC<WhatsAppOTPProps> = ({
+  onVerificationSuccess,
+  onCancel,
+}) => {
+  const [phoneNumber, setPhoneNumber] = useState("");
+  const [otp, setOtp] = useState("");
+  const [step, setStep] = useState<"phone" | "otp">("phone");
   const [loading, setLoading] = useState(false);
-  const [error, setError] = useState('');
-  const [success, setSuccess] = useState('');
+  const [error, setError] = useState("");
+  const [success, setSuccess] = useState("");
   const [countdown, setCountdown] = useState(0);
 
   useEffect(() => {
-    let timer: NodeJS.Timeout;
     if (countdown > 0) {
-      timer = setTimeout(() => setCountdown(countdown - 1), 1000);
+      const timer = setTimeout(() => setCountdown(countdown - 1), 1000);
+      return () => clearTimeout(timer);
     }
-    return () => clearTimeout(timer);
   }, [countdown]);
 
   const handleSendOTP = async (e: React.FormEvent) => {
     e.preventDefault();
     setLoading(true);
-    setError('');
-    setSuccess('');
+    setError("");
+    setSuccess("");
 
     try {
       await sendWhatsAppOTP(phoneNumber);
-      setSuccess('OTP sent to your WhatsApp number!');
-      setStep('otp');
+      setSuccess("OTP sent to your WhatsApp number!");
+      setStep("otp");
       setCountdown(300); // 5 minutes countdown
     } catch (error: any) {
-      setError(error.message || 'Failed to send OTP');
+      setError(error.message || "Failed to send OTP");
     } finally {
       setLoading(false);
     }
@@ -44,14 +50,14 @@ const WhatsAppOTP: React.FC<WhatsAppOTPProps> = ({ onVerificationSuccess, onCanc
   const handleVerifyOTP = async (e: React.FormEvent) => {
     e.preventDefault();
     setLoading(true);
-    setError('');
+    setError("");
 
     try {
       await verifyWhatsAppOTP(phoneNumber, otp);
-      setSuccess('Phone number verified successfully!');
+      setSuccess("Phone number verified successfully!");
       onVerificationSuccess(phoneNumber);
     } catch (error: any) {
-      setError(error.message || 'Invalid OTP');
+      setError(error.message || "Invalid OTP");
     } finally {
       setLoading(false);
     }
@@ -59,15 +65,15 @@ const WhatsAppOTP: React.FC<WhatsAppOTPProps> = ({ onVerificationSuccess, onCanc
 
   const handleResendOTP = async () => {
     setLoading(true);
-    setError('');
-    setSuccess('');
+    setError("");
+    setSuccess("");
 
     try {
       await resendWhatsAppOTP(phoneNumber);
-      setSuccess('OTP resent to your WhatsApp number!');
+      setSuccess("OTP resent to your WhatsApp number!");
       setCountdown(300);
     } catch (error: any) {
-      setError(error.message || 'Failed to resend OTP');
+      setError(error.message || "Failed to resend OTP");
     } finally {
       setLoading(false);
     }
@@ -76,7 +82,7 @@ const WhatsAppOTP: React.FC<WhatsAppOTPProps> = ({ onVerificationSuccess, onCanc
   const formatTime = (seconds: number) => {
     const mins = Math.floor(seconds / 60);
     const secs = seconds % 60;
-    return `${mins}:${secs.toString().padStart(2, '0')}`;
+    return `${mins}:${secs.toString().padStart(2, "0")}`;
   };
 
   return (
@@ -86,10 +92,9 @@ const WhatsAppOTP: React.FC<WhatsAppOTPProps> = ({ onVerificationSuccess, onCanc
           WhatsApp Verification
         </h2>
         <p className="text-gray-600">
-          {step === 'phone' 
-            ? 'Enter your phone number to receive OTP via WhatsApp'
-            : 'Enter the OTP sent to your WhatsApp'
-          }
+          {step === "phone"
+            ? "Enter your phone number to receive OTP via WhatsApp"
+            : "Enter the OTP sent to your WhatsApp"}
         </p>
       </div>
 
@@ -105,10 +110,13 @@ const WhatsAppOTP: React.FC<WhatsAppOTPProps> = ({ onVerificationSuccess, onCanc
         </div>
       )}
 
-      {step === 'phone' ? (
+      {step === "phone" ? (
         <form onSubmit={handleSendOTP} className="space-y-4">
           <div>
-            <label htmlFor="phoneNumber" className="block text-sm font-medium text-gray-700 mb-1">
+            <label
+              htmlFor="phoneNumber"
+              className="block text-sm font-medium text-gray-700 mb-1"
+            >
               Phone Number
             </label>
             <input
@@ -135,14 +143,18 @@ const WhatsAppOTP: React.FC<WhatsAppOTPProps> = ({ onVerificationSuccess, onCanc
                 <div className="animate-spin rounded-full h-4 w-4 border-b-2 border-white"></div>
               ) : (
                 <>
-                  <svg className="w-4 h-4 mr-2" fill="currentColor" viewBox="0 0 24 24">
-                    <path d="M17.472 14.382c-.297-.149-1.758-.867-2.03-.967-.273-.099-.471-.148-.67.15-.197.297-.767.966-.94 1.164-.173.199-.347.223-.644.075-.297-.15-1.255-.463-2.39-1.475-.883-.788-1.48-1.761-1.653-2.059-.173-.297-.018-.458.13-.606.134-.133.298-.347.446-.52.149-.174.198-.298.298-.497.099-.198.05-.371-.025-.52-.075-.149-.669-1.612-.916-2.207-.242-.579-.487-.5-.669-.51-.173-.008-.371-.01-.57-.01-.198 0-.52.074-.792.372-.272.297-1.04 1.016-1.04 2.479 0 1.462 1.065 2.875 1.213 3.074.149.198 2.096 3.2 5.077 4.487.709.306 1.262.489 1.694.625.712.227 1.36.195 1.871.118.571-.085 1.758-.719 2.006-1.413.248-.694.248-1.289.173-1.413-.074-.124-.272-.198-.57-.347m-5.421 7.403h-.004a9.87 9.87 0 01-5.031-1.378l-.361-.214-3.741.982.998-3.648-.235-.374a9.86 9.86 0 01-1.51-5.26c.001-5.45 4.436-9.884 9.888-9.884 2.64 0 5.122 1.03 6.988 2.898a9.825 9.825 0 012.893 6.994c-.003 5.45-4.437 9.884-9.885 9.884m8.413-18.297A11.815 11.815 0 0012.05 0C5.495 0 .16 5.335.157 11.892c0 2.096.547 4.142 1.588 5.945L.057 24l6.305-1.654a11.882 11.882 0 005.683 1.448h.005c6.554 0 11.89-5.335 11.893-11.893A11.821 11.821 0 0020.885 3.488"/>
+                  <svg
+                    className="w-4 h-4 mr-2"
+                    fill="currentColor"
+                    viewBox="0 0 24 24"
+                  >
+                    <path d="M17.472 14.382c-.297-.149-1.758-.867-2.03-.967-.273-.099-.471-.148-.67.15-.197.297-.767.966-.94 1.164-.173.199-.347.223-.644.075-.297-.15-1.255-.463-2.39-1.475-.883-.788-1.48-1.761-1.653-2.059-.173-.297-.018-.458.13-.606.134-.133.298-.347.446-.52.149-.174.198-.298.298-.497.099-.198.05-.371-.025-.52-.075-.149-.669-1.612-.916-2.207-.242-.579-.487-.5-.669-.51-.173-.008-.371-.01-.57-.01-.198 0-.52.074-.792.372-.272.297-1.04 1.016-1.04 2.479 0 1.462 1.065 2.875 1.213 3.074.149.198 2.096 3.2 5.077 4.487.709.306 1.262.489 1.694.625.712.227 1.36.195 1.871.118.571-.085 1.758-.719 2.006-1.413.248-.694.248-1.289.173-1.413-.074-.124-.272-.198-.57-.347m-5.421 7.403h-.004a9.87 9.87 0 01-5.031-1.378l-.361-.214-3.741.982.998-3.648-.235-.374a9.86 9.86 0 01-1.51-5.26c.001-5.45 4.436-9.884 9.888-9.884 2.64 0 5.122 1.03 6.988 2.898a9.825 9.825 0 012.893 6.994c-.003 5.45-4.437 9.884-9.885 9.884m8.413-18.297A11.815 11.815 0 0012.05 0C5.495 0 .16 5.335.157 11.892c0 2.096.547 4.142 1.588 5.945L.057 24l6.305-1.654a11.882 11.882 0 005.683 1.448h.005c6.554 0 11.89-5.335 11.893-11.893A11.821 11.821 0 0020.885 3.488" />
                   </svg>
                   Send WhatsApp OTP
                 </>
               )}
             </button>
-            
+
             {onCancel && (
               <button
                 type="button"
@@ -157,14 +169,19 @@ const WhatsAppOTP: React.FC<WhatsAppOTPProps> = ({ onVerificationSuccess, onCanc
       ) : (
         <form onSubmit={handleVerifyOTP} className="space-y-4">
           <div>
-            <label htmlFor="otp" className="block text-sm font-medium text-gray-700 mb-1">
+            <label
+              htmlFor="otp"
+              className="block text-sm font-medium text-gray-700 mb-1"
+            >
               Enter OTP
             </label>
             <input
               type="text"
               id="otp"
               value={otp}
-              onChange={(e) => setOtp(e.target.value.replace(/\D/g, '').slice(0, 6))}
+              onChange={(e) =>
+                setOtp(e.target.value.replace(/\D/g, "").slice(0, 6))
+              }
               placeholder="Enter 6-digit OTP"
               className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 text-center text-lg tracking-widest"
               maxLength={6}
@@ -177,7 +194,10 @@ const WhatsAppOTP: React.FC<WhatsAppOTPProps> = ({ onVerificationSuccess, onCanc
 
           {countdown > 0 && (
             <div className="text-center text-sm text-gray-600">
-              OTP expires in: <span className="font-mono font-bold">{formatTime(countdown)}</span>
+              OTP expires in:{" "}
+              <span className="font-mono font-bold">
+                {formatTime(countdown)}
+              </span>
             </div>
           )}
 
@@ -190,10 +210,10 @@ const WhatsAppOTP: React.FC<WhatsAppOTPProps> = ({ onVerificationSuccess, onCanc
               {loading ? (
                 <div className="animate-spin rounded-full h-4 w-4 border-b-2 border-white"></div>
               ) : (
-                'Verify OTP'
+                "Verify OTP"
               )}
             </button>
-            
+
             <button
               type="button"
               onClick={handleResendOTP}
@@ -207,10 +227,10 @@ const WhatsAppOTP: React.FC<WhatsAppOTPProps> = ({ onVerificationSuccess, onCanc
           <button
             type="button"
             onClick={() => {
-              setStep('phone');
-              setOtp('');
-              setError('');
-              setSuccess('');
+              setStep("phone");
+              setOtp("");
+              setError("");
+              setSuccess("");
             }}
             className="w-full text-sm text-gray-600 hover:text-gray-800"
           >
