@@ -1,4 +1,5 @@
 import { useEffect, useState } from "react";
+import { getAuthHeader } from "../utils/token";
 
 const API_URL = import.meta.env.VITE_API_BASE_URL || "";
 
@@ -17,9 +18,14 @@ const SuperAdminPanel = () => {
 
   useEffect(() => {
     const fetchBookings = async () => {
+      const headers: HeadersInit = {};
+      const authHeader = getAuthHeader();
+      if (authHeader) {
+        headers["Authorization"] = authHeader;
+      }
       const response = await fetch(`${API_URL}/api/my-hotels/admin/bookings/`, {
         method: "GET",
-        credentials: "include",
+        headers,
       });
       const data = await response.json();
       setBookings(data);

@@ -55,8 +55,14 @@ router.post(
           expiresIn: "1d",
         }
       );
+      // Return token in response body for Bearer token authentication
+      // Also set cookie for backward compatibility (optional)
       res.cookie("auth_token", token, getAuthCookieOptions());
-      res.status(200).json({ userId: user._id });
+      res.status(200).json({ 
+        userId: user._id,
+        token: token,
+        isAdmin: user.isAdmin
+      });
     } catch (error) {
       console.log(error);
       res.status(500).json({ message: "Something went wrong" });
@@ -69,10 +75,11 @@ router.get("/validate-token", verifyToken, (req: Request, res: Response) => {
 });
 
 router.post("/logout", (req: Request, res: Response) => {
+  // Clear cookie for backward compatibility (optional)
   const cookieOptions = getAuthCookieOptions(0);
   cookieOptions.expires = new Date(0);
   res.cookie("auth_token", "", cookieOptions);
-  res.send();
+  res.status(200).json({ message: "Logged out successfully" });
 });
 
 export default router;

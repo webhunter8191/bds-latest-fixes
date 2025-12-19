@@ -6,6 +6,7 @@ import { useMutation } from "react-query";
 import * as apiClient from "../../api-client";
 import { useAppContext } from "../../contexts/AppContext";
 import { useNavigate, useLocation } from "react-router-dom";
+import { getAuthHeader } from "../../utils/token";
 
 const RAZORPAY_KEY_ID = import.meta.env.VITE_API_RAZORPAY_KEY_ID;
 const API_BASE_URL = import.meta.env.VITE_API_BASE_URL || "";
@@ -112,12 +113,16 @@ const BookingForm = ({
 
       // const { bookingId } = bookingResponse.data;
 
+      const headers: HeadersInit = {
+        "Content-Type": "application/json",
+      };
+      const authHeader = getAuthHeader();
+      if (authHeader) {
+        headers["Authorization"] = authHeader;
+      }
       const paymentRes = await fetch(`${API_BASE_URL}/api/payment/order`, {
         method: "POST",
-        credentials: "include",
-        headers: {
-          "Content-Type": "application/json",
-        },
+        headers,
         body: JSON.stringify({ amount: totalCost }),
       });
 
@@ -138,12 +143,16 @@ const BookingForm = ({
       order_id: orderData.id,
       handler: async (response: any) => {
         try {
+          const verifyHeaders: HeadersInit = {
+            "Content-Type": "application/json",
+          };
+          const authHeader = getAuthHeader();
+          if (authHeader) {
+            verifyHeaders["Authorization"] = authHeader;
+          }
           const res = await fetch(`${API_BASE_URL}/api/payment/verify`, {
             method: "POST",
-            credentials: "include",
-            headers: {
-              "Content-Type": "application/json",
-            },
+            headers: verifyHeaders,
             body: JSON.stringify({
               razorpay_order_id: response.razorpay_order_id,
               razorpay_payment_id: response.razorpay_payment_id,

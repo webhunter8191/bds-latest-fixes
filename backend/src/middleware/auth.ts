@@ -11,9 +11,19 @@ declare global {
 }
 
 const verifyToken = (req: Request, res: Response, next: NextFunction) => {
+  // Try to get token from Authorization header first (Bearer token)
+  let token: string | undefined;
   
+  const authHeader = req.headers.authorization;
+  if (authHeader && authHeader.startsWith("Bearer ")) {
+    token = authHeader.substring(7); // Remove "Bearer " prefix
+  }
   
-  const token = req.cookies["auth_token"];
+  // Fallback to cookie for backward compatibility (optional)
+  if (!token) {
+    token = req.cookies["auth_token"];
+  }
+  
   if (!token) {
     return res
       .status(403)
@@ -26,7 +36,6 @@ const verifyToken = (req: Request, res: Response, next: NextFunction) => {
       process.env.JWT_SECRET_KEY as string
     ) as JwtPayload;
 
-    
     req.userId = decoded.userId;
     req.isAdmin = decoded.isAdmin !== undefined ? decoded.isAdmin : false;
     next();

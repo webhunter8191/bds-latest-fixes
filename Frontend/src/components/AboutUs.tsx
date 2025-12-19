@@ -46,7 +46,7 @@ const AboutUs: React.FC = () => {
             </div>
           </div>
         </div>
-{/*  */}
+        {/*  */}
         {/* What We Offer Section */}
         <div className="mb-20">
           <div className="text-center mb-12">

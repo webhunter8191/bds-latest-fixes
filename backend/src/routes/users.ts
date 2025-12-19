@@ -69,8 +69,15 @@ router.post(
         }
       );
 
+      // Return token in response body for Bearer token authentication
+      // Also set cookie for backward compatibility (optional)
       res.cookie("auth_token", token, getAuthCookieOptions());
-      return res.status(200).send({ message: "User registered OK" });
+      return res.status(200).send({ 
+        message: "User registered OK",
+        token: token,
+        userId: user._id,
+        isAdmin: user.isAdmin
+      });
     } catch (error) {
       console.log(error);
       res.status(500).send({ message: "Something went wrong" });

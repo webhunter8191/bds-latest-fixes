@@ -9,6 +9,7 @@ import { useForm } from "react-hook-form";
 import { SignInFormData } from "./SignIn";
 import { useQueryClient } from "react-query";
 import { FaEye, FaEyeSlash } from "react-icons/fa";
+import { getAuthHeader } from "../utils/token";
 
 export type RegisterFormData = {
   firstName: string;
@@ -88,10 +89,14 @@ const Register = ({ redirectState }: { redirectState?: any }) => {
 
   const handleOtpValidation = async (data: RegisterFormData, otp: string) => {
     try {
+      const headers: HeadersInit = { "Content-Type": "application/json" };
+      const authHeader = getAuthHeader();
+      if (authHeader) {
+        headers["Authorization"] = authHeader;
+      }
       const response = await fetch(`${baseUrl}/api/otp/verify`, {
         method: "POST",
-        headers: { "Content-Type": "application/json" },
-        credentials: "include",
+        headers,
         body: JSON.stringify({ otp, email: data.email }),
       });
 
@@ -126,10 +131,14 @@ const Register = ({ redirectState }: { redirectState?: any }) => {
       setOtp("");
       setTimer(300);
       setShowResendButton(false);
+      const headers: HeadersInit = { "Content-Type": "application/json" };
+      const authHeader = getAuthHeader();
+      if (authHeader) {
+        headers["Authorization"] = authHeader;
+      }
       await fetch(`${baseUrl}/api/otp/send`, {
         method: "POST",
-        headers: { "Content-Type": "application/json" },
-        credentials: "include",
+        headers,
         body: JSON.stringify({ email: watch("email") }),
       });
       Swal.fire("OTP Sent!", "Check your email.", "info");
@@ -140,10 +149,14 @@ const Register = ({ redirectState }: { redirectState?: any }) => {
   };
 
   const sendOtp = async ({ email }: { email: any }) => {
+    const headers: HeadersInit = { "Content-Type": "application/json" };
+    const authHeader = getAuthHeader();
+    if (authHeader) {
+      headers["Authorization"] = authHeader;
+    }
     const response = await fetch(`${baseUrl}/api/otp/send`, {
       method: "POST",
-      headers: { "Content-Type": "application/json" },
-      credentials: "include",
+      headers,
       body: JSON.stringify({ email }),
     });
     const data = await response.json();

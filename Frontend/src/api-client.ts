@@ -7,11 +7,29 @@ import {
   UserType,
 } from "../../backend/src/shared/types";
 import { BookingFormData } from "./forms/BookingForm/BookingForm";
+import { getAuthHeader, saveToken, removeToken } from "./utils/token";
+
 const API_BASE_URL = import.meta.env.VITE_API_BASE_URL || "";
+
+/**
+ * Get headers for authenticated requests
+ */
+const getAuthHeaders = (): HeadersInit => {
+  const headers: HeadersInit = {
+    "Content-Type": "application/json",
+  };
+  
+  const authHeader = getAuthHeader();
+  if (authHeader) {
+    headers["Authorization"] = authHeader;
+  }
+  
+  return headers;
+};
 
 export const fetchCurrentUser = async (): Promise<UserType> => {
   const response = await fetch(`${API_BASE_URL}/api/users/me`, {
-    credentials: "include",
+    headers: getAuthHeaders(),
   });
   if (!response.ok) {
     throw new Error("Error fetching user");
@@ -22,7 +40,6 @@ export const fetchCurrentUser = async (): Promise<UserType> => {
 export const register = async (formData: RegisterFormData) => {
   const response = await fetch(`${API_BASE_URL}/api/users/register`, {
     method: "POST",
-    credentials: "include",
     headers: {
       "Content-Type": "application/json",
     },
@@ -34,12 +51,18 @@ export const register = async (formData: RegisterFormData) => {
   if (!response.ok) {
     throw new Error(responseBody.message);
   }
+  
+  // Save token if provided in response
+  if (responseBody.token) {
+    saveToken(responseBody.token);
+  }
+  
+  return responseBody;
 };
 
 export const signIn = async (formData: SignInFormData) => {
   const response = await fetch(`${API_BASE_URL}/api/auth/login`, {
     method: "POST",
-    credentials: "include",
     headers: {
       "Content-Type": "application/json",
     },
@@ -50,36 +73,59 @@ export const signIn = async (formData: SignInFormData) => {
   if (!response.ok) {
     throw new Error(body.message);
   }
+  
+  // Save token if provided in response
+  if (body.token) {
+    saveToken(body.token);
+  }
+  
   return body;
 };
 
 
 export const validateToken = async () => {
   const response = await fetch(`${API_BASE_URL}/api/auth/validate-token`, {
-    credentials: "include",
+    headers: getAuthHeaders(),
   });
   const data = await response.json();
-if(data?.message){
-  return null;
-}
+  if(data?.message){
+    // If token is invalid, remove it from storage
+    removeToken();
+    return null;
+  }
   return data;
 };
 
 export const signOut = async () => {
-  const response = await fetch(`${API_BASE_URL}/api/auth/logout`, {
-    credentials: "include",
-    method: "POST",
-  });
-
-  if (!response.ok) {
-    throw new Error("Error during sign out");
+  // Remove token from localStorage first
+  removeToken();
+  
+  // Optionally call logout endpoint (for server-side cleanup if needed)
+  try {
+    const response = await fetch(`${API_BASE_URL}/api/auth/logout`, {
+      method: "POST",
+      headers: getAuthHeaders(),
+    });
+    // Don't throw error if logout endpoint fails, token is already removed
+    if (!response.ok) {
+      console.warn("Logout endpoint returned error, but token was cleared locally");
+    }
+  } catch (error) {
+    console.warn("Error calling logout endpoint, but token was cleared locally", error);
   }
 };
 
 export const addMyHotel = async (hotelFormData: FormData) => {
+  const headers: HeadersInit = {};
+  const authHeader = getAuthHeader();
+  if (authHeader) {
+    headers["Authorization"] = authHeader;
+  }
+  // Don't set Content-Type for FormData, browser will set it with boundary
+  
   const response = await fetch(`${API_BASE_URL}/api/my-hotels`, {
     method: "POST",
-    credentials: "include",
+    headers,
     body: hotelFormData,
   });
 
@@ -92,7 +138,7 @@ export const addMyHotel = async (hotelFormData: FormData) => {
 
 export const fetchMyHotels = async (): Promise<HotelType[]> => {
   const response = await fetch(`${API_BASE_URL}/api/my-hotels`, {
-    credentials: "include",
+    headers: getAuthHeaders(),
   });
 
   if (!response.ok) {
@@ -104,7 +150,7 @@ export const fetchMyHotels = async (): Promise<HotelType[]> => {
 
 export const fetchMyHotelById = async (hotelId: string): Promise<HotelType> => {
   const response = await fetch(`${API_BASE_URL}/api/my-hotels/${hotelId}`, {
-    credentials: "include",
+    headers: getAuthHeaders(),
   });
 
   if (!response.ok) {
@@ -115,12 +161,19 @@ export const fetchMyHotelById = async (hotelId: string): Promise<HotelType> => {
 };
 
 export const updateMyHotelById = async (hotelFormData: FormData) => {
+  const headers: HeadersInit = {};
+  const authHeader = getAuthHeader();
+  if (authHeader) {
+    headers["Authorization"] = authHeader;
+  }
+  // Don't set Content-Type for FormData, browser will set it with boundary
+  
   const response = await fetch(
     `${API_BASE_URL}/api/my-hotels/${hotelFormData.get("hotelId")}`,
     {
       method: "PUT",
+      headers,
       body: hotelFormData,
-      credentials: "include",
     }
   );
 
@@ -230,12 +283,9 @@ export const createPaymentIntent = async (
   const response = await fetch(
     `${API_BASE_URL}/api/hotels/${hotelId}/bookings/payment-intent`,
     {
-      credentials: "include",
       method: "POST",
+      headers: getAuthHeaders(),
       body: JSON.stringify({ numberOfNights }),
-      headers: {
-        "Content-Type": "application/json",
-      },
     }
   );
 
@@ -251,10 +301,7 @@ export const createRoomBooking = async (formData: BookingFormData) => {
     `${API_BASE_URL}/api/my-bookings/booking/${formData.hotelId}`,
     {
       method: "POST",
-      headers: {
-        "Content-Type": "application/json",
-      },
-      credentials: "include",
+      headers: getAuthHeaders(),
       body: JSON.stringify(formData),
     }
   );
@@ -266,7 +313,7 @@ export const createRoomBooking = async (formData: BookingFormData) => {
 
 export const fetchMyBookings = async (): Promise<HotelType[]> => {
   const response = await fetch(`${API_BASE_URL}/api/my-bookings`, {
-    credentials: "include",
+    headers: getAuthHeaders(),
   });
 
   if (!response.ok) {
@@ -278,7 +325,7 @@ export const fetchMyBookings = async (): Promise<HotelType[]> => {
 
 export const fetchHotelOwnerBookings = async (): Promise<HotelType[]> => {
   const response = await fetch(`${API_BASE_URL}/api/my-hotels/my-bookings/${Date.now()}`, {
-    credentials: "include",
+    headers: getAuthHeaders(),
   });
 
   if (!response.ok) {
@@ -295,12 +342,9 @@ export const createPaymentOrder = async (
   numberOfNights: string
 ): Promise<PaymentIntentResponse> => {
   const response = await fetch(`${API_BASE_URL}/api/hotels/${hotelId}/bookings/payment-order`, {
-    credentials: "include",
     method: "POST",
+    headers: getAuthHeaders(),
     body: JSON.stringify({ numberOfNights }),
-    headers: {
-      "Content-Type": "application/json",
-    },
   });
 
   if (!response.ok) {
