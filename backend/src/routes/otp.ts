@@ -61,11 +61,11 @@ router.post("/send", async (req: Request, res: Response) => {
   let otp;
 
   // ✅ Step 2: Check if OTP already exists or generate new one
-  const storedOtp = await OTPModel.findOne({ email });
+  const storedOtp = await OTPModel.findOne({ email, type: "email" });
 
   if (!storedOtp) {
     otp = crypto.randomInt(100000, 999999).toString();
-    await OTPModel.create({ email, otp, createdAt: new Date() });
+    await OTPModel.create({ email, otp, type: "email", createdAt: new Date() });
   } else {
     otp = storedOtp.otp;
   }
@@ -107,60 +107,13 @@ router.post("/send", async (req: Request, res: Response) => {
 });
 
 
-router.post("/send", async (req: Request, res: Response) => {
-  const { email } = req.body;
-
-  // ✅ Step 1: Check if user already exists
-  const existingUser = await User.findOne({ email });
-  if (existingUser) {
-    return res.status(400).json({ message: "User already exists" });
-  }
-
-  let otp;
-
-  // ✅ Step 2: Check if OTP already exists or generate new one
-  const storedOtp = await OTPModel.findOne({ email });
-
-  if (!storedOtp) {
-    otp = crypto.randomInt(100000, 999999).toString();
-    await OTPModel.create({ email, otp, createdAt: new Date() });
-  } else {
-    otp = storedOtp.otp;
-  }
-
-  // ✅ Step 3: Send email
-  const transporter = nodemailer.createTransport({
-    host: "smtp.hostinger.com",
-    port: 465,
-    secure: true,
-    auth: {
-      user: EMAIL_USER,
-      pass: EMAIL_PASS,
-    },
-  });
-
-  const mailOptions = {
-    from: `"Brij Divine Stay" <${EMAIL_USER}>`,
-    to: email,
-    subject: "Your OTP Code",
-    html: `<h1>Your OTP code is ${otp}</h1>`,
-  };
-
-  try {
-    await transporter.sendMail(mailOptions);
-    res.status(200).json({ message: "OTP sent successfully" });
-  } catch (error) {
-    res.status(500).json({ message: "Error sending OTP", error });
-  }
-});
-
 // Verify OTP
 router.post("/verify", async (req: Request, res: Response) => {
   try {
     const { email, otp } = req.body;
 
     // Fetch the latest OTP for the given email
-    const storedOtp = await OTPModel.findOne({ email }).sort({ createdAt: -1 });
+    const storedOtp = await OTPModel.findOne({ email, type: "email" }).sort({ createdAt: -1 });
 
     if (storedOtp && storedOtp.otp === otp) {
       res.status(200).json({ message: "OTP verified successfully" });

@@ -16,7 +16,7 @@ const otpSchema = new mongoose.Schema({
     },
     type: {
         type: String,
-        enum: ['email', 'whatsapp'],
+        enum: ['email'],
         required: true,
     },
     createdAt: {
