@@ -1,6 +1,7 @@
 import express, { Request, Response } from "express";
 import multer from "multer";
 import cloudinary from "cloudinary";
+import mongoose from "mongoose";
 import Hotel from "../models/hotel";
 import verifyToken from "../middleware/auth";
 import BookingModel from "../models/booking";
@@ -420,39 +421,76 @@ router.get("/admin/bookings",
   verifyToken,
   async(req:Request,res:Response)=>{
   try{
-    const hotelData = await Hotel.find({},{name:1,rooms:1,imageUrls:1});
+    const hotelData = await Hotel.find({},{_id:1,name:1,rooms:1,imageUrls:1,location:1,type:1,starRating:1,status:1,userId:1});
     if(!hotelData){
       return res.status(404).json({ message: "Hotel not found" });
     }
     const hotelIds = hotelData.map((hotel:any)=>hotel._id.toString());
-    const bookings = await BookingModel.find({hotelId:{$in:hotelIds},deletedAt:null},{hotelId:0, __v:0}).lean();
+    // Sort by _id descending to get newest bookings first (ObjectId contains creation timestamp)
+    const bookings = await BookingModel.find({hotelId:{$in:hotelIds},deletedAt:null},{__v:0}).sort({_id: -1}).lean();
     const userIds = [...new Set(bookings.map((booking: any) => booking.userId))];
-    const userData = await UserModel.find({_id:{$in:userIds}},{mobNo:1});
+    const userData = await UserModel.find({_id:{$in:userIds}},{mobNo:1,firstName:1,lastName:1});
+    
+    // Get hotel owner user IDs
+    const hotelOwnerIds = [...new Set(hotelData.map((hotel:any) => hotel.userId?.toString()).filter(Boolean))];
+    const hotelOwners = await UserModel.find({_id:{$in:hotelOwnerIds}},{firstName:1,lastName:1});
+    
     const groupedBookings = bookings.reduce((acc: any, booking: any) => {
+    const hotel = hotelData.find((h: any) => h._id.toString() === booking.hotelId);
+    if (!hotel) {
+      return acc; // Skip if hotel not found
+    }
+    
     const roomId = booking.roomsId[0];
-    const hotel = hotelData.find((h: any) => 
-      h.rooms.some((r: any) => r._id.toString() === roomId)
-    );
     const user = userData.find((u: any) => u._id.toString() === booking.userId);
+    const hotelOwner = hotelOwners.find((u: any) => u._id.toString() === hotel.userId?.toString());
   
     const hotelName = hotel?.name || '';
     if (!acc[hotelName]) {
       acc[hotelName] = {
         hotelName,
-        firstName: booking.firstName,
-        lastName: booking.lastName,
-        email: booking.email,
+        firstName: hotelOwner?.firstName || '',
+        lastName: hotelOwner?.lastName || '',
+        email: '', // Owner email not needed for display
         phone: user?.mobNo,
         imageUrl: hotel?.imageUrls?.[0] || '',
+        location: hotel?.location || '',
+        type: hotel?.type || '',
+        starRating: hotel?.starRating || 0,
+        status: hotel?.status || 'active',
         bookings: []
       };
     }
-    const room = hotel?.rooms.find((r: any) => r._id.toString() === roomId);  
+    
+    // Find the room by matching roomId - handle both string and ObjectId comparisons
+    const room = hotel?.rooms.find((r: any) => {
+      const roomIdStr = typeof r._id === 'object' ? r._id.toString() : String(r._id);
+      const bookingRoomIdStr = String(roomId);
+      return roomIdStr === bookingRoomIdStr;
+    });
+    
+    // If room not found by ID, try to get category from first available room as fallback
+    // Default to category 1 if no room found (shouldn't happen in normal cases)
+    const roomCategory = room?.category ?? hotel?.rooms?.[0]?.category ?? 1;
+    
+    // Extract creation timestamp from ObjectId for sorting
+    // With lean(), _id is a string, so we need to convert it to ObjectId to get timestamp
+    let createdAt: Date;
+    if (typeof booking._id === 'string') {
+      createdAt = new mongoose.Types.ObjectId(booking._id).getTimestamp();
+    } else {
+      createdAt = booking._id.getTimestamp ? booking._id.getTimestamp() : new Date();
+    }
+    
     acc[hotelName].bookings.push({
+      firstName: booking.firstName,
+      lastName: booking.lastName,
+      email: booking.email,
       checkIn: booking.checkIn,
       checkOut: booking.checkOut,
-      category: (room as any)?.category,
+      category: roomCategory,
       bookingId: booking._id.toString(),
+      createdAt: createdAt, // Add creation timestamp for sorting
       roomsCount: booking.roomsId.length.toString(),
       totalCost: booking.totalCost,
       paymentOption: booking.paymentOption || 'full',
@@ -462,8 +500,28 @@ router.get("/admin/bookings",
     return acc;
 }, {});
 
-// Transform the groupedBookings object into an array
+// Sort bookings within each hotel by creation time (when booking was made - latest first)
+Object.keys(groupedBookings).forEach((hotelName) => {
+  groupedBookings[hotelName].bookings.sort((a: any, b: any) => {
+    const dateA = a.createdAt ? new Date(a.createdAt).getTime() : 0;
+    const dateB = b.createdAt ? new Date(b.createdAt).getTime() : 0;
+    return dateB - dateA; // Descending order (newest bookings first)
+  });
+});
+
+// Transform the groupedBookings object into an array and sort hotels by latest booking creation time
   const bookingsArray = Object.values(groupedBookings);
+  
+  // Sort hotels by their latest booking's creation time (when booking was made - latest first)
+  bookingsArray.sort((a: any, b: any) => {
+    const latestBookingA = a.bookings && a.bookings.length > 0 && a.bookings[0].createdAt
+      ? new Date(a.bookings[0].createdAt).getTime() 
+      : 0;
+    const latestBookingB = b.bookings && b.bookings.length > 0 && b.bookings[0].createdAt
+      ? new Date(b.bookings[0].createdAt).getTime() 
+      : 0;
+    return latestBookingB - latestBookingA; // Descending order (newest bookings first)
+  });
       return res.status(200).json(bookingsArray);
     }catch(error){
       console.log(error);

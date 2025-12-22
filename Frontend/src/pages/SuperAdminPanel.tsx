@@ -313,6 +313,9 @@ const SuperAdminPanel = () => {
                         <tr className="bg-gray-50 text-left text-gray-600 text-sm uppercase">
                           <th className="py-4 px-5 font-semibold">Guest</th>
                           <th className="py-4 px-5 font-semibold">Email</th>
+                          <th className="py-4 px-5 font-semibold">
+                            Booking Date
+                          </th>
                           <th className="py-4 px-5 font-semibold">Check-In</th>
                           <th className="py-4 px-5 font-semibold">Check-Out</th>
                           <th className="py-4 px-5 font-semibold">Room Type</th>
@@ -329,19 +332,44 @@ const SuperAdminPanel = () => {
                             <td className="py-4 px-5">
                               <div className="flex items-center">
                                 <div className="w-10 h-10 rounded-full bg-gradient-to-br from-[#6A5631] to-[#8B7442] flex items-center justify-center text-white font-bold mr-3">
-                                  {(hotel.firstName?.[0] || "G").toUpperCase()}
+                                  {(
+                                    booking.firstName?.[0] || "G"
+                                  ).toUpperCase()}
                                 </div>
                                 <div>
                                   <p className="font-medium text-gray-800">
-                                    {hotel.firstName} {hotel.lastName}
+                                    {booking.firstName} {booking.lastName}
                                   </p>
                                 </div>
                               </div>
                             </td>
                             <td className="py-4 px-5">
                               <p className="text-sm text-gray-600">
-                                {hotel.email}
+                                {booking.email}
                               </p>
+                            </td>
+                            <td className="py-4 px-5">
+                              <div className="font-medium text-gray-800">
+                                {booking.createdAt
+                                  ? new Date(
+                                      booking.createdAt
+                                    ).toLocaleDateString(undefined, {
+                                      month: "short",
+                                      day: "numeric",
+                                      year: "numeric",
+                                    })
+                                  : "N/A"}
+                              </div>
+                              <div className="text-xs text-gray-500 mt-1">
+                                {booking.createdAt
+                                  ? new Date(
+                                      booking.createdAt
+                                    ).toLocaleTimeString(undefined, {
+                                      hour: "2-digit",
+                                      minute: "2-digit",
+                                    })
+                                  : ""}
+                              </div>
                             </td>
                             <td className="py-4 px-5">
                               <div className="font-medium text-gray-800">
@@ -458,14 +486,14 @@ const SuperAdminPanel = () => {
                           <div className="flex items-start justify-between mb-4">
                             <div className="flex items-center">
                               <div className="w-12 h-12 rounded-full bg-gradient-to-br from-[#6A5631] to-[#8B7442] flex items-center justify-center text-white font-bold mr-3">
-                                {(hotel.firstName?.[0] || "G").toUpperCase()}
+                                {(booking.firstName?.[0] || "G").toUpperCase()}
                               </div>
                               <div>
                                 <p className="font-medium text-gray-800">
-                                  {hotel.firstName} {hotel.lastName}
+                                  {booking.firstName} {booking.lastName}
                                 </p>
                                 <p className="text-sm text-gray-600">
-                                  {hotel.email}
+                                  {booking.email}
                                 </p>
                               </div>
                             </div>
@@ -474,6 +502,32 @@ const SuperAdminPanel = () => {
                           {/* Booking Details */}
                           <div className="bg-gray-50 rounded-lg p-3 mb-3">
                             <div className="grid grid-cols-2 gap-3">
+                              <div>
+                                <p className="text-xs text-gray-500">
+                                  Booking Date
+                                </p>
+                                <p className="font-medium text-gray-800">
+                                  {booking.createdAt
+                                    ? new Date(
+                                        booking.createdAt
+                                      ).toLocaleDateString(undefined, {
+                                        month: "short",
+                                        day: "numeric",
+                                        year: "numeric",
+                                      })
+                                    : "N/A"}
+                                </p>
+                                <p className="text-xs text-gray-500 mt-0.5">
+                                  {booking.createdAt
+                                    ? new Date(
+                                        booking.createdAt
+                                      ).toLocaleTimeString(undefined, {
+                                        hour: "2-digit",
+                                        minute: "2-digit",
+                                      })
+                                    : ""}
+                                </p>
+                              </div>
                               <div>
                                 <p className="text-xs text-gray-500">
                                   Check-In

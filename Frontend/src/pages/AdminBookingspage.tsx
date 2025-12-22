@@ -363,11 +363,21 @@ const AdminBookingspage = () => {
                               <span className="inline-flex items-center">
                                 <span className="w-3 h-3 rounded-full bg-amber-500 mr-2"></span>
                                 <span className="font-medium text-gray-800">
-                                  {
-                                    categories[
-                                      booking.category as keyof typeof categories
-                                    ]
-                                  }
+                                  {(() => {
+                                    const categoryKey = Number(
+                                      booking.category
+                                    );
+                                    return categoryKey &&
+                                      categories[
+                                        categoryKey as keyof typeof categories
+                                      ]
+                                      ? categories[
+                                          categoryKey as keyof typeof categories
+                                        ]
+                                      : booking.category
+                                      ? `Room Type ${booking.category}`
+                                      : "N/A";
+                                  })()}
                                 </span>
                               </span>
                             </td>
@@ -494,11 +504,21 @@ const AdminBookingspage = () => {
                                 <div className="flex items-center">
                                   <span className="w-2 h-2 rounded-full bg-amber-500 mr-1.5"></span>
                                   <span className="font-medium text-gray-800 text-sm">
-                                    {
-                                      categories[
-                                        booking.category as keyof typeof categories
-                                      ]
-                                    }
+                                    {(() => {
+                                      const categoryKey = Number(
+                                        booking.category
+                                      );
+                                      return categoryKey &&
+                                        categories[
+                                          categoryKey as keyof typeof categories
+                                        ]
+                                        ? categories[
+                                            categoryKey as keyof typeof categories
+                                          ]
+                                        : booking.category
+                                        ? `Room Type ${booking.category}`
+                                        : "N/A";
+                                    })()}
                                   </span>
                                 </div>
                               </div>
