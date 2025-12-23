@@ -6,6 +6,7 @@ import userRoutes from "./routes/users";
 import authRoutes from "./routes/auth";
 import cookieParser from "cookie-parser";
 import path from "path";
+import fs from "fs";
 import { v2 as cloudinary } from "cloudinary";
 import myHotelRoutes from "./routes/my-hotels";
 import hotelRoutes from "./routes/hotels";
@@ -119,7 +120,24 @@ app.use((req, res, next) => {
   next();
 });
 
-app.use(express.static(path.join(__dirname, "../../frontend/dist")));
+// Only serve static files in development/local environment
+// On Vercel, frontend and backend are separate deployments
+// Skip static file serving if running on Vercel
+if (!process.env.VERCEL) {
+  const frontendPath = path.join(__dirname, "../../Frontend/dist");
+  const frontendPathAlt = path.join(__dirname, "../../frontend/dist");
+  
+  // Try both capital and lowercase folder names
+  try {
+    if (fs.existsSync(frontendPath)) {
+      app.use(express.static(frontendPath));
+    } else if (fs.existsSync(frontendPathAlt)) {
+      app.use(express.static(frontendPathAlt));
+    }
+  } catch (error) {
+    console.log("Frontend dist folder not found, skipping static file serving");
+  }
+}
 
 // Health check endpoint for iOS/Mac testing
 app.get("/api/health", (req: Request, res: Response) => {
@@ -147,9 +165,24 @@ app.use("/api/payment", paymentRoutes);
 app.use("/api/otp", otpRoutes);
 app.use("/api/pdfUpload", pdfUpload);
 
-app.get("*", (req: Request, res: Response) => {
-  res.sendFile(path.join(__dirname, "../../frontend/dist/index.html"));
-});
+// Only serve catch-all route in development/local environment
+// On Vercel, frontend handles its own routing
+// Skip catch-all route if running on Vercel
+if (!process.env.VERCEL) {
+  app.get("*", (req: Request, res: Response) => {
+    const indexPath = path.join(__dirname, "../../Frontend/dist/index.html");
+    const indexPathAlt = path.join(__dirname, "../../frontend/dist/index.html");
+    
+    // Try both capital and lowercase folder names
+    if (fs.existsSync(indexPath)) {
+      res.sendFile(indexPath);
+    } else if (fs.existsSync(indexPathAlt)) {
+      res.sendFile(indexPathAlt);
+    } else {
+      res.status(404).json({ message: "Frontend not found" });
+    }
+  });
+}
 
 app.listen(8000, () => {
   console.log("server running on localhost:8000");
