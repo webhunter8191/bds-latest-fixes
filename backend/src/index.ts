@@ -21,13 +21,34 @@ cloudinary.config({
   api_secret: process.env.CLOUDINARY_API_SECRET,
 });
 
-const connection = mongoose.connect(process.env.MONGODB_CONNECTION_STRING as string);
-connection.then(() => {
-  console.log("Database connectrd succesfully");
-})
+const mongoUri = process.env.MONGODB_CONNECTION_STRING;
+
+if (!mongoUri) {
+  console.error("Missing MONGODB_CONNECTION_STRING env var; cannot start server.");
+  process.exit(1);
+}
+
+mongoose.set("strictQuery", true);
+
+const connection = mongoose.connect(mongoUri, {
+  serverSelectionTimeoutMS: 5000,
+  connectTimeoutMS: 5000,
+  socketTimeoutMS: 20000,
+  bufferCommands: false,
+});
+
+mongoose.connection.on("error", (err) => {
+  console.error("MongoDB connection error", err);
+});
+
+connection
+  .then(() => {
+    console.log("Database connected successfully");
+  })
   .catch((err) => {
-  console.error("Database connection Failed ",err)
-})
+    console.error("Database connection failed", err);
+    process.exit(1);
+  });
 
 const app = express();
 
