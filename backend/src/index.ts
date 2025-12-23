@@ -64,18 +64,40 @@ app.use((req, res, next) => {
 
 const corsOptions = {
   origin: function (origin: string | undefined, callback: (err: Error | null, allow?: boolean) => void) {
+    // Support comma-separated env list and common local dev ports
+    const envOrigins = (process.env.FRONTEND_URL || "")
+      .split(",")
+      .map((url) => url.trim())
+      .filter(Boolean);
+
+    // If no FRONTEND_URL is provided, default to allowing all origins to avoid blocking
+    if (!envOrigins.length) {
+      callback(null, true);
+      return;
+    }
+
     const allowedOrigins = [
-      process.env.FRONTEND_URL,
-      'http://localhost:5173',
-      'http://localhost:5174',
-      'http://127.0.0.1:5173',
-      'http://127.0.0.1:5174'
+      ...envOrigins,
+      "http://localhost:5173",
+      "http://localhost:5174",
+      "http://127.0.0.1:5173",
+      "http://127.0.0.1:5174",
     ];
-    
-    if (!origin || allowedOrigins.includes(origin)) {
+
+    // Allow Vercel preview/production domains if origin matches *.vercel.app
+    let isVercelPreview = false;
+    if (origin) {
+      try {
+        isVercelPreview = /\.vercel\.app$/i.test(new URL(origin).hostname);
+      } catch (err) {
+        // Malformed origin; reject below
+      }
+    }
+
+    if (!origin || allowedOrigins.includes(origin) || isVercelPreview) {
       callback(null, true);
     } else {
-      callback(new Error('Not allowed by CORS'));
+      callback(new Error("Not allowed by CORS"));
     }
   },
   methods: ["GET", "POST", "PUT", "DELETE", "PATCH", "OPTIONS"],
