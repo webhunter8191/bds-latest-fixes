@@ -181,6 +181,7 @@ if (!process.env.VERCEL) {
     console.log("Frontend dist folder not found, skipping static file serving");
   }
 }
+//
 
 // Health check endpoint for iOS/Mac testing
 app.get("/api/health", (req: Request, res: Response) => {
