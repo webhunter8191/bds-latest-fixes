@@ -11,14 +11,16 @@ declare global {
 }
 
 const verifyToken = (req: Request, res: Response, next: NextFunction) => {
+  // Get token from Authorization header
+  const authHeader = req.headers.authorization;
   
-  
-  const token = req.cookies["auth_token"];
-  if (!token) {
+  if (!authHeader || !authHeader.startsWith("Bearer ")) {
     return res
       .status(403)
-      .json({ message: "Access Denied , No token provided" });
+      .json({ message: "Access Denied, No token provided" });
   }
+
+  const token = authHeader.substring(7); // Remove "Bearer " prefix
 
   try {
     const decoded = jwt.verify(
@@ -26,12 +28,11 @@ const verifyToken = (req: Request, res: Response, next: NextFunction) => {
       process.env.JWT_SECRET_KEY as string
     ) as JwtPayload;
 
-    
     req.userId = decoded.userId;
     req.isAdmin = decoded.isAdmin !== undefined ? decoded.isAdmin : false;
     next();
   } catch (error) {
-    return res.status(401).json({ message: "invalid token" });
+    return res.status(401).json({ message: "Invalid token" });
   }
 };
 

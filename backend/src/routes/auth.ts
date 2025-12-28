@@ -7,23 +7,6 @@ import verifyToken from "../middleware/auth";
 import whatsappService from "../utils/whatsapp";
 
 const router = express.Router();
-// test cookie
-router.get("/test-cookie", (req: Request, res: Response) => {
-  res.cookie("test_cookie", "test_value", {
-    httpOnly: true,
-    secure: process.env.NODE_ENV === "production",
-    sameSite: "none",
-    maxAge: 60000,
-  });
-  res.send("Test cookie has been set.");
-});
-
-router.get("/check-cookie", (req: Request, res: Response) => {
-  const value = req.cookies["test_cookie"];
-  res.send({ cookieValue: value || "No cookie received" });
-});
-
-
 
 router.post(
   "/login",
@@ -59,13 +42,7 @@ router.post(
           expiresIn: "1d",
         }
       );
-      res.cookie("auth_token", token, {
-        httpOnly: true,
-        secure: process.env.NODE_ENV === "production",
-        maxAge: 86400000,
-        sameSite: 'none'
-      });
-      res.status(200).json({ userId: user._id });
+      res.status(200).json({ userId: user._id, token });
     } catch (error) {
       console.log(error);
       res.status(500).json({ message: "Something went wrong" });
@@ -78,14 +55,9 @@ router.get("/validate-token", verifyToken, (req: Request, res: Response) => {
 });
 
 router.post("/logout", (req: Request, res: Response) => {
-  res.cookie("auth_token", "", {
-    httpOnly: true,
-    secure: process.env.NODE_ENV === "production",
-    maxAge: 86400000,
-    sameSite: 'none',
-    expires: new Date(0),
-  });
-  res.send();
+  // With JWT bearer tokens, logout is handled client-side by removing the token
+  // No server-side action needed
+  res.status(200).json({ message: "Logged out successfully" });
 });
 
 // Register with phone number
@@ -147,14 +119,7 @@ router.post(
         }
       );
 
-      res.cookie("auth_token", token, {
-        httpOnly: true,
-        secure: process.env.NODE_ENV === "production",
-        maxAge: 86400000,
-        sameSite: 'none'
-      });
-
-      res.status(201).json({ userId: user._id });
+      res.status(201).json({ userId: user._id, token });
     } catch (error) {
       console.log(error);
       res.status(500).json({ message: "Something went wrong" });
@@ -198,14 +163,7 @@ router.post(
         }
       );
 
-      res.cookie("auth_token", token, {
-        httpOnly: true,
-        secure: process.env.NODE_ENV === "production",
-        maxAge: 86400000,
-        sameSite: 'none'
-      });
-
-      res.status(200).json({ userId: user._id });
+      res.status(200).json({ userId: user._id, token });
     } catch (error) {
       console.log(error);
       res.status(500).json({ message: "Something went wrong" });

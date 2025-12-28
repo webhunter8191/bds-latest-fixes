@@ -1,4 +1,5 @@
 import { useEffect, useState } from "react";
+import { tokenService } from "../utils/token";
 
 const API_URL = import.meta.env.VITE_API_BASE_URL || "";
 
@@ -28,11 +29,17 @@ const SuperAdminPanel = () => {
   useEffect(() => {
     const fetchBookings = async () => {
       try {
+        const token = tokenService.getToken();
+        const headers: HeadersInit = {};
+        if (token) {
+          headers["Authorization"] = `Bearer ${token}`;
+        }
+
         const response = await fetch(
           `${API_URL}/api/my-hotels/admin/bookings`,
           {
             method: "GET",
-            credentials: "include",
+            headers,
           }
         );
 

@@ -91,7 +91,6 @@ const Register = ({ redirectState }: { redirectState?: any }) => {
       const response = await fetch(`${baseUrl}/api/otp/verify`, {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        credentials: "include",
         body: JSON.stringify({ otp, email: data.email }),
       });
 
@@ -129,7 +128,6 @@ const Register = ({ redirectState }: { redirectState?: any }) => {
       await fetch(`${baseUrl}/api/otp/send`, {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        credentials: "include",
         body: JSON.stringify({ email: watch("email") }),
       });
       Swal.fire("OTP Sent!", "Check your email.", "info");
@@ -143,7 +141,6 @@ const Register = ({ redirectState }: { redirectState?: any }) => {
     const response = await fetch(`${baseUrl}/api/otp/send`, {
       method: "POST",
       headers: { "Content-Type": "application/json" },
-      credentials: "include",
       body: JSON.stringify({ email }),
     });
     const data = await response.json();
