@@ -6,6 +6,7 @@ import userRoutes from "./routes/users";
 import authRoutes from "./routes/auth";
 import cookieParser from "cookie-parser";
 import path from "path";
+import fs from "fs";
 import { v2 as cloudinary } from "cloudinary";
 import myHotelRoutes from "./routes/my-hotels";
 import hotelRoutes from "./routes/hotels";
@@ -59,7 +60,36 @@ app.use(
 
 
 
-app.use(express.static(path.join(__dirname, "../../frontend/dist")));
+// Serve static files from Frontend dist directory
+// Try different possible paths for different deployment environments
+const possiblePaths = [
+  path.join(__dirname, "../../Frontend/dist"), // Local development (capital F)
+  path.join(__dirname, "../../frontend/dist"), // Deployment (lowercase)
+  path.join(process.cwd(), "Frontend/dist"),    // Alternative path
+  path.join(process.cwd(), "frontend/dist"),    // Alternative path (lowercase)
+];
+
+let frontendDistPath: string | null = null;
+for (const possiblePath of possiblePaths) {
+  try {
+    if (fs.existsSync(possiblePath) && fs.existsSync(path.join(possiblePath, "index.html"))) {
+      frontendDistPath = possiblePath;
+      console.log(`Frontend dist found at: ${frontendDistPath}`);
+      break;
+    }
+  } catch (err) {
+    // Continue to next path
+  }
+}
+
+if (!frontendDistPath) {
+  console.warn("Frontend dist directory not found. Static file serving disabled.");
+  console.warn("Checked paths:", possiblePaths);
+}
+
+if (frontendDistPath) {
+  app.use(express.static(frontendDistPath));
+}
 
 app.use("/api/auth", authRoutes);
 app.use("/api/users", userRoutes);
@@ -70,8 +100,32 @@ app.use("/api/payment", paymentRoutes);
 app.use("/api/otp", otpRoutes);
 app.use("/api/pdfUpload", pdfUpload);
 
+// Serve index.html for all non-API routes (SPA fallback)
 app.get("*", (req: Request, res: Response) => {
-  res.sendFile(path.join(__dirname, "../../frontend/dist/index.html"));
+  // Skip API routes
+  if (req.path.startsWith("/api/")) {
+    return res.status(404).json({ message: "API route not found" });
+  }
+  
+  // If frontend dist path was found, serve index.html
+  if (frontendDistPath) {
+    const indexPath = path.join(frontendDistPath, "index.html");
+    res.sendFile(indexPath, (err) => {
+      if (err) {
+        console.error("Error serving index.html:", err);
+        res.status(404).json({ 
+          message: "Frontend not found",
+          path: indexPath 
+        });
+      }
+    });
+  } else {
+    // Frontend not found - return error
+    res.status(404).json({ 
+      message: "Frontend build not found. Please ensure Frontend/dist exists.",
+      checkedPaths: possiblePaths
+    });
+  }
 });
 
 app.listen(7000, () => {
