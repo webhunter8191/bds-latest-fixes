@@ -353,3 +353,53 @@ export const createPaymentOrder = async (
 
   return response.json();
 };
+
+// Admin Hotel Management APIs
+export const fetchAllHotelsAdmin = async (): Promise<HotelType[]> => {
+  const response = await fetch(`${API_BASE_URL}/api/admin/hotels`, {
+    headers: getAuthHeaders(false),
+  });
+
+  if (!response.ok) {
+    throw new Error("Error fetching all hotels");
+  }
+
+  return response.json();
+};
+
+export const fetchHotelByIdAdmin = async (hotelId: string): Promise<HotelType> => {
+  const response = await fetch(`${API_BASE_URL}/api/admin/hotels/${hotelId}`, {
+    headers: getAuthHeaders(false),
+  });
+
+  if (!response.ok) {
+    throw new Error("Error fetching hotel");
+  }
+
+  return response.json();
+};
+
+export const updateHotelByIdAdmin = async (hotelFormData: FormData) => {
+  const token = tokenService.getToken();
+  const headers: HeadersInit = {};
+  if (token) {
+    headers["Authorization"] = `Bearer ${token}`;
+  }
+
+  const response = await fetch(
+    `${API_BASE_URL}/api/admin/hotels/${hotelFormData.get("hotelId")}`,
+    {
+      method: "PUT",
+      headers,
+      body: hotelFormData,
+    }
+  );
+
+  if (!response.ok) {
+    const errorData = await response.json().catch(() => ({}));
+    console.error("Server error response:", errorData);
+    throw new Error(`Failed to update Hotel: ${errorData.message || response.statusText}`);
+  }
+
+  return response.json();
+};

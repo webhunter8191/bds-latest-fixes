@@ -21,6 +21,7 @@ import Footer from "./components/Footer";
 // import AdminBookings from "./components/AdminBookings";
 import AdminBookingspage from "./pages/AdminBookingspage";
 import SuperAdminPanel from "./pages/SuperAdminPanel";
+import AdminHotelsManagement from "./pages/AdminHotelsManagement";
 import AboutUs from "./components/AboutUs";
 import PrivacyPolicy from "./components/PrivacyPolicy";
 import ContactUs from "./components/Contact";
@@ -165,6 +166,14 @@ const App = () => {
               element={
                 <Layout>
                   <SuperAdminPanel />
+                </Layout>
+              }
+            />
+            <Route
+              path="/admin/hotels"
+              element={
+                <Layout>
+                  <AdminHotelsManagement />
                 </Layout>
               }
             />

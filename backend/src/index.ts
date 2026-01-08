@@ -14,6 +14,7 @@ import bookingRoutes from "./routes/my-bookings";
 import paymentRoutes from "./routes/payment";
 import otpRoutes from "./routes/otp";
 import pdfUpload from "./routes/pdfUpload";
+import adminHotelRoutes from "./routes/admin-hotels";
 
 cloudinary.config({
   cloud_name: process.env.CLOUDINARY_CLOUD_NAME,
@@ -99,6 +100,7 @@ app.use("/api/my-bookings", bookingRoutes);
 app.use("/api/payment", paymentRoutes);
 app.use("/api/otp", otpRoutes);
 app.use("/api/pdfUpload", pdfUpload);
+app.use("/api/admin/hotels", adminHotelRoutes);
 
 // Serve index.html for all non-API routes (SPA fallback)
 app.get("*", (req: Request, res: Response) => {
