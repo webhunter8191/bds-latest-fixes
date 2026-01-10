@@ -16,6 +16,9 @@ import otpRoutes from "./routes/otp";
 import pdfUpload from "./routes/pdfUpload";
 import adminHotelRoutes from "./routes/admin-hotels";
 
+// Disable Mongoose buffering - operations will fail immediately if connection is not ready
+mongoose.set("bufferCommands", false);
+
 cloudinary.config({
   cloud_name: process.env.CLOUDINARY_CLOUD_NAME,
   api_key: process.env.CLOUDINARY_API_KEY,
@@ -29,8 +32,6 @@ const mongooseOptions = {
   connectTimeoutMS: 30000, // 30 seconds
   maxPoolSize: 10,
   minPoolSize: 1,
-  bufferMaxEntries: 0, // Disable mongoose buffering
-  bufferCommands: false, // Disable mongoose buffering
 };
 
 const connectDB = async () => {
