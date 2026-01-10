@@ -22,13 +22,39 @@ cloudinary.config({
   api_secret: process.env.CLOUDINARY_API_SECRET,
 });
 
-const connection = mongoose.connect(process.env.MONGODB_CONNECTION_STRING as string);
-connection.then(() => {
-  console.log("Database connectrd succesfully");
-})
-  .catch((err) => {
-  console.error("Database connection Failed ",err)
-})
+// MongoDB connection options
+const mongooseOptions = {
+  serverSelectionTimeoutMS: 30000, // 30 seconds
+  socketTimeoutMS: 45000, // 45 seconds
+  connectTimeoutMS: 30000, // 30 seconds
+  maxPoolSize: 10,
+  minPoolSize: 1,
+  bufferMaxEntries: 0, // Disable mongoose buffering
+  bufferCommands: false, // Disable mongoose buffering
+};
+
+const connectDB = async () => {
+  try {
+    await mongoose.connect(process.env.MONGODB_CONNECTION_STRING as string, mongooseOptions);
+    console.log("Database connected successfully");
+  } catch (err) {
+    console.error("Database connection failed:", err);
+    process.exit(1); // Exit if database connection fails
+  }
+};
+
+// Handle connection events
+mongoose.connection.on("error", (err) => {
+  console.error("MongoDB connection error:", err);
+});
+
+mongoose.connection.on("disconnected", () => {
+  console.warn("MongoDB disconnected");
+});
+
+mongoose.connection.on("reconnected", () => {
+  console.log("MongoDB reconnected");
+});
 
 const app = express();
 
@@ -130,6 +156,15 @@ app.get("*", (req: Request, res: Response) => {
   }
 });
 
-app.listen(7000, () => {
-  console.log("server running on localhost:7000");
+// Start server only after database connection is established
+const startServer = async () => {
+  await connectDB();
+  app.listen(7000, () => {
+    console.log("server running on localhost:7000");
+  });
+};
+
+startServer().catch((err) => {
+  console.error("Failed to start server:", err);
+  process.exit(1);
 });
