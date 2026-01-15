@@ -4,6 +4,7 @@ import { MdTravelExplore } from "react-icons/md";
 import DatePicker from "react-datepicker";
 import "react-datepicker/dist/react-datepicker.css";
 import { useNavigate } from "react-router-dom";
+import { FaUsers } from "react-icons/fa";
 
 const SearchBar = () => {
   const navigate = useNavigate();
@@ -20,6 +21,9 @@ const SearchBar = () => {
     search.checkOut || tomorrow
   );
   const [roomCount, setRoomCount] = useState<number>(search.roomCount);
+  const [personCount, setPersonCount] = useState<number>(
+    (search.adultCount || 1) + (search.childCount || 0)
+  );
   const [showDropdown, setShowDropdown] = useState<boolean>(false);
   const [filteredLocations, setFilteredLocations] = useState<string[]>([]);
 
@@ -87,7 +91,8 @@ const SearchBar = () => {
   const handleSubmit = (event: FormEvent) => {
     event.preventDefault();
     if (checkIn && checkOut) {
-      search.saveSearchValues(destination, checkIn, checkOut, roomCount, 0);
+      // For backend compatibility, send personCount as adultCount and 0 for childCount
+      search.saveSearchValues(destination, checkIn, checkOut, roomCount, personCount, 0, 0);
       navigate("/search");
     } else {
       alert("Please select valid check-in and check-out dates.");
@@ -128,6 +133,9 @@ const SearchBar = () => {
     setShowDropdown(false);
   };
 
+  const guestDropdownRef = useRef<HTMLDivElement>(null);
+  const [showGuestDropdown, setShowGuestDropdown] = useState<boolean>(false);
+
   useEffect(() => {
     const handleClickOutside = (event: MouseEvent) => {
       if (
@@ -135,6 +143,12 @@ const SearchBar = () => {
         !dropdownRef.current.contains(event.target as Node)
       ) {
         setShowDropdown(false);
+      }
+      if (
+        guestDropdownRef.current &&
+        !guestDropdownRef.current.contains(event.target as Node)
+      ) {
+        setShowGuestDropdown(false);
       }
     };
     document.addEventListener("mousedown", handleClickOutside);
@@ -144,7 +158,7 @@ const SearchBar = () => {
   return (
     <form
       onSubmit={handleSubmit}
-      className="p-6 bg-white border border-slate-200 rounded-3xl grid grid-cols-2 md:grid-cols-2 lg:grid-cols-5 gap-4 shadow-xl  "
+      className="p-6 bg-white border border-slate-200 rounded-3xl grid grid-cols-2 md:grid-cols-2 lg:grid-cols-5 gap-4 shadow-xl"
     >
       {/* Location Input */}
       <div className="flex flex-col  relative" ref={dropdownRef}>
@@ -181,22 +195,70 @@ const SearchBar = () => {
           </ul>
         )}
       </div>
-      {/* Room Count Input */}
-      <div className="flex flex-col md:col-span-1">
+
+      {/* Rooms & Guests Input */}
+      <div className="flex flex-col relative" ref={guestDropdownRef}>
         <label className="block text-gray-700 font-semibold mb-2 text-base">
-          Rooms
+          Guests
         </label>
-        <div className="flex items-center p-3 bg-gray-100 rounded-lg focus-within:ring-2 focus-within:ring-brand transition">
-          <input
-            type="number"
-            min={1}
-            max={20}
-            className="w-full bg-transparent focus:outline-none text-base text-left placeholder-gray-400"
-            value={roomCount}
-            placeholder="How many rooms do you want?"
-            onChange={(event) => setRoomCount(parseInt(event.target.value))}
-          />
+        <div 
+          className="flex items-center p-3 bg-gray-100 rounded-lg cursor-pointer hover:bg-gray-200 transition"
+          onClick={() => setShowGuestDropdown(!showGuestDropdown)}
+        >
+          <FaUsers size={22} className="text-gray-500 mr-2" />
+          <span className="text-base text-gray-700">
+            {roomCount} Room{roomCount > 1 ? 's' : ''}, {personCount} Person{personCount > 1 ? 's' : ''}
+          </span>
         </div>
+        
+        {/* Guests Dropdown */}
+        {showGuestDropdown && (
+          <div className="absolute top-full left-0 w-full min-w-[250px] bg-white border border-slate-200 rounded-lg shadow-lg z-20 mt-1 p-4">
+            {/* Rooms Row */}
+            <div className="flex justify-between items-center mb-4">
+              <span className="text-gray-700 font-medium">Rooms</span>
+              <div className="flex items-center gap-3">
+                <button
+                  type="button"
+                  onClick={() => setRoomCount(Math.max(1, roomCount - 1))}
+                  className="w-8 h-8 flex items-center justify-center rounded-full border border-gray-300 hover:bg-gray-100 text-gray-600"
+                >
+                  -
+                </button>
+                <span className="w-4 text-center">{roomCount}</span>
+                <button
+                  type="button"
+                  onClick={() => setRoomCount(Math.min(20, roomCount + 1))}
+                  className="w-8 h-8 flex items-center justify-center rounded-full border border-gray-300 hover:bg-gray-100 text-gray-600"
+                >
+                  +
+                </button>
+              </div>
+            </div>
+            
+            {/* Persons Row */}
+            <div className="flex justify-between items-center">
+              <span className="text-gray-700 font-medium">Persons</span>
+              <div className="flex items-center gap-3">
+                <button
+                  type="button"
+                  onClick={() => setPersonCount(Math.max(1, personCount - 1))}
+                  className="w-8 h-8 flex items-center justify-center rounded-full border border-gray-300 hover:bg-gray-100 text-gray-600"
+                >
+                  -
+                </button>
+                <span className="w-4 text-center">{personCount}</span>
+                <button
+                  type="button"
+                  onClick={() => setPersonCount(Math.min(20, personCount + 1))}
+                  className="w-8 h-8 flex items-center justify-center rounded-full border border-gray-300 hover:bg-gray-100 text-gray-600"
+                >
+                  +
+                </button>
+              </div>
+            </div>
+          </div>
+        )}
       </div>
       {/* Check-in Date Input */}
       <div className="flex flex-col md:col-span-1">

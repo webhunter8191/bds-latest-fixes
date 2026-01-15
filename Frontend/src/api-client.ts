@@ -4,7 +4,7 @@ import { SignInFormData } from "./pages/SignIn";
 import {
   HotelType,
   PaymentIntentResponse,
-  
+
   UserType,
 } from "../../backend/src/shared/types";
 import { BookingFormData } from "./forms/BookingForm/BookingForm";
@@ -191,6 +191,8 @@ export type SearchParams = {
   checkIn?: string;
   checkOut?: string;
   roomCount: string;
+  adultCount?: string;
+  childCount?: string;
   page?: string;
   facilities?: string[];
   types?: string[];
@@ -204,6 +206,8 @@ export const searchHotels = async (searchParams: {
   checkIn: string;
   checkOut: string;
   roomCount: string;
+  adultCount?: string;
+  childCount?: string;
   page?: string;
   stars?: string[];
   types?: string[];
@@ -237,7 +241,7 @@ export const searchHotels = async (searchParams: {
       queryParams.append("facilities", facility)
     );
   }
-  
+
   if (searchParams.temples && searchParams.temples.length > 0) {
     searchParams.temples.forEach((temple) =>
       queryParams.append("temples", temple)
@@ -246,6 +250,14 @@ export const searchHotels = async (searchParams: {
 
   if (searchParams.maxPrice) {
     queryParams.append("maxPrice", searchParams.maxPrice);
+  }
+
+  if (searchParams.adultCount) {
+    queryParams.append("adultCount", searchParams.adultCount);
+  }
+
+  if (searchParams.childCount) {
+    queryParams.append("childCount", searchParams.childCount);
   }
 
   if (searchParams.sortOption) {

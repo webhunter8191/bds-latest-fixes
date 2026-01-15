@@ -36,6 +36,8 @@ const Search = () => {
     checkIn: search.checkIn.toISOString(),
     checkOut: search.checkOut.toISOString(),
     roomCount: search.roomCount.toString(),
+    adultCount: search.adultCount.toString(),
+    childCount: search.childCount.toString(),
     page: page.toString(),
     stars: selectedStars,
     types: selectedHotelTypes,

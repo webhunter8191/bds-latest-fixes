@@ -123,9 +123,33 @@ router.get("/search", async (req: Request, res: Response) => {
     const targetDateStr = targetDate.toISOString().split("T")[0]; // "YYYY-MM-DD"
     const roomCount = parseInt(req.query.roomCount as string) || 1;
 
+    // Process person count for filtering
+    const requestedPersons = parseInt(req.query.adultCount as string) || 0;
+
     // Query hotels
     const hotels = await Hotel.aggregate([
       { $match: query },
+      // Add person capacity filtering if requested
+      ...(requestedPersons > 0 ? [{
+        $addFields: {
+          matchingRooms: {
+            $filter: {
+              input: "$rooms",
+              as: "room",
+              cond: {
+                $and: [
+                  { $gte: ["$$room.availableRooms", roomCount] },
+                  { $gte: [{ $add: ["$$room.adultCount", "$$room.childCount"] }, requestedPersons] }
+                ]
+              }
+            }
+          }
+        }
+      }, {
+        $match: {
+          matchingRooms: { $ne: [] }
+        }
+      }] : []),
       {
         $addFields: {
           pricePerNight: {
@@ -169,10 +193,10 @@ router.get("/search", async (req: Request, res: Response) => {
       },
       ...(req.query.maxPrice
         ? [{
-            $match: {
-              pricePerNight: { $lte: parseInt(req.query.maxPrice as string) }
-            }
-          }]
+          $match: {
+            pricePerNight: { $lte: parseInt(req.query.maxPrice as string) }
+          }
+        }]
         : []),
       { $sort: sortOptions },
       { $skip: skip },
@@ -302,8 +326,8 @@ router.get("/:id", [param("id").notEmpty().withMessage("Hotel ID is required")],
       return res.status(400).json({ errors: errors.array() });
     }
 
-    const id = req.params.id.toString(); 
-    
+    const id = req.params.id.toString();
+
     // First fetch the hotel to check raw data
     const rawHotel = await Hotel.findById(id);
     console.log("Raw hotel data:", JSON.stringify({
@@ -311,17 +335,17 @@ router.get("/:id", [param("id").notEmpty().withMessage("Hotel ID is required")],
       name: rawHotel?.name,
       roomCount: rawHotel?.rooms?.length
     }));
-    
+
     if (rawHotel?.rooms?.length) {
-      console.log("Raw features data sample:", 
-        rawHotel.rooms.map((r: any) => ({ 
-          category: r.category, 
+      console.log("Raw features data sample:",
+        rawHotel.rooms.map((r: any) => ({
+          category: r.category,
           features: r.features,
           featuresType: typeof r.features
         }))
       );
     }
-    
+
     const aggregation = [
       { $match: { _id: new mongoose.Types.ObjectId(id) } },
       {
@@ -363,18 +387,18 @@ router.get("/:id", [param("id").notEmpty().withMessage("Hotel ID is required")],
         }
       }
     ];
-    
+
     const [hotel] = await Hotel.aggregate(aggregation);
-    
+
     // Log the processed hotel data
     if (hotel?.rooms?.length) {
-      console.log("Processed hotel rooms features:", 
-        hotel.rooms.map((r: any) => ({ 
-          category: r.category, 
+      console.log("Processed hotel rooms features:",
+        hotel.rooms.map((r: any) => ({
+          category: r.category,
           features: r.features
         }))
       );
-      
+
       // Ensure all room features are properly formatted arrays
       hotel.rooms = hotel.rooms.map((room: any) => {
         if (!room.features) {
@@ -392,23 +416,23 @@ router.get("/:id", [param("id").notEmpty().withMessage("Hotel ID is required")],
           // If it's an object but not an array
           room.features = Object.values(room.features);
         }
-        
+
         // Remove any duplicate features
         if (Array.isArray(room.features)) {
           room.features = [...new Set(room.features)];
         }
-        
+
         return room;
       });
-      
-      console.log("Normalized room features:", 
-        hotel.rooms.map((r: any) => ({ 
-          category: r.category, 
+
+      console.log("Normalized room features:",
+        hotel.rooms.map((r: any) => ({
+          category: r.category,
           features: r.features
         }))
       );
     }
-    
+
     return res.status(200).json(hotel);
   } catch (error) {
     console.log(error);
@@ -422,10 +446,10 @@ const constructSearchQuery = (queryParams: any) => {
 
   if (queryParams.destination) {
     const searchTerm = queryParams.destination.trim().toLowerCase();
-    
+
     // Create a regex pattern for partial matching
     const regex = new RegExp(searchTerm, 'i');
-    
+
     // Search in multiple fields related to location
     constructedQuery.$or = [
       { 'nearbyTemple': { $regex: regex } },
@@ -461,6 +485,7 @@ const constructSearchQuery = (queryParams: any) => {
     }
   }
 
+  // Filter by room availability (person count will be handled in aggregation pipeline)
   if (queryParams.roomCount) {
     constructedQuery['rooms'] = {
       $elemMatch: {
@@ -495,23 +520,23 @@ const constructSearchQuery = (queryParams: any) => {
   return constructedQuery;
 };
 
-router.patch("/:id",verifyToken, async (req: Request, res: Response) => {
-  try{
-    const {id}=req.params;
-    const {status='archive'}=req.query;
+router.patch("/:id", verifyToken, async (req: Request, res: Response) => {
+  try {
+    const { id } = req.params;
+    const { status = 'archive' } = req.query;
     const response = await Hotel.findByIdAndUpdate({
-      _id:id
-    },{
-      $set:{status}
+      _id: id
+    }, {
+      $set: { status }
     });
-    if(!response){
-      return res.status(400).json({message:"Hotel not found"});
+    if (!response) {
+      return res.status(400).json({ message: "Hotel not found" });
     }
-    return res.status(200).json({message:"Hotel status updated successfully"});    
+    return res.status(200).json({ message: "Hotel status updated successfully" });
   }
-  catch(error){
+  catch (error) {
     console.log(error);
-    res.status(500).json({message:"Something went wrong"});
+    res.status(500).json({ message: "Something went wrong" });
   }
 });
 
