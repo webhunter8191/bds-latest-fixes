@@ -228,11 +228,11 @@ const Detail = () => {
 
   // Helper to get default bed configuration based on room category
   const getDefaultBedConfiguration = (category: number): string => {
-    if (category === 1 || category === 2) {
+    if (category === 1 || category === 2 || category === 8) {
       return "Double Bed";
-    } else if (category === 3 || category === 4) {
+    } else if (category === 3 || category === 4 || category === 9) {
       return "Double Bed + Single Bed";
-    } else if (category === 5 || category === 6) {
+    } else if (category === 5 || category === 6 || category === 10) {
       return "Double Bed + Double Bed";
     } else if (category === 7) {
       return "Large Hall";
@@ -274,6 +274,9 @@ const Detail = () => {
     5: "4 Bed AC",
     6: "4 Bed Non AC",
     7: "Community Hall",
+    8: "Double Bed Deluxe",
+    9: "Triple Bed Deluxe",
+    10: "Four Bed Deluxe",
   };
 
   const [selectedRooms, setSelectedRooms] = useState<{

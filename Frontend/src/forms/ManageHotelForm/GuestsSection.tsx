@@ -69,6 +69,9 @@ const GuestsSection = ({
     { value: 5, label: "4 Bed AC" },
     { value: 6, label: "4 Bed Non-AC" },
     { value: 7, label: "Community Hall" },
+    { value: 8, label: "2 Bed Deluxe" },
+    { value: 9, label: "3 Bed Deluxe" },
+    { value: 10, label: "4 Bed Deluxe" },
   ];
 
   const categoriesTitles: Record<string, string> = {
@@ -79,6 +82,9 @@ const GuestsSection = ({
     "5": "4 Bed AC",
     "6": "4 Bed Non-AC",
     "7": "Community Hall",
+    "8": "2 Bed Deluxe",
+    "9": "3 Bed Deluxe",
+    "10": "4 Bed Deluxe",
   };
 
   useEffect(() => {

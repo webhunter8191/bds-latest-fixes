@@ -14,6 +14,9 @@ const AdminBookingspage = () => {
     5: "4 Bed AC",
     6: "4 Bed Non AC",
     7: "Community Hall",
+    8: "2 Bed Deluxe",
+    9: "3 Bed Deluxe",
+    10: "4 Bed Deluxe",
   };
 
   useEffect(() => {
