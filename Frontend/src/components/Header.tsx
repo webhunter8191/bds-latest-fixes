@@ -226,6 +226,14 @@ const Header = () => {
               <FaTimes />
             </button>
 
+            <NavLink
+              to="/tours"
+              className="inline-block text-[#6A5631] font-bold text-xl hover:text-black transition duration-300 mb-8"
+              onClick={() => setIsMenuOpen(false)}
+            >
+              Tours
+            </NavLink>
+
             {isLoggedIn ? (
               <>
                 {/* Show My Bookings or My Hotels based on user role */}
@@ -263,7 +271,13 @@ const Header = () => {
         </div>
 
         {/* Normal Navigation for Larger Screens */}
-        <nav className="hidden lg:flex items-center space-x-4">
+        <nav className="hidden lg:flex items-center space-x-6">
+          <NavLink
+            to="/tours"
+            className="text-gray-700 font-semibold hover:text-[#6A5631] transition duration-300"
+          >
+            Tours
+          </NavLink>
           {isLoggedIn ? (
             <>
               {/* Show My Bookings or My Hotels based on user role */}
