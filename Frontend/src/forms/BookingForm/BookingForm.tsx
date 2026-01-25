@@ -165,7 +165,7 @@ const BookingForm = ({
 
           const verifyData = await res.json();
           if (verifyData.message) {
-            alert(verifyData.message);
+            showToast({ message: "Payment successful! Booking confirmed.", type: "SUCCESS" });
             bookRoom({
               ...bookingData,
               paymentIntentId: response.razorpay_payment_id,

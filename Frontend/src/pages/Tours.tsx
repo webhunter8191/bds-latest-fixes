@@ -1,16 +1,21 @@
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
+import img1 from "../assets/bg1.png";
+import img2 from "../assets/bg2.jpg";
+import img3 from "../assets/bg3.png";
+import img4 from "../assets/mathura.png";
 import {
   Clock,
-  Users,
+  Banknote,
   MapPin,
   CheckCircle2,
   ArrowRight,
-  Sun,
-  Globe,
+  Car,
+  Rainbow,
   UserCheck,
   Coffee,
   Plus,
   Minus,
+
 } from "lucide-react";
 
 const itinerary = [
@@ -18,18 +23,16 @@ const itinerary = [
     day: 1,
     title: "Mathura & Gokul",
     image:
-      "https://share.google/3Z6mYGQVRS2ImcHRH",
+      img4,
     morning: {
       title: "Morning – Mathura",
       items: [
         {
           name: "Shri Krishna Janmabhoomi",
-          time: "09:00 AM",
           desc: "The sacred birthplace of Lord Krishna, one of the most important pilgrimage sites in India.",
         },
         {
           name: "Dwarkadhish Temple",
-          time: "10:30 AM",
           desc: "A grand temple known for its intricate architecture and vibrant devotional atmosphere.",
         },
       ],
@@ -60,7 +63,7 @@ const itinerary = [
     day: 2,
     title: "Nandgaon, Barsana & Govardhan",
     image:
-      "https://images.unsplash.com/photo-1548013146-72479768bbaa?auto=format&fit=crop&q=80&w=1200",
+      img3,
     morning: {
       title: "Morning – Nandgaon & Barsana",
       items: [
@@ -98,7 +101,7 @@ const itinerary = [
           desc: "A major stop during Govardhan Parikrama.",
         },
         {
-          name: "Poochha Ka Lota",
+          name: "Poochhri Ka Lota",
           desc: "A unique and spiritually significant rock formation.",
         },
       ],
@@ -108,13 +111,12 @@ const itinerary = [
     day: 3,
     title: "Vrindavan",
     image:
-      "https://images.unsplash.com/photo-1582234053074-972f7c050d4d?auto=format&fit=crop&q=80&w=1200",
+    img1,
     morning: {
       title: "Morning – Vrindavan Temples",
       items: [
         {
           name: "Banke Bihari Temple",
-          time: "08:30 AM",
           desc: "The most famous temple of Vrindavan, known for its unique darshan style.",
         },
         {
@@ -155,17 +157,58 @@ const itinerary = [
   },
 ];
 
-// Pricing configuration
-const pricing = {
-  baseTour: 1499, // per person
-  food: 350, // per person per day
-  stay: 1000, // per day for up to 3 people (shared room)
-};
-
 const Tours: React.FC = () => {
   const [guests, setGuests] = useState(3);
   const [includeFood, setIncludeFood] = useState(false);
   const [includeStay, setIncludeStay] = useState(false);
+
+  // Pricing configuration
+  const pricing = {
+    baseTour: 1499, // per person
+    food: 350, // per person per day
+    stay: 1000, // per day for up to 3 people (shared room)
+  };
+
+  // Carousel state
+  const [currentSlide, setCurrentSlide] = useState(0);
+
+  // Carousel slides data
+  const slides = [
+    {
+      title: "Brij Darshan – 3 Day Spiritual Tour",
+      subtitle: "Sacred Pilgrimage Experience",
+      description: "A soulful journey through Mathura, Gokul, Barsana, Govardhan and Vrindavan — experiencing the divine land of Lord Krishna.",
+      highlight: "Divine Heritage"
+    },
+    {
+      title: "Experience the Divine Land",
+      subtitle: "Authentic Spiritual Journey",
+      description: "Walk in the footsteps of Lord Krishna, visit sacred temples, and immerse yourself in the rich cultural heritage of Brij Bhoomi.",
+      highlight: "Sacred Places"
+    },
+    {
+      title: "Personalized Spiritual Experience",
+      subtitle: "Tailored for Your Soul",
+      description: "Customize your pilgrimage with expert guides, authentic cuisine, and premium accommodations for a truly transformative experience.",
+      highlight: "Divine Connection"
+    }
+  ];
+
+  // Auto-play carousel
+  useEffect(() => {
+    const timer = setInterval(() => {
+      setCurrentSlide((prev) => (prev + 1) % slides.length);
+    }, 5000); // Change slide every 5 seconds
+
+    return () => clearInterval(timer);
+  }, [slides.length]);
+
+  // Navigation functions
+  // const goToSlide = (index: number) => {
+  //   setCurrentSlide(index);
+  // };
+
+ 
 
 
   const calculateStayCost = () => {
@@ -183,127 +226,102 @@ const Tours: React.FC = () => {
   };
 
 
-  // Sticky Pricing Sidebar Component (Desktop/Tablet)
-  const StickyPricingSidebar = () => (
-    <div className="hidden lg:block fixed right-4 top-1/3 z-50 w-80">
-      <div className="bg-white rounded-2xl shadow-2xl border border-gray-200 p-6 backdrop-blur-sm bg-white/95">
-        <h3 className="text-base lg:text-lg font-bold text-[#2D241C] mb-3 lg:mb-4 text-center">Your Package Summary</h3>
-
-        {/* Guest Counter */}
-        <div className="mb-3 lg:mb-4">
-          <h4 className="font-semibold text-xs lg:text-sm mb-2 lg:mb-3 text-center text-[#EBC486]">Number of Guests</h4>
-          <div className="flex items-center justify-center gap-2 lg:gap-3 bg-gray-50 rounded-lg lg:rounded-xl p-2">
-            <button
-              onClick={() => setGuests(Math.max(3, guests - 1))}
-              className="bg-[#EBC486] text-[#2D241C] p-1.5 lg:p-2 rounded-full hover:bg-[#D4AF37] transition-all duration-200 hover:scale-105 shadow-md"
-            >
-              <Minus size={14} className="lg:w-4 lg:h-4" />
-            </button>
-            <div className="text-center min-w-[50px] lg:min-w-[60px]">
-              <span className="text-lg lg:text-xl font-bold block">{guests}</span>
-              <span className="text-xs text-gray-500">Guests</span>
-            </div>
-            <button
-              onClick={() => setGuests(Math.min(8, guests + 1))}
-              className="bg-[#EBC486] text-[#2D241C] p-1.5 lg:p-2 rounded-full hover:bg-[#D4AF37] transition-all duration-200 hover:scale-105 shadow-md"
-            >
-              <Plus size={14} className="lg:w-4 lg:h-4" />
-            </button>
-          </div>
+  // Compact Vertical Card - Details Page Style
+  const PricingCalculator = () => (
+    <div className="w-full max-w-sm mx-auto">
+      <div className="bg-white rounded-xl shadow-md overflow-hidden transition-all duration-300 hover:shadow-lg cursor-pointer ">
+        {/* Card Header - Like room type overlay */}
+        <div className="bg-gradient-to-r from-[#6A5631] to-[#5a4a2a] px-4 py-3">
+          <h3 className="text-lg font-semibold text-white text-center">
+            Spiritual Tour Package
+          </h3>
+          <p className="text-xs text-amber-100 text-center mt-1">
+            3 Days / 2 Nights • {guests} Guests
+          </p>
         </div>
 
-        {/* Package Options */}
-        <div className="space-y-2 lg:space-y-3 mb-3 lg:mb-4">
-          {/* Base Tour */}
-          <div className="bg-[#EBC486]/10 rounded-lg lg:rounded-xl p-2 lg:p-3 border border-[#EBC486]/20">
-            <div className="flex items-center justify-between">
-              <div className="flex items-center gap-2">
-                <div className="w-5 h-5 lg:w-6 lg:h-6 bg-[#EBC486] rounded-full flex items-center justify-center">
-                  <CheckCircle2 size={12} className="lg:w-[14px] lg:h-[14px] text-[#2D241C]" />
-                </div>
-                <div>
-                  <p className="font-semibold text-xs lg:text-sm text-[#2D241C]">Tour Package</p>
-                  <p className="text-xs text-gray-600">3 Days Spiritual</p>
-                </div>
-              </div>
-              <p className="font-bold text-xs lg:text-sm text-[#2D241C]">₹{(pricing.baseTour * guests).toLocaleString()}</p>
+        {/* Card Content - Compact like room details */}
+        <div className="p-4 space-y-4">
+          {/* Price Display - Prominent like room price */}
+          <div className="text-center">
+            <div className="text-3xl font-bold text-[#6A5631] mb-1">
+              ₹{calculateTotal().toLocaleString()}
+            </div>
+            <div className="text-sm text-gray-600">Total Package Price</div>
+          </div>
+
+          {/* Guest Counter - Compact */}
+          <div className="flex items-center justify-between bg-gray-50 rounded-lg p-2">
+            <span className="text-sm font-medium text-gray-700">Guests</span>
+            <div className="flex items-center gap-2">
+              <button
+                onClick={() => setGuests(Math.max(3, guests - 1))}
+                className="bg-[#6A5631] text-white w-6 h-6 rounded-full flex items-center justify-center hover:bg-[#5a4a2a] transition-colors text-sm"
+              >
+                <Minus size={12} />
+              </button>
+              <span className="text-sm font-bold min-w-[20px] text-center">{guests}</span>
+              <button
+                onClick={() => setGuests(Math.min(8, guests + 1))}
+                className="bg-[#6A5631] text-white w-6 h-6 rounded-full flex items-center justify-center hover:bg-[#5a4a2a] transition-colors text-sm"
+              >
+                <Plus size={12} />
+              </button>
             </div>
           </div>
 
-          {/* Food Option */}
-          <div className={`rounded-lg lg:rounded-xl p-2 lg:p-3 border-2 transition-all duration-200 ${
-            includeFood
-              ? 'bg-[#EBC486]/10 border-[#EBC486]'
-              : 'bg-gray-50 border-gray-200 hover:border-[#EBC486]/50'
-          }`}>
-            <div className="flex items-center justify-between">
+          {/* Package Options - Vertical list like room features */}
+          <div className="space-y-3">
+            {/* Base Tour - Always included */}
+            <div className="flex items-center justify-between py-2">
               <div className="flex items-center gap-2">
-                <button
-                  onClick={() => setIncludeFood(!includeFood)}
-                  className={`w-5 h-5 lg:w-6 lg:h-6 rounded-md lg:rounded-lg border-2 flex items-center justify-center transition-all duration-200 ${
-                    includeFood
-                      ? 'bg-[#EBC486] border-[#EBC486]'
-                      : 'border-gray-300 hover:border-[#EBC486]'
-                  }`}
-                >
-                  {includeFood && <CheckCircle2 size={12} className="lg:w-[14px] lg:h-[14px] text-[#2D241C]" />}
-                </button>
-                <div>
-                  <p className="font-semibold text-xs lg:text-sm text-[#2D241C] flex items-center gap-1">
-                    <Coffee size={12} className="lg:w-[14px] lg:h-[14px] text-[#EBC486]" /> Meals
-                  </p>
-                  <p className="text-xs text-gray-600">3 Days</p>
-                </div>
+                <CheckCircle2 size={16} className="text-green-500" />
+                <span className="text-sm font-medium text-gray-800">Tour Package</span>
               </div>
-              <p className="font-bold text-xs lg:text-sm text-[#2D241C]">₹{(pricing.food * guests * 3).toLocaleString()}</p>
+              <span className="text-sm font-bold text-[#6A5631]">₹{(pricing.baseTour * guests).toLocaleString()}</span>
+            </div>
+
+            {/* Meals Option */}
+            <div className="flex items-center justify-between py-2">
+              <div className="flex items-center gap-2">
+                <input
+                  type="checkbox"
+                  id="food-option"
+                  checked={includeFood}
+                  onChange={(e) => setIncludeFood(e.target.checked)}
+                  className="w-4 h-4 text-[#6A5631] border-gray-300 rounded focus:ring-[#6A5631]"
+                />
+                <span className="text-sm font-medium text-gray-800">Meals Package</span>
+              </div>
+              <span className="text-sm font-bold text-[#6A5631]">₹{(pricing.food * guests * 3).toLocaleString()}</span>
+            </div>
+
+            {/* Stay Option */}
+            <div className="flex items-center justify-between py-2">
+              <div className="flex items-center gap-2">
+                <input
+                  type="checkbox"
+                  id="stay-option"
+                  checked={includeStay}
+                  onChange={(e) => setIncludeStay(e.target.checked)}
+                  className="w-4 h-4 text-[#6A5631] border-gray-300 rounded focus:ring-[#6A5631]"
+                />
+                <span className="text-sm font-medium text-gray-800">Accommodation</span>
+              </div>
+              <span className="text-sm font-bold text-[#6A5631]">₹{(calculateStayCost() * 3).toLocaleString()}</span>
             </div>
           </div>
 
-          {/* Stay Option */}
-          <div className={`rounded-lg lg:rounded-xl p-2 lg:p-3 border-2 transition-all duration-200 ${
-            includeStay
-              ? 'bg-[#EBC486]/10 border-[#EBC486]'
-              : 'bg-gray-50 border-gray-200 hover:border-[#EBC486]/50'
-          }`}>
-            <div className="flex items-center justify-between">
-              <div className="flex items-center gap-2">
-                <button
-                  onClick={() => setIncludeStay(!includeStay)}
-                  className={`w-5 h-5 lg:w-6 lg:h-6 rounded-md lg:rounded-lg border-2 flex items-center justify-center transition-all duration-200 ${
-                    includeStay
-                      ? 'bg-[#EBC486] border-[#EBC486]'
-                      : 'border-gray-300 hover:border-[#EBC486]'
-                  }`}
-                >
-                  {includeStay && <CheckCircle2 size={12} className="lg:w-[14px] lg:h-[14px] text-[#2D241C]" />}
-                </button>
-                <div>
-                  <p className="font-semibold text-xs lg:text-sm text-[#2D241C] flex items-center gap-1">
-                    <UserCheck size={12} className="lg:w-[14px] lg:h-[14px] text-[#EBC486]" /> Stay
-                  </p>
-                  <p className="text-xs text-gray-600">
-                    {guests <= 3 && "1 Room"}
-                    {guests === 4 && "1 Room"}
-                    {guests >= 5 && guests <= 6 && "2 Rooms"}
-                    {guests >= 7 && "2 Rooms"}
-                  </p>
-                </div>
-              </div>
-              <p className="font-bold text-xs lg:text-sm text-[#2D241C]">₹{(calculateStayCost() * 3).toLocaleString()}</p>
-            </div>
-          </div>
-        </div>
+          {/* Book Button - Like room selection */}
+          <button className="w-full bg-[#6A5631] text-white py-3 rounded-lg font-semibold hover:bg-[#5a4a2a] transition duration-200 shadow-md">
+            Book Now
+          </button>
 
-        {/* Total */}
-        <div className="border-t border-gray-200 pt-3 lg:pt-4">
-          <div className="bg-[#2D241C] text-white rounded-lg lg:rounded-xl p-3 lg:p-4">
-            <div className="flex justify-between items-center mb-2 lg:mb-3">
-              <span className="text-xs lg:text-sm font-medium">Total Amount</span>
-              <span className="text-base lg:text-lg font-bold text-[#EBC486]">₹{calculateTotal().toLocaleString()}</span>
-            </div>
-            <button className="w-full bg-gradient-to-r from-[#EBC486] to-[#D4AF37] text-[#2D241C] py-2 lg:py-3 rounded-md lg:rounded-lg font-bold hover:from-[#D4AF37] hover:to-[#EBC486] transition-all duration-300 text-xs lg:text-sm shadow-lg hover:shadow-xl">
-              Book Now
-            </button>
+          {/* Package Info */}
+          <div className="text-center">
+            {/* <p className="text-xs text-gray-500">
+              Includes transportation & expert guide
+            </p> */}
           </div>
         </div>
       </div>
@@ -523,52 +541,110 @@ const Tours: React.FC = () => {
     </div>
   );
   return (
-    <div className="bg-[#FAF9F6] text-[#2D241C] relative lg:pr-96">
-      {/* Sticky Pricing Sidebar (Desktop) */}
-      <StickyPricingSidebar />
-
+    <div className="bg-[#FAF9F6] text-[#2D241C] relative">
       {/* Mobile Bottom Bar */}
       <MobileBottomBar />
 
-      {/* HERO */}
-      <section className="relative min-h-[50vh] sm:min-h-[60vh] md:min-h-[70vh] flex items-center justify-center text-white">
-        <img
-          src="https://images.unsplash.com/photo-1624640149023-e18e97669f91"
-          className="absolute inset-0 w-full h-full object-cover"
-          alt="Brij Darshan Tour"
-        />
-        <div className="absolute inset-0 bg-black/60" />
-        <div className="relative z-10 max-w-4xl text-center px-3 sm:px-4 md:px-6">
-          <span className="text-xs sm:text-sm tracking-widest uppercase text-[#EBC486]">
-            Sacred Pilgrimage Experience
-          </span>
-          <h1 className="mt-3 sm:mt-4 text-xl xs:text-2xl sm:text-3xl md:text-4xl lg:text-5xl xl:text-6xl font-serif font-bold leading-tight">
-            Brij Darshan – 3 Day Spiritual Tour
-          </h1>
-          <p className="mt-3 sm:mt-4 md:mt-6 text-xs sm:text-sm md:text-base lg:text-lg text-gray-200 max-w-2xl mx-auto leading-relaxed px-2">
-            A soulful journey through Mathura, Gokul, Barsana, Govardhan and
-            Vrindavan — experiencing the divine land of Lord Krishna.
-          </p>
-
-          <div className="mt-6 sm:mt-8 flex flex-col sm:flex-row gap-3 sm:gap-4 justify-center">
-            <button className="bg-[#EBC486] text-[#2D241C] px-6 sm:px-8 py-3 sm:py-4 rounded-full font-semibold flex items-center justify-center gap-2 hover:bg-white transition text-sm sm:text-base">
-              Book Your Tour <ArrowRight size={16} className="sm:w-[18px] sm:h-[18px]" />
-            </button>
-            <button className="border border-white/40 px-6 sm:px-8 py-3 sm:py-4 rounded-full hover:bg-white/10 transition text-sm sm:text-base">
-              View Gallery
-            </button>
+      {/* HERO CAROUSEL */}
+      <section className="relative min-h-[50vh] sm:min-h-[60vh] md:min-h-[70vh] flex items-center justify-center overflow-hidden">
+        {/* Background with images */}
+        {slides.map((_, index) => (
+          <div
+            key={`bg-${index}`}
+            className={`absolute inset-0 transition-all duration-1000 ${
+              index === currentSlide
+                ? 'opacity-100'
+                : 'opacity-0'
+            }`}
+          >
+            <img
+              src={index % 2 === 0 ? img1 : img2}
+              alt={`Slide ${index + 1} background`}
+              className="w-full h-full object-cover"
+            />
+            {/* Overlay for text readability */}
+            <div className="absolute inset-0 bg-black/50" />
           </div>
+        ))}
+
+        {/* Carousel Content */}
+        <div className="relative z-10 w-full max-w-6xl mx-auto px-3 sm:px-4 md:px-6">
+          {slides.map((slide, index) => (
+            <div
+              key={index}
+              className={`transition-all duration-1000 transform ${
+                index === currentSlide
+                  ? 'opacity-100 translate-x-0'
+                  : index < currentSlide
+                  ? 'opacity-0 -translate-x-full absolute inset-0'
+                  : 'opacity-0 translate-x-full absolute inset-0'
+              }`}
+            >
+              <div className="text-center text-white">
+                <span className="inline-block px-4 py-1 bg-[#EBC486]/20 text-[#EBC486] text-xs sm:text-sm tracking-widest uppercase rounded-full border border-[#EBC486]/30 mb-4">
+                  {slide.highlight}
+                </span>
+                <h1 className="text-xl xs:text-2xl sm:text-3xl md:text-4xl lg:text-5xl xl:text-6xl font-serif font-bold leading-tight mb-4">
+                  {slide.title}
+                </h1>
+                <p className="text-xs sm:text-sm md:text-base lg:text-lg text-gray-300 max-w-2xl mx-auto leading-relaxed px-2 mb-6">
+                  {slide.description}
+                </p>
+
+                <div className="flex flex-col sm:flex-row gap-3 sm:gap-4 justify-center">
+                  <button className="mx-auto bg-[#EBC486] text-[#2D241C]  px-6 sm:px-6 py-3 sm:py-4 rounded-full font-semibold flex items-center justify-center gap-2 hover:bg-white transition text-sm sm:text-base shadow-lg hover:shadow-xl">
+                    Book Your Tour <ArrowRight size={16} className="sm:w-[18px] sm:h-[18px]" />
+                  </button>
+                  {/* <button className="border border-white/40 px-6 sm:px-8 py-3 sm:py-4 rounded-full hover:bg-white/10 transition text-sm sm:text-base">
+                    View Gallery
+                  </button> */}
+                </div>
+              </div>
+            </div>
+          ))}
+
+          {/* Navigation Arrows */}
+          {/* <button
+            onClick={prevSlide}
+            className="absolute left-4 top-1/2 transform -translate-y-1/2 bg-white/10 backdrop-blur-sm hover:bg-white/20 p-2 rounded-full transition-all duration-200 group"
+            aria-label="Previous slide"
+          >
+            <ChevronLeft className="w-5 h-5 sm:w-6 sm:h-6 text-white group-hover:text-[#EBC486]" />
+          </button>
+          <button
+            onClick={nextSlide}
+            className="absolute right-4 top-1/2 transform -translate-y-1/2 bg-white/10 backdrop-blur-sm hover:bg-white/20 p-2 rounded-full transition-all duration-200 group"
+            aria-label="Next slide"
+          >
+            <ChevronRight className="w-5 h-5 sm:w-6 sm:h-6 text-white group-hover:text-[#EBC486]" />
+          </button> */}
+
+          {/* Slide Indicators */}
+          {/* <div className="absolute bottom-6 left-1/2 transform -translate-x-1/2 flex gap-2">
+            {slides.map((_, index) => (
+              <button
+                key={index}
+                onClick={() => goToSlide(index)}
+                className={`w-2 h-2 rounded-full transition-all duration-300 ${
+                  index === currentSlide
+                    ? 'bg-[#EBC486] w-6'
+                    : 'bg-white/40 hover:bg-white/60'
+                }`}
+                aria-label={`Go to slide ${index + 1}`}
+              />
+            ))}
+          </div> */}
         </div>
       </section>
 
       {/* META */}
-      <section className="-mt-6 sm:-mt-8 md:-mt-10 relative z-20 px-3 sm:px-4 md:px-6 pb-0 lg:pb-0">
+      <section className="mt-6 sm:-mt-8 md:-mt-10 relative z-20 px-3 sm:px-4 md:px-6 pb-0 lg:pb-0">
         <div className="max-w-6xl mx-auto grid grid-cols-2 md:grid-cols-2 lg:grid-cols-4 gap-2 sm:gap-3 md:gap-4">
           {[
             { icon: Clock, label: "Duration", value: "3 Days / 2 Nights" },
-            { icon: Sun, label: "Timings", value: "07:00 AM – 07:00 PM" },
-            { icon: Users, label: "Group Size", value: "3-8 Guests" },
-            { icon: Globe, label: "Languages", value: "Hindi & English" },
+            { icon: Car, label: "Customizable Tour Package", value: "Meals • Stay • Travel" },
+            { icon: Banknote, label: "Transparent Pricing", value: "Clear & honest pricing" },
+            { icon: Rainbow, label: "Spiritual Experience", value: "Guided temple visits" },
           ].map(({ icon: Icon, label, value }) => (
             <div key={label} className="bg-white p-2 sm:p-3 md:p-4 lg:p-5 rounded-lg sm:rounded-xl text-center shadow-sm">
               <Icon className="mx-auto mb-1.5 sm:mb-2 text-[#6A5631] w-4 h-4 sm:w-5 sm:h-5 md:w-6 md:h-6" />
@@ -579,7 +655,198 @@ const Tours: React.FC = () => {
         </div>
       </section>
 
-      {/* PRICING SUMMARY */}
+      {/* MAIN CONTENT LAYOUT */}
+      <div className="relative">
+        {/* Background decoration */}
+        <div className="absolute inset-0 bg-gradient-to-b from-transparent via-[#FAF9F6]/50 to-transparent pointer-events-none" />
+
+        <div className="relative max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-12 lg:py-16 xl:py-20">
+          <div className="grid grid-cols-1 lg:grid-cols-12 gap-8 lg:gap-12 xl:gap-16">
+            {/* ITINERARY SECTION - Left Column */}
+            <div className="lg:col-span-8 xl:col-span-7">
+              <div className="space-y-8 lg:space-y-12 xl:space-y-16">
+                {/* Section Header */}
+                <div className="text-center lg:text-left">
+                  <h2 className="text-2xl sm:text-3xl lg:text-4xl font-serif font-bold text-[#2D241C] mb-4">
+                    Your Spiritual Journey
+                  </h2>
+                  <p className="text-base sm:text-lg text-gray-600 max-w-2xl mx-auto lg:mx-0 leading-relaxed">
+                    Experience the divine path through sacred places and timeless traditions
+                  </p>
+                  <div className="w-24 h-1 bg-gradient-to-r from-[#EBC486] to-[#D4AF37] mx-auto lg:mx-0 mt-6 rounded-full"></div>
+                </div>
+
+                {/* Itinerary Days */}
+                {itinerary.map((day) => (
+                  <div key={day.day} className="group">
+                    {/* Day Header with elegant styling */}
+                    <div className="flex items-center gap-4 mb-6 lg:mb-8">
+                      <div className="flex items-center justify-center w-12 h-12 lg:w-16 lg:h-16 bg-gradient-to-br from-[#6A5631] to-[#5a4a2a] rounded-full shadow-lg">
+                        <span className="text-lg lg:text-xl font-bold text-white">{day.day}</span>
+                      </div>
+                      <div className="flex-1">
+                        <h3 className="text-xl sm:text-2xl lg:text-3xl font-serif font-bold text-[#2D241C] mb-1">
+                          {day.title}
+                        </h3>
+                        <div className="w-16 h-0.5 bg-[#EBC486] rounded-full"></div>
+                      </div>
+                    </div>
+
+                    {/* Day Content Card */}
+                    <div className="bg-white rounded-2xl lg:rounded-3xl shadow-xl border border-gray-100 overflow-hidden group-hover:shadow-2xl transition-all duration-300">
+                      <div className="grid grid-rows-1  lg:grid-rows-1 gap-0 ">
+                        {/* Image Section */}
+                        <div className="relative overflow-hidden h">
+                          <img
+                            src={day.image}
+                            alt={day.title}
+                            className="w-full h-50 sm:h-80 lg:h-50 object-cover group-hover:scale-105 transition-transform duration-700"
+                          />
+                          <div className="absolute inset-0 bg-gradient-to-t from-black/30 via-transparent to-transparent" />
+                          {/* Day number overlay */}
+                          <div className="absolute top-0 left-4 lg:top-6 lg:left-6">
+                            <div className="bg-white/90 backdrop-blur-sm rounded-full px-3 py-1 lg:px-4 lg:py-2">
+                              <span className="text-sm lg:text-base font-semibold text-[#2D241C]">Day {day.day}</span>
+                            </div>
+                          </div>
+                        </div>
+
+                        {/* Content Section */}
+                        <div className="p-6 lg:p-8 xl:p-10 space-y-6 lg:space-y-8">
+                          {/* Morning Session */}
+                          <div className="space-y-4">
+                            <div className="flex items-center gap-3">
+                              <div className="p-2 bg-[#EBC486]/10 rounded-lg">
+                                <Car className="w-5 h-5 lg:w-6 lg:h-6 text-[#6A5631]" />
+                              </div>
+                              <h4 className="text-lg lg:text-xl font-semibold text-[#2D241C]">
+                                {day.morning.title}
+                              </h4>
+                            </div>
+                            <ul className="space-y-3 lg:space-y-4">
+                              {day.morning.items.map((item, i) => (
+                                <li key={i} className="flex gap-3">
+                                  <div className="w-2 h-2 bg-[#EBC486] rounded-full mt-2 flex-shrink-0"></div>
+                                  <div>
+                                    <p className="font-semibold text-[#2D241C] text-sm lg:text-base">
+                                      {item.name}
+                                      {/* {item.time && (
+                                        <span className="text-[#6A5631] ml-2 font-medium">
+                                          ({item.time})
+                                        </span>
+                                      )} */}
+                                    </p>
+                                    <p className="text-gray-600 text-sm leading-relaxed mt-1">
+                                      {item.desc}
+                                    </p>
+                                  </div>
+                                </li>
+                              ))}
+                            </ul>
+                          </div>
+
+                          {/* Afternoon Session */}
+                          <div className="space-y-4 pt-4 border-t border-gray-100">
+                            <div className="flex items-center gap-3">
+                              <div className="p-2 bg-[#EBC486]/10 rounded-lg">
+                                <Clock className="w-5 h-5 lg:w-6 lg:h-6 text-[#6A5631]" />
+                              </div>
+                              <h4 className="text-lg lg:text-xl font-semibold text-[#2D241C]">
+                                {day.afternoon.title}
+                              </h4>
+                            </div>
+                            <ul className="space-y-3 lg:space-y-4">
+                              {day.afternoon.items.map((item, i) => (
+                                <li key={i} className="flex gap-3">
+                                  <div className="w-2 h-2 bg-[#EBC486] rounded-full mt-2 flex-shrink-0"></div>
+                                  <div>
+                                    <p className="font-semibold text-[#2D241C] text-sm lg:text-base">
+                                      {item.name}
+                                    </p>
+                                    <p className="text-gray-600 text-sm leading-relaxed mt-1">
+                                      {item.desc}
+                                    </p>
+                                  </div>
+                                </li>
+                              ))}
+                            </ul>
+                          </div>
+                        </div>
+                      </div>
+                    </div>
+                  </div>
+                ))}
+              </div>
+            </div>
+
+            {/* PRICING CALCULATOR - Right Column */}
+            <div className="hidden lg:block lg:col-span-4 xl:col-span-5 ">
+              <div className="lg:sticky lg:top-8 xl:top-12">
+                {/* Section Header */}
+                <div className="text-center lg:text-left mb-8">
+                  <h3 className="text-xl lg:text-2xl font-serif font-bold text-[#2D241C] mb-2">
+                    Customize Your Package
+                  </h3>
+                  <p className="text-sm lg:text-base text-gray-600 leading-relaxed">
+                    Personalize your spiritual journey with our flexible pricing options
+                  </p>
+                </div>
+
+                {/* Calculator Card */}
+                <div className=" overflow-hidden">
+                  <PricingCalculator />
+                </div>
+
+                {/* Trust Indicators */}
+                <div className="mt-8 text-center lg:text-left">
+                  <div className="flex items-center justify-center lg:justify-start gap-2 mb-3">
+                    {/* <div className="flex gap-1">
+                      {[...Array(5)].map((_, i) => (
+                        <div key={i} className="w-3 h-3 bg-[#EBC486] rounded-full"></div>
+                      ))}
+                    </div> */}
+                    {/* <span className="text-sm text-gray-600 font-medium">4.9/5 Rating</span> */}
+                  </div>
+                  {/* <p className="text-xs text-gray-500">
+                    Trusted by 500+ spiritual seekers
+                  </p> */}
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+   {/* CTA */}
+   <section className="px-3 sm:px-4 md:px-6 pb-24 sm:pb-24 md:pb-24 lg:pb-0">
+        <div className="max-w-3xl mx-auto text-center">
+          <div className="bg-gradient-to-br from-[#EBC486]/20 to-[#D4AF37]/20 rounded-2xl p-8 sm:p-10 md:p-12 backdrop-blur-sm border border-[#EBC486]/30">
+            <h2 className="text-2xl sm:text-3xl md:text-4xl font-serif font-bold text-[#2D241C] mb-4">
+              Ready for Your Divine Journey?
+            </h2>
+            <p className="text-base sm:text-lg text-gray-700 mb-6 max-w-2xl mx-auto leading-relaxed">
+              Use the pricing calculator on the right to customize your spiritual tour package.
+              Experience the sacred lands of Lord Krishna with personalized service and authentic hospitality.
+            </p>
+
+            <div className="flex flex-col sm:flex-row gap-4 justify-center items-center">
+              <div className="flex items-center gap-2 text-sm text-gray-600">
+                <div className="w-2 h-2 bg-green-500 rounded-full"></div>
+                <span>Expert Spiritual Guides</span>
+              </div>
+              <div className="flex items-center gap-2 text-sm text-gray-600">
+                <div className="w-2 h-2 bg-blue-500 rounded-full"></div>
+                <span>Authentic Local Cuisine</span>
+              </div>
+              <div className="flex items-center gap-2 text-sm text-gray-600">
+                <div className="w-2 h-2 bg-purple-500 rounded-full"></div>
+                <span>Sacred Site Access</span>
+              </div>
+            </div>
+          </div>
+
+          
+          {/* PRICING SUMMARY */}
       <section className="px-3 sm:px-4 md:px-6 py-6 sm:py-8 md:py-12 lg:py-16 pb-24 sm:pb-24 md:pb-24 lg:pb-0">
         <div className="max-w-5xl mx-auto">
           <div className="text-center mb-4 sm:mb-6 md:mb-8">
@@ -637,90 +904,6 @@ const Tours: React.FC = () => {
           </div>
         </div>
       </section>
-
-      {/* ITINERARY */}
-      <section className="max-w-6xl mx-auto px-3 sm:px-4 md:px-6 py-6 sm:py-8 md:py-12 lg:py-16 xl:py-20 pb-24 sm:pb-24 md:pb-24 lg:pb-0 space-y-6 sm:space-y-8 md:space-y-12 lg:space-y-16 xl:space-y-20">
-        {itinerary.map((day) => (
-          <div key={day.day}>
-            <h2 className="text-base sm:text-lg md:text-xl lg:text-2xl xl:text-3xl font-serif font-bold mb-3 sm:mb-4 md:mb-6 lg:mb-8 px-1 sm:px-2">
-              Day {day.day}: {day.title}
-            </h2>
-
-            <div className="grid md:grid-cols-1 lg:grid-cols-2 gap-3 sm:gap-4 md:gap-6 lg:gap-8 xl:gap-10">
-              <img
-                src={day.image}
-                alt={day.title}
-                className="rounded-lg sm:rounded-xl md:rounded-2xl lg:rounded-3xl shadow-lg w-full h-[180px] sm:h-[240px] md:h-[280px] lg:h-[320px] xl:h-[380px] object-cover"
-              />
-
-              <div className="space-y-3 sm:space-y-4 md:space-y-6 lg:space-y-8">
-                <div>
-                  <h3 className="font-bold text-xs sm:text-sm md:text-base lg:text-lg mb-1.5 sm:mb-2 md:mb-3 lg:mb-4 flex items-center gap-1.5 sm:gap-2">
-                    <Sun size={12} className="sm:w-3.5 sm:h-3.5 md:w-4 md:h-4 lg:w-[18px] lg:h-[18px]" /> {day.morning.title}
-                  </h3>
-                  <ul className="space-y-1.5 sm:space-y-2 md:space-y-3">
-                    {day.morning.items.map((item, i) => (
-                      <li key={i}>
-                        <p className="font-semibold text-xs sm:text-sm lg:text-base">
-                          {item.name}{" "}
-                          {item.time && (
-                            <span className="text-xs text-[#6A5631] ml-0.5 sm:ml-1 md:ml-2">
-                              ({item.time})
-                            </span>
-                          )}
-                        </p>
-                        <p className="text-xs text-gray-600 leading-relaxed">{item.desc}</p>
-                      </li>
-                    ))}
-                  </ul>
-                </div>
-
-                <div>
-                  <h3 className="font-bold text-xs sm:text-sm md:text-base lg:text-lg mb-1.5 sm:mb-2 md:mb-3 lg:mb-4 flex items-center gap-1.5 sm:gap-2">
-                    <Clock size={12} className="sm:w-3.5 sm:h-3.5 md:w-4 md:h-4 lg:w-[18px] lg:h-[18px]" /> {day.afternoon.title}
-                  </h3>
-                  <ul className="space-y-1.5 sm:space-y-2 md:space-y-3">
-                    {day.afternoon.items.map((item, i) => (
-                      <li key={i}>
-                        <p className="font-semibold text-xs sm:text-sm lg:text-base">{item.name}</p>
-                        <p className="text-xs text-gray-600 leading-relaxed">{item.desc}</p>
-                      </li>
-                    ))}
-                  </ul>
-                </div>
-              </div>
-            </div>
-          </div>
-        ))}
-      </section>
-
-      {/* CTA */}
-      <section className="px-3 sm:px-4 md:px-6 py-8 sm:py-10 md:py-12 lg:py-16 pb-24 sm:pb-24 md:pb-24 lg:pb-0">
-        <div className="max-w-3xl mx-auto text-center">
-          <div className="bg-gradient-to-br from-[#EBC486]/20 to-[#D4AF37]/20 rounded-2xl p-8 sm:p-10 md:p-12 backdrop-blur-sm border border-[#EBC486]/30">
-            <h2 className="text-2xl sm:text-3xl md:text-4xl font-serif font-bold text-[#2D241C] mb-4">
-              Ready for Your Divine Journey?
-            </h2>
-            <p className="text-base sm:text-lg text-gray-700 mb-6 max-w-2xl mx-auto leading-relaxed">
-              Use the pricing calculator on the right to customize your spiritual tour package.
-              Experience the sacred lands of Lord Krishna with personalized service and authentic hospitality.
-            </p>
-
-            <div className="flex flex-col sm:flex-row gap-4 justify-center items-center">
-              <div className="flex items-center gap-2 text-sm text-gray-600">
-                <div className="w-2 h-2 bg-green-500 rounded-full"></div>
-                <span>Expert Spiritual Guides</span>
-              </div>
-              <div className="flex items-center gap-2 text-sm text-gray-600">
-                <div className="w-2 h-2 bg-blue-500 rounded-full"></div>
-                <span>Authentic Local Cuisine</span>
-              </div>
-              <div className="flex items-center gap-2 text-sm text-gray-600">
-                <div className="w-2 h-2 bg-purple-500 rounded-full"></div>
-                <span>Sacred Site Access</span>
-              </div>
-            </div>
-          </div>
 
           <div className="mt-6 sm:mt-8 text-center">
             <p className="text-sm text-gray-500 mb-2">Trusted by spiritual seekers worldwide</p>

@@ -4,6 +4,7 @@ import Hotel from "../models/hotel";
 import { HotelType } from "../shared/types";
 import BookingModel from "../models/booking";
 import UserModel from "../models/user";
+import { sendBookingConfirmationToCustomer, sendBookingNotificationToAdmin, sendBookingNotificationToHotelOwner } from "../utils/email";
 
 const router = express.Router();
 
@@ -132,13 +133,63 @@ router.post("/booking/:hotelId",
       return res.status(404).json({ message: "Hotel not found" });
     }
 
+    // Get hotel owner's email
+    const hotelOwner = await UserModel.findById(hotel.userId);
+    const hotelOwnerEmail = hotelOwner?.email;
+
+    // Get customer's phone number
+    const customer = await UserModel.findById(userId);
+    const customerPhone = customer?.mobNo;
+
     const rooms = roomCount;
+
+    // Get room details for category information
+    console.log('roomsId:', roomsId);
+    console.log('hotel.rooms:', hotel.rooms.map(r => ({ id: r._id.toString(), category: r.category })));
+
+    const roomDetails = hotel.rooms.filter((room: any) => roomsId.includes(room._id.toString()));
+    console.log('Filtered roomDetails:', roomDetails);
+
+    // Define category names mapping
+    const categories = {
+      1: "Double Bed AC",
+      2: "Double Bed Non AC",
+      3: "3 Bed AC",
+      4: "3 Bed Non AC",
+      5: "4 Bed AC",
+      6: "4 Bed Non AC",
+      7: "Community Hall",
+      8: "Double Bed Deluxe",
+      9: "Triple Bed Deluxe",
+      10: "Four Bed Deluxe",
+    };
+
+    // Create a map to count rooms by category
+    const categoryCount = roomDetails.reduce((acc: any, room: any) => {
+      const categoryNum = room.category;
+      acc[categoryNum] = (acc[categoryNum] || 0) + 1;
+      return acc;
+    }, {});
+
+    // Create a clear room breakdown string with proper category names
+    const roomCategories = Object.entries(categoryCount)
+      .map(([category, count]) => {
+        const categoryNum = parseInt(category);
+        const categoryName = categories[categoryNum as keyof typeof categories] || `Category ${category}`;
+        console.log(`Category ${categoryNum}: ${categoryName} (${count})`);
+        return `${count as number} ${categoryName}${(count as number) > 1 ? 's' : ''}`;
+      })
+      .join(', ');
+
+    const roomBreakdown = `${rooms} Room${rooms > 1 ? 's' : ''} (${roomCategories})`;
+    console.log('Final room breakdown:', roomBreakdown);
 
     // Add the new booking
     const booking = {
       firstName,
       lastName,
       email,
+      phone: customerPhone,
       roomsId,
       checkIn: checkInDate,
       checkOut: checkOutDate,
@@ -146,12 +197,37 @@ router.post("/booking/:hotelId",
       userId,
       totalCost,
       rooms,
+      roomCategories: roomBreakdown,
       paymentOption: paymentOption || 'full',
       fullAmount: fullAmount || totalCost
     };
 
     const data = await BookingModel.create(booking);
     await Hotel.updateOne({_id : hotelId, "rooms._id":{$in:roomsId}},{$inc:{"rooms.$.availableRooms":-rooms}});
+
+    // Send confirmation emails asynchronously (don't wait for completion)
+    try {
+      // Send confirmation email to customer
+      sendBookingConfirmationToCustomer(email, booking, hotel).catch(error => {
+        console.error('Failed to send customer confirmation email:', error);
+      });
+
+      // Send notification email to admin
+      sendBookingNotificationToAdmin(booking, hotel).catch(error => {
+        console.error('Failed to send admin notification email:', error);
+      });
+
+      // Send notification email to hotel owner
+      if (hotelOwnerEmail) {
+        sendBookingNotificationToHotelOwner(booking, hotel, hotelOwnerEmail).catch(error => {
+          console.error('Failed to send hotel owner notification email:', error);
+        });
+      }
+    } catch (emailError) {
+      // Log email errors but don't fail the booking
+      console.error('Email sending error:', emailError);
+    }
+
     return res.status(200).json({ "message":"booking created successfully", data: data });
   } catch (error) {
     console.log(error);
