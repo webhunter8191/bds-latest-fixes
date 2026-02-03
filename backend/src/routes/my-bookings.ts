@@ -1,4 +1,5 @@
 import express, { Request, Response } from "express";
+import mongoose from "mongoose";
 import verifyToken from "../middleware/auth";
 import Hotel from "../models/hotel";
 import { HotelType } from "../shared/types";
@@ -15,13 +16,30 @@ router.get("/",
   try {
     
     const userId = req.userId;
-    const bookings = await BookingModel.find({ userId, deletedAt:null},{deletedAt:0,__v:0}).sort({ checkIn: -1 });    
-    const hotelIds = bookings.map((booking) => booking.hotelId);    
+    const bookings = await BookingModel.find(
+      { userId, deletedAt: null },
+      { deletedAt: 0, __v: 0 }
+    ).sort({ checkIn: -1 });
+
+    // Tour bookings don't have a Mongo hotelId; keep them separate
+    const tourBookings = bookings.filter(
+      (b: any) => b.bookingType === "tour" || !!b.tourDate || !!b.tourId
+    );
+    const hotelBookings = bookings.filter((b: any) => !tourBookings.includes(b));
+
+    const hotelIds = hotelBookings
+      .map((booking: any) => booking.hotelId)
+      .filter((id: any) => typeof id === "string" && mongoose.Types.ObjectId.isValid(id));
+
     const userDetails = await UserModel.findOne({_id:userId},{mobNo:1,_id:0});
-    const hotels = await Hotel.find({ _id: { $in: hotelIds } },{name:1,rooms:1,"imageUrls":1,location:1,address:1});    
-    const data = bookings.map((booking) => {
+    const hotels = await Hotel.find(
+      { _id: { $in: hotelIds } },
+      { name: 1, rooms: 1, imageUrls: 1, location: 1, address: 1 }
+    );
+
+    const data = hotelBookings.map((booking: any) => {
       const hotel = hotels.find((hotel) => hotel._id.toString() === booking.hotelId);
-      const rooms = hotel?.rooms.filter((room:any) => booking.roomsId.includes(room._id.toString()));      
+      const rooms = hotel?.rooms.filter((room:any) => (booking.roomsId || []).includes(room._id.toString()));      
       return {
         ...booking.toJSON(),
         hotelName: hotel?.name,
@@ -30,6 +48,11 @@ router.get("/",
         location: hotel?.location,
         address: hotel?.address,
         rooms,
+        tourDate: booking.tourDate, // Add tourDate
+        guests: booking.guests, // Add guests
+        includeFood: booking.includeFood, // Add includeFood
+        includeStay: booking.includeStay, // Add includeStay
+        paymentIntentId: booking.paymentIntentId, // Add paymentIntentId
 
       };
     });    
@@ -45,6 +68,11 @@ const finalData = data.map((booking) => {
     imageUrl:booking.imageUrl,
     location: booking.location,
     address: booking.address,
+    tourDate: booking.tourDate, // Add tourDate
+    guests: booking.guests, // Add guests
+    includeFood: booking.includeFood, // Add includeFood
+    includeStay: booking.includeStay, // Add includeStay
+    paymentIntentId: booking.paymentIntentId, // Add paymentIntentId
     bookings:booking?.rooms?.map((room:any) => {
       return {
         checkIn:booking.checkIn,
@@ -74,6 +102,34 @@ const groupedData = finalData.reduce((acc: any, curr) => {
   
   return acc;
 }, []);
+
+// Add tour bookings as their own group so the frontend can render them
+if (tourBookings.length > 0) {
+  groupedData.unshift({
+    hotelName: "Tour Bookings",
+    firstName: tourBookings[0].firstName,
+    lastName: tourBookings[0].lastName,
+    email: tourBookings[0].email,
+    phone: userDetails?.mobNo,
+    imageUrl: undefined,
+    location: "",
+    address: "",
+    bookings: tourBookings.map((b: any) => ({
+      bookingId: b._id,
+      tourId: b.tourId,
+      tourName: b.tourName,
+      checkIn: b.checkIn,
+      checkOut: b.checkOut,
+      tourDate: b.tourDate,
+      guests: b.guests,
+      includeFood: b.includeFood,
+      includeStay: b.includeStay,
+      totalCost: Math.abs(b.totalCost),
+      paymentOption: b.paymentOption || "full",
+      fullAmount: b.fullAmount || b.totalCost,
+    })),
+  });
+}
 
     return res.status(200).json(groupedData);
   } catch (error) {
@@ -116,9 +172,88 @@ router.post("/booking/:hotelId",
     
     const userId = req.userId;
     const hotelId = req.params.hotelId;
-    const { firstName, lastName, email, checkIn, checkOut, totalCost, roomsId, roomCount, paymentOption, fullAmount } = req.body;
+    const {
+      firstName,
+      lastName,
+      email,
+      checkIn,
+      checkOut,
+      totalCost,
+      totalAmount,
+      roomsId,
+      roomCount,
+      paymentOption,
+      fullAmount,
+      // Tour booking fields
+      tourId,
+      tourName,
+      tourDate,
+      guests,
+      includeFood,
+      includeStay,
+      paymentIntentId,
+    } = req.body;
     console.log("in booking route", req.body);
 
+    // ---- TOUR BOOKING FLOW ----
+    const isTourBooking =
+      !!tourDate ||
+      !!tourId ||
+      includeFood !== undefined ||
+      includeStay !== undefined ||
+      guests !== undefined ||
+      totalAmount !== undefined;
+
+    if (isTourBooking) {
+      if (!tourDate) {
+        return res.status(400).json({ message: "tourDate is required for tour booking" });
+      }
+
+      const tourStart = new Date(tourDate);
+      if (isNaN(tourStart.getTime())) {
+        return res.status(400).json({ message: "Invalid tourDate" });
+      }
+
+      const user = await UserModel.findById(userId, {
+        firstName: 1,
+        lastName: 1,
+        email: 1,
+        mobNo: 1,
+      });
+      if (!user) {
+        return res.status(404).json({ message: "User not found" });
+      }
+
+      // totalAmount = amount paid now (30% for partial, 100% for full)
+      const amountPaid = Number(totalAmount ?? totalCost ?? 0);
+      const totalBookingCost = Number(fullAmount ?? amountPaid);
+      if (!Number.isFinite(amountPaid) || amountPaid <= 0) {
+        return res.status(400).json({ message: "Invalid payment amount" });
+      }
+
+      const booking = {
+        bookingType: "tour",
+        tourId: tourId || hotelId,
+        tourName: tourName || undefined,
+        userId,
+        firstName: user.firstName,
+        lastName: user.lastName,
+        email: user.email,
+        checkIn: tourStart,
+        checkOut: tourStart,
+        totalCost: amountPaid,
+        paymentOption: paymentOption || "full",
+        fullAmount: totalBookingCost,
+        paymentIntentId,
+        tourDate,
+        guests: guests !== undefined ? Number(guests) : undefined,
+        includeFood: !!includeFood,
+        includeStay: !!includeStay,
+      };
+
+      const data = await BookingModel.create(booking);
+      return res.status(200).json({ message: "tour booking created successfully", data });
+    }
 
     // Validate request payload
     const checkInDate = new Date(checkIn);

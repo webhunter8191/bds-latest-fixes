@@ -424,17 +424,29 @@ router.get("/admin/bookings",
   verifyToken,
   async(req:Request,res:Response)=>{
   try{
-    const hotelData = await Hotel.find({},{name:1,rooms:1,imageUrls:1,userId:1,location:1,type:1,status:1}).lean();
-    if(!hotelData || hotelData.length === 0){
-      return res.status(200).json([]);
-    }
-    const hotelIds = hotelData.map((hotel:any)=>hotel._id.toString());
-    const bookings = await BookingModel.find({hotelId:{$in:hotelIds},deletedAt:null},{hotelId:0, __v:0}).lean();
+    const hotelData = await Hotel.find({},{name:1,rooms:1,imageUrls:1,userId:1,location:1,type:1,status:1,starRating:1}).lean();
+    const hotelIds = (hotelData || []).map((hotel:any)=>hotel._id.toString());
+    
+    // Fetch hotel bookings (exclude tour bookings)
+    const hotelBookings = await BookingModel.find({
+      hotelId: {$in: hotelIds},
+      deletedAt: null,
+      $or: [{ bookingType: { $ne: "tour" } }, { bookingType: { $exists: false } }]
+    },{hotelId:0, __v:0}).lean();
+    
+    // Fetch tour bookings separately
+    const tourBookings = await BookingModel.find({
+      deletedAt: null,
+      $or: [{ bookingType: "tour" }, { tourId: { $exists: true, $ne: null } }]
+    },{__v:0}).lean();
+    
+    const bookings = hotelBookings;
     
     // Get all user IDs (both booking guests and hotel owners)
-    const bookingUserIds = [...new Set(bookings.map((booking: any) => booking.userId))];
-    const hotelOwnerIds = [...new Set(hotelData.map((hotel: any) => hotel.userId))];
-    const allUserIds = [...new Set([...bookingUserIds, ...hotelOwnerIds])];
+    const bookingUserIds = [...new Set(bookings.map((b: any) => b.userId))];
+    const tourUserIds = [...new Set(tourBookings.map((b: any) => b.userId))];
+    const hotelOwnerIds = [...new Set((hotelData || []).map((h: any) => h.userId))];
+    const allUserIds = [...new Set([...bookingUserIds, ...tourUserIds, ...hotelOwnerIds])];
     
     const userData = await UserModel.find({_id:{$in:allUserIds}},{firstName:1,lastName:1,email:1,mobNo:1}).lean();
     
@@ -479,6 +491,7 @@ router.get("/admin/bookings",
           location: hotel?.location || '',
           type: hotel?.type || '',
           status: hotel?.status || 'active',
+          starRating: hotel?.starRating || 0,
           imageUrl: hotel?.imageUrls?.[0] || '',
           bookings: []
         };
@@ -502,8 +515,52 @@ router.get("/admin/bookings",
     });
 
 // Transform the groupedBookings object into an array (only hotels with bookings)
-  const bookingsArray = Object.values(groupedBookings);
-      return res.status(200).json(bookingsArray);
+    const bookingsArray = Object.values(groupedBookings);
+    
+    // Add tour bookings as a separate group with full customer details
+    if (tourBookings.length > 0) {
+      const tourBookingsGroup = {
+        hotelName: "Tour Bookings",
+        isTourBookings: true,
+        firstName: "",
+        lastName: "",
+        email: "",
+        phone: "",
+        location: "Tours",
+        type: "Tour",
+        status: "active",
+        imageUrl: "",
+        starRating: 0,
+        bookings: tourBookings.map((b: any) => {
+          const customer = userData.find((u: any) =>
+            (u._id?.toString?.() || String(u._id)) === (b.userId?.toString?.() || String(b.userId))
+          );
+          return {
+            checkIn: b.checkIn,
+            checkOut: b.checkOut,
+            tourDate: b.tourDate,
+            tourId: b.tourId,
+            tourName: b.tourName,
+            guests: b.guests,
+            includeFood: b.includeFood,
+            includeStay: b.includeStay,
+            category: null,
+            bookingId: b._id?.toString?.() || b._id,
+            roomsCount: null,
+            totalCost: b.totalCost,
+            paymentOption: b.paymentOption || "full",
+            fullAmount: b.fullAmount || b.totalCost,
+            guestFirstName: b.firstName,
+            guestLastName: b.lastName,
+            guestEmail: b.email,
+            guestPhone: customer?.mobNo || "",
+          };
+        }),
+      };
+      bookingsArray.unshift(tourBookingsGroup);
+    }
+    
+    return res.status(200).json(bookingsArray);
     }catch(error){
       console.log(error);
       return res.status(500).json({ message: "Unable to fetch hotels" });

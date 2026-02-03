@@ -1,0 +1,517 @@
+{
+    "tours": [
+        {
+            "id": "braj-3d",
+            "slug": "3-days-braj-darshan",
+            "title": "Brij Darshan – 3 Day Spiritual Tour",
+            "subtitle": "Sacred Pilgrimage Experience",
+            "duration": "3 Days / 2 Nights",
+            "days": 3,
+            "nights": 2,
+            "heroSlides": [
+                {
+                    "title": "Brij Darshan – 3 Day Spiritual Tour",
+                    "subtitle": "Sacred Pilgrimage Experience",
+                    "description": "A soulful journey through Mathura, Gokul, Barsana, Govardhan and Vrindavan — experiencing the divine land of Lord Krishna.",
+                    "highlight": "Divine Heritage"
+                },
+                {
+                    "title": "Experience the Divine Land",
+                    "subtitle": "Authentic Spiritual Journey",
+                    "description": "Walk in the footsteps of Lord Krishna, visit sacred temples, and immerse yourself in the rich cultural heritage of Brij Bhoomi.",
+                    "highlight": "Sacred Places"
+                },
+                {
+                    "title": "Personalized Spiritual Experience",
+                    "subtitle": "Tailored for Your Soul",
+                    "description": "Customize your pilgrimage with expert guides, authentic cuisine, and premium accommodations.",
+                    "highlight": "Divine Connection"
+                }
+            ],
+            "pricing": {
+                "baseTour": 1499,
+                "food": 350,
+                "stay": {
+                    "upto3": 1000,
+                    "extra4th": 1500,
+                    "fiveToSix": 2000,
+                    "sevenToEight": 2500
+                },
+                "gstPercent": 5
+            },
+            "itinerary": [
+                {
+                    "day": 1,
+                    "title": "Mathura & Gokul",
+                    "image": "mathura.png",
+                    "morning": {
+                        "title": "Morning – Mathura",
+                        "items": [
+                            {
+                                "name": "Shri Krishna Janmabhoomi",
+                                "desc": "The sacred birthplace of Lord Krishna, one of the most important pilgrimage sites in India."
+                            },
+                            {
+                                "name": "Dwarkadhish Temple",
+                                "desc": "A grand temple known for its intricate architecture and vibrant devotional atmosphere."
+                            },
+                            {
+                                "name": "Yamuna Ghat",
+                                "desc": ""
+                            }
+                        ]
+                    },
+                    "afternoon": {
+                        "title": "Afternoon – Gokul",
+                        "items": [
+                            {
+                                "name": "Raman Reti",
+                                "desc": "The holy sands where Lord Krishna spent his childhood with friends."
+                            },
+                            {
+                                "name": "84 Khamba",
+                                "desc": "A historic architectural structure supported by 84 stone pillars."
+                            },
+                            {
+                                "name": "Brahmand Ghat",
+                                "desc": "The divine place where Krishna revealed the universe to Mother Yashoda."
+                            },
+                            {
+                                "name": "Chintaharan Mahadev Temple",
+                                "desc": "A peaceful Mahadev Temple believed to remove worries and stress."
+                            }
+                        ]
+                    }
+                },
+                {
+                    "day": 2,
+                    "title": "Nandgaon, Barsana & Govardhan",
+                    "image": "bg3.png",
+                    "morning": {
+                        "title": "Morning – Barsana & Nandgaon",
+                        "items": [
+                            {
+                                "name": "Nand Mahal",
+                                "desc": "The residence of Nanda Baba, foster father of Lord Krishna."
+                            },
+                            {
+                                "name": "Radha Rani Temple",
+                                "desc": "A hilltop temple in Barsana dedicated to Shri Radha Rani."
+                            },
+                            {
+                                "name": "Kirti Mandir",
+                                "desc": "The birthplace of Radha Rani’s mother, Kirti Maiya."
+                            },
+                            {
+                                "name": "Gahvar Van",
+                                "desc": "A sacred forest where Radha and Krishna performed divine pastimes."
+                            }
+                        ]
+                    },
+                    "afternoon": {
+                        "title": "Afternoon – Govardhan",
+                        "items": [
+                            {
+                                "name": "Govardhan Parikrama",
+                                "desc": "Sacred parikrama route."
+                            },
+                            {
+                                "name": "Radha Kund",
+                                "desc": "Most sacred kund of Braj."
+                            },
+                            {
+                                "name": "Dan Ghati Temple",
+                                "desc": "The main temple marking the beginning of Govardhan Parikrama."
+                            },
+                            {
+                                "name": "Radha Kund & Shyam Kund",
+                                "desc": "The most sacred water ponds in the entire Braj region."
+                            },
+                            {
+                                "name": "Jatipura",
+                                "desc": "A major stop during Govardhan Parikrama."
+                            },
+                            {
+                                "name": "Poochhri Ka Lota",
+                                "desc": "A unique and spiritually significant rock formation."
+                            }
+                        ]
+                    }
+                },
+                {
+                    "day": 3,
+                    "title": "Vrindavan",
+                    "image": "bg1.png",
+                    "morning": {
+                        "title": "Morning – Vrindavan Temples",
+                        "items": [
+                            {
+                                "name": "Banke Bihari Temple",
+                                "desc": "The most famous temple of Vrindavan, known for its unique darshan style."
+                            },
+                            {
+                                "name": "Radha Vallabh Temple",
+                                "desc": "A temple focusing on devotion to Shri Radha as supreme."
+                            },
+                            {
+                                "name": "Nidhivan",
+                                "desc": "A mystical forest believed to host divine Raas Leela every night."
+                            },
+                            {
+                                "name": "Radha Raman & Rangji Temple",
+                                "desc": "Ancient temples known for devotion and South Indian architecture."
+                            },
+                            {
+                                "name": "Tatiya Sthan",
+                                "desc": ""
+                            },
+                            {
+                                "name": "Madan Mohan Temple",
+                                "desc": "A beautiful temple known for its serene surroundings."
+                            }
+                        ]
+                    },
+                    "afternoon": {
+                        "title": "Evening – Vrindavan",
+                        "items": [
+                            {
+                                "name": "Prem Mandir",
+                                "desc": "A beautifully illuminated marble temple symbolizing divine love."
+                            },
+                            {
+                                "name": "ISKCON Temple",
+                                "desc": "Krishna-Balaram Mandir, a global center for devotion."
+                            },
+                            {
+                                "name": "Chandrodaya Mandir",
+                                "desc": "Upcoming world’s tallest Krishna temple."
+                            },
+                            {
+                                "name": "Shri Priyakant Ju Temple",
+                                "desc": "A peaceful lotus-shaped temple"
+                            },
+                            {
+                                "name": "Chaar Dham Temple",
+                                "desc": ""
+                            }
+                        ]
+                    }
+                }
+            ]
+        },
+        {
+            "id": "braj-5d",
+            "slug": "5-days-braj-darshan",
+            "title": "Brij Darshan – 5 Day Spiritual Tour",
+            "subtitle": "Complete Braj Bhoomi Experience",
+            "duration": "5 Days / 4 Nights",
+            "days": 5,
+            "nights": 4,
+            "heroSlides": [
+                {
+                    "title": "Brij Darshan – 5 Day Spiritual Tour",
+                    "subtitle": "Complete Braj Bhoomi Experience",
+                    "description": "An extended spiritual journey with more time in Vrindavan and deeper exploration of Braj.",
+                    "highlight": "Complete Darshan"
+                },
+                {
+                    "title": "Walk the Sacred Land of Shri Krishna",
+                    "subtitle": "Braj Darshan at a Divine Pace",
+                    "description": "An immersive spiritual tour designed for devotion, reflection and inner peace.",
+                    "highlight": "Spiritual Yatra"
+                }
+            ],
+            "pricing": {
+                "baseTour": 1899,
+                "food": 350,
+                "stay": {
+                    "upto3": 1000,
+                    "extra4th": 1500,
+                    "fiveToSix": 2000,
+                    "sevenToEight": 2500
+                },
+                "gstPercent": 5
+            },
+            "itinerary": [
+                {
+                    "day": 1,
+                    "title": "Mathura, Gokul & Rawal",
+                    "image": "mathura.png",
+                    "morning": {
+                        "title": "Gokul & Rawal",
+                        "items": [
+                            {
+                                "name": "Nand Bhawan",
+                                "desc": "The childhood home of Lord Krishna in Gokul."
+                            },
+                            {
+                                "name": "Raman Reti",
+                                "desc": "Sacred sands where Krishna played with his friends."
+                            },
+                            {
+                                "name": "Brahmand Ghat",
+                                "desc": "The place where Krishna revealed the universe to Yashoda."
+                            },
+                            {
+                                "name": "84 Khamba",
+                                "desc": "Historic structure supported by 84 stone pillars."
+                            },
+                            {
+                                "name": "Chintaharan Mahadev",
+                                "desc": "Ancient Shiva temple believed to remove worries."
+                            },
+                            {
+                                "name": "Rawal Village",
+                                "desc": "Believed birthplace of Shri Radha Rani."
+                            }
+                        ]
+                    },
+                    "afternoon": {
+                        "title": "Mathura Darshan",
+                        "items": [
+                            {
+                                "name": "Dwarkadhish Temple",
+                                "desc": "One of the most revered temples of Mathura."
+                            },
+                            {
+                                "name": "Shri Krishna Janmabhoomi",
+                                "desc": "The sacred birthplace of Lord Krishna."
+                            },
+                            {
+                                "name": "Vishram Ghat",
+                                "desc": "Holy Yamuna ghat where Krishna rested after victory over Kansa."
+                            },
+                            {
+                                "name": "Birla Mandir",
+                                "desc": "Modern temple known for its peaceful surroundings."
+                            },
+                            {
+                                "name": "Kans Qila",
+                                "desc": "Historic fort associated with King Kansa."
+                            }
+                        ]
+                    }
+                },
+                {
+                    "day": 2,
+                    "title": "Barsana, Nandgaon & Govardhan",
+                    "image": "bg3.png",
+                    "morning": {
+                        "title": "Barsana & Nandgaon",
+                        "items": [
+                            {
+                                "name": "Maan Mandir",
+                                "desc": "Temple representing Radha Rani’s loving sulk (maan)."
+                            },
+                            {
+                                "name": "Radha Rani Mahal",
+                                "desc": "Hilltop shrine dedicated to Shri Radha Rani."
+                            },
+                            {
+                                "name": "Kirti Mandir",
+                                "desc": "Birthplace of Kirti Maiya, mother of Radha Rani."
+                            },
+                            {
+                                "name": "Gahvar Van",
+                                "desc": "Sacred forest of divine pastimes of Radha Krishna."
+                            },
+                            {
+                                "name": "Nand Mahal",
+                                "desc": "Residence of Nanda Baba in Nandgaon."
+                            },
+                            {
+                                "name": "Aasheshwar Mahadev",
+                                "desc": "Ancient Shiva temple worshipped by the residents of Braj."
+                            },
+                            {
+                                "name": "Kadamb ter",
+                                "desc": "Sacred spot associated with Krishna’s pastimes."
+                            }
+                        ]
+                    },
+                    "afternoon": {
+                        "title": "Govardhan Darshan",
+                        "items": [
+                            {
+                                "name": "Daan Ghati Temple",
+                                "desc": "Sacred site marking Krishna’s divine toll pastime."
+                            },
+                            {
+                                "name": "Jatipura",
+                                "desc": "Major starting point of Govardhan Parikrama."
+                            },
+                            {
+                                "name": "Talhati",
+                                "desc": "Base area of Govardhan Hill."
+                            },
+                            {
+                                "name": "Poochhri Ka Lota",
+                                "desc": "Unique rock formation resembling a water pot."
+                            },
+                            {
+                                "name": "Mansi Ganga",
+                                "desc": "Sacred water tank created by Krishna’s mind."
+                            },
+                            {
+                                "name": "Kusum Sarovar",
+                                "desc": "Beautiful kund where Radha-Krishna met."
+                            },
+                            {
+                                "name": "Radha Kund",
+                                "desc": "Most sacred kund dedicated to Shri Radha."
+                            },
+                            {
+                                "name": "Shyam Kund",
+                                "desc": "Sacred kund associated with Lord Krishna."
+                            },
+                            {
+                                "name": "Lalita Kund",
+                                "desc": "Kund dedicated to Lalita Sakhi."
+                            }
+                        ]
+                    }
+                },
+                {
+                    "day": 3,
+                    "title": "Vrindavan Darshan",
+                    "image": "bg1.png",
+                    "morning": {
+                        "title": "Main Temples",
+                        "items": [
+                            {
+                                "name": "Banke Bihari Temple",
+                                "desc": "Most famous temple of Vrindavan with unique darshan style."
+                            },
+                            {
+                                "name": "Snehi Bihari Temple",
+                                "desc": "Temple dedicated to the loving form of Krishna."
+                            },
+                            {
+                                "name": "Radha Vallabh Temple",
+                                "desc": "Temple focusing on devotion to Shri Radha."
+                            },
+                            {
+                                "name": "Radha Raman Temple",
+                                "desc": "Ancient temple with self-manifested deity."
+                            },
+                            {
+                                "name": "Madan Mohan Temple",
+                                "desc": "One of the oldest temples in Vrindavan."
+                            },
+                            {
+                                "name": "Neem Karori Ashram",
+                                "desc": ""
+                            }
+                        ]
+                    },
+                    "afternoon": {
+                        "title": "Sacred Places",
+                        "items": [
+                            {
+                                "name": "Nidhivan",
+                                "desc": "Mystical forest believed to host divine Raas Leela."
+                            },
+                            {
+                                "name": "Keshi Ghat",
+                                "desc": "Yamuna ghat where Krishna defeated demon Keshi."
+                            },
+                            {
+                                "name": "Vanshi Vat",
+                                "desc": "Sacred banyan tree associated with Krishna’s flute."
+                            },
+                            {
+                                "name": "Gopeshwar Mahadev",
+                                "desc": "Shiva temple guarding the Raas Leela."
+                            },
+                            {
+                                "name": "Vankhandi Mahadev Temple",
+                                "desc": ""
+                            },
+                            {
+                                "name": "Pagal Baba Temple",
+                                "desc": "Peaceful temple known for panoramic views."
+                            }
+                        ]
+                    }
+                },
+                {
+                    "day": 4,
+                    "title": "Vrindavan & Dauji",
+                    "image": "bg1.png",
+                    "morning": {
+                        "title": "Vrindavan Highlights",
+                        "items": [
+                            {
+                                "name": "Prem Mandir",
+                                "desc": "Magnificent marble temple symbolizing divine love."
+                            },
+                            {
+                                "name": "ISKCON Temple",
+                                "desc": "Krishna-Balaram Mandir and global spiritual center."
+                            },
+                            {
+                                "name": "Chandrodaya Mandir",
+                                "desc": "Upcoming tallest Krishna temple in the world."
+                            },
+                            {
+                                "name": "Jaipur Temple",
+                                "desc": "Red sandstone temple built by the Jaipur royal family."
+                            },
+                            {
+                                "name": "Rangji Temple",
+                                "desc": "South Indian style temple dedicated to Lord Ranganatha."
+                            }
+                        ]
+                    },
+                    "afternoon": {
+                        "title": "Vrindavan & Dauji Darshan",
+                        "items": [
+                            {
+                                "name": "Dauji Temple",
+                                "desc": "Ancient temple dedicated to Lord Balaram."
+                            },
+                            {
+                                "name": "Bhandir Van",
+                                "desc": "Sacred forest where Lord Krishna and Radha performed divine pastimes."
+                            },
+                            {
+                                "name": "Radha Rani Temple ",
+                                "desc": ""
+                            },
+                            {
+                                "name": "Ram Taal",
+                                "desc": "Holy pond associated with Lord Balaram, known for its spiritual significance."
+                            },
+                            {
+                                "name": "Garud Dev Ji Temple",
+                                "desc": "Temple dedicated to Garud Dev, the divine vehicle of Lord Vishnu."
+                            }
+                        ]
+                    }
+                },
+                {
+                    "day": 5,
+                    "title": "Agra",
+                    "image": "agra.png",
+                    "morning": {
+                        "title": "Agra Sightseeing",
+                        "items": [
+                            {
+                                "name": "Taj Mahal",
+                                "desc": "World-famous marble monument and symbol of love."
+                            },
+                            {
+                                "name": "Agra Fort",
+                                "desc": "Historic Mughal fort and UNESCO World Heritage Site."
+                            }
+                        ]
+                    },
+                    "afternoon": {
+                        "title": "Leisure / Return",
+                        "items": []
+                    }
+                }
+            ]
+        }
+    ]
+}

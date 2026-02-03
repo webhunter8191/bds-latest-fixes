@@ -78,15 +78,15 @@ export const sendBookingConfirmationToCustomer = async (
             </div>
             ${bookingData.paymentOption === 'partial' ? `<div style="display: table-row;">
               <div style="display: table-cell; padding: 8px 0; font-weight: bold;">Amount Paid:</div>
-              <div style="display: table-cell; padding: 8px 0; font-weight: bold; color: #28a745;">₹${bookingData.fullAmount?.toLocaleString() || '0'}</div>
+              <div style="display: table-cell; padding: 8px 0; font-weight: bold; color: #28a745;">₹${Math.round(bookingData.totalCost).toLocaleString()}</div>
             </div>
             <div style="display: table-row;">
               <div style="display: table-cell; padding: 8px 0; font-weight: bold;">Amount Due at Check-in:</div>
-              <div style="display: table-cell; padding: 8px 0; font-weight: bold; color: #dc3545;">₹${(bookingData.totalCost - (bookingData.fullAmount || 0)).toLocaleString()}</div>
+              <div style="display: table-cell; padding: 8px 0; font-weight: bold; color: #dc3545;">₹${Math.round(((bookingData.fullAmount || bookingData.totalCost) - bookingData.totalCost)).toLocaleString()}</div>
             </div>` : ''}
             <div style="display: table-row;">
               <div style="display: table-cell; padding: 8px 0; font-weight: bold;">Total Amount:</div>
-              <div style="display: table-cell; padding: 8px 0; font-weight: bold; color: #7B3F00;">₹${bookingData.totalCost.toLocaleString()}</div>
+              <div style="display: table-cell; padding: 8px 0; font-weight: bold; color: #7B3F00;">₹${Math.round(bookingData.fullAmount || bookingData.totalCost).toLocaleString()}</div>
             </div>
           </div>
         </div>
@@ -194,15 +194,15 @@ export const sendBookingNotificationToAdmin = async (
             </div>
             ${bookingData.paymentOption === 'partial' ? `<div style="display: table-row;">
               <div style="display: table-cell; padding: 8px 0; font-weight: bold;">Amount Paid Online:</div>
-              <div style="display: table-cell; padding: 8px 0; font-weight: bold; color: #28a745;">₹${bookingData.fullAmount?.toLocaleString() || '0'}</div>
+              <div style="display: table-cell; padding: 8px 0; font-weight: bold; color: #28a745;">₹${Math.round(bookingData.totalCost).toLocaleString()}</div>
             </div>
             <div style="display: table-row;">
               <div style="display: table-cell; padding: 8px 0; font-weight: bold;">Amount Due at Check-in:</div>
-              <div style="display: table-cell; padding: 8px 0; font-weight: bold; color: #dc3545;">₹${(bookingData.totalCost - (bookingData.fullAmount || 0)).toLocaleString()}</div>
+              <div style="display: table-cell; padding: 8px 0; font-weight: bold; color: #dc3545;">₹${Math.round(((bookingData.fullAmount || bookingData.totalCost) - bookingData.totalCost)).toLocaleString()}</div>
             </div>` : ''}
             <div style="display: table-row;">
               <div style="display: table-cell; padding: 8px 0; font-weight: bold;">Total Amount:</div>
-              <div style="display: table-cell; padding: 8px 0; font-weight: bold; color: #7B3F00;">₹${bookingData.totalCost.toLocaleString()}</div>
+              <div style="display: table-cell; padding: 8px 0; font-weight: bold; color: #7B3F00;">₹${Math.round(bookingData.fullAmount || bookingData.totalCost).toLocaleString()}</div>
             </div>
           </div>
         </div>
@@ -311,15 +311,15 @@ export const sendBookingNotificationToHotelOwner = async (
             </div>
             ${bookingData.paymentOption === 'partial' ? `<div style="display: table-row;">
               <div style="display: table-cell; padding: 8px 0; font-weight: bold;">Amount Paid Online:</div>
-              <div style="display: table-cell; padding: 8px 0; font-weight: bold; color: #28a745;">₹${bookingData.fullAmount?.toLocaleString() || '0'}</div>
+              <div style="display: table-cell; padding: 8px 0; font-weight: bold; color: #28a745;">₹${Math.round(bookingData.totalCost).toLocaleString()}</div>
             </div>
             <div style="display: table-row;">
               <div style="display: table-cell; padding: 8px 0; font-weight: bold;">Amount Due at Check-in:</div>
-              <div style="display: table-cell; padding: 8px 0; font-weight: bold; color: #dc3545;">₹${(bookingData.totalCost - (bookingData.fullAmount || 0)).toLocaleString()}</div>
+              <div style="display: table-cell; padding: 8px 0; font-weight: bold; color: #dc3545;">₹${Math.round(((bookingData.fullAmount || bookingData.totalCost) - bookingData.totalCost)).toLocaleString()}</div>
             </div>` : ''}
             <div style="display: table-row;">
               <div style="display: table-cell; padding: 8px 0; font-weight: bold;">Total Amount:</div>
-              <div style="display: table-cell; padding: 8px 0; font-weight: bold; color: #7B3F00;">₹${bookingData.totalCost.toLocaleString()}</div>
+              <div style="display: table-cell; padding: 8px 0; font-weight: bold; color: #7B3F00;">₹${Math.round(bookingData.fullAmount || bookingData.totalCost).toLocaleString()}</div>
             </div>
           </div>
         </div>

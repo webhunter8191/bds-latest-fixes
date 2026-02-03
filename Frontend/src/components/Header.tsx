@@ -1,4 +1,3 @@
-
 import { useState } from "react";
 import { NavLink } from "react-router-dom";
 import { FaBars, FaTimes, FaUserCircle } from "react-icons/fa";
@@ -45,7 +44,7 @@ const Header = () => {
             </button>
 
             <NavLink
-              to="/tours"
+              to="/packages"
               className="inline-block text-[#6A5631] font-bold text-xl hover:text-black transition duration-300 mb-8"
               onClick={() => setIsMenuOpen(false)}
             >
@@ -91,7 +90,7 @@ const Header = () => {
         {/* Normal Navigation for Larger Screens */}
         <nav className="hidden lg:flex items-center space-x-6">
           <NavLink
-            to="/tours"
+            to="/packages"
             className="text-gray-700 font-semibold hover:text-[#6A5631] transition duration-300"
           >
             Tours
@@ -102,7 +101,7 @@ const Header = () => {
               {!isAdmin ? (
                 <NavLink
                   to="/my-bookings"
-                  className="bg-bg-[#6A5631] text-white px-4 py-2 rounded-lg hover:bg-[#6A5631] transition duration-300"
+                  className="bg-[#6A5631] text-white px-4 py-2 rounded-lg hover:bg-[#6A5631] transition duration-300"
                 >
                   My Bookings
                 </NavLink>

@@ -29,6 +29,7 @@ import ContactUs from "./components/Contact";
 import AgreementTwoStep from "./pages/AgreementFrom";
 import TermsAndConditions from "./pages/Terms&Conditions";
 import AuthChoice from "./pages/AuthChoice";
+import PackagesLandingPage from "./pages/PackagesLandingPage";
 
 const App = () => {
   const { isLoggedIn, isAdmin } = useAppContext();
@@ -46,7 +47,17 @@ const App = () => {
           }
         />
         <Route
-          path="/tours"
+          path="/packages"
+          element={
+            <div className="mx-auto">
+              <Header />
+              <PackagesLandingPage />
+              <Footer />
+            </div>
+          }
+        />
+        <Route
+          path="/tours/:slug"
           element={
             <div className="mx-auto">
               <Header />

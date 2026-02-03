@@ -94,6 +94,8 @@ export const signIn = async (formData: SignInFormData) => {
 
 export const validateToken = async () => {
   const response = await fetch(`${API_BASE_URL}/api/auth/validate-token`, {
+    method: "GET",
+    credentials: "include", // ✅ VERY IMPORTANT
     headers: getAuthHeaders(false),
   });
   const data = await response.json();
