@@ -38,73 +38,6 @@ const Tours: React.FC = () => {
   const location = useLocation();
   const { currentUser, showToast } = useAppContext();
 
-  // const startRazorpayPayment = async () => {
-  //   const totalAmount = calculateTotal();
-
-  //   const res = await fetch(`${API_BASE_URL}/api/payment/order`, {
-  //     method: "POST",
-  //     headers: {
-  //       "Content-Type": "application/json",
-  //       Authorization: `Bearer ${tokenService.getToken()}`,
-  //     },
-  //     body: JSON.stringify({
-  //       amount: totalAmount,
-  //     }),
-  //   });
-
-  //   if (!res.ok) {
-  //     console.error(
-  //       "API request to create Razorpay order failed:",
-  //       res.status,
-  //       res.statusText
-  //     );
-  //     const errorBody = await res.text();
-  //     console.error("API error response body:", errorBody);
-  //     showToast({
-  //       message: `Failed to create Razorpay order: ${res.statusText}`,
-  //       type: "ERROR",
-  //     });
-  //     return;
-  //   }
-
-  //   const { data: order } = await res.json();
-
-  //   console.log("Razorpay Order Data:", order);
-
-  //   if (!order || !order.id) {
-  //     showToast({ message: "Failed to create Razorpay order", type: "ERROR" });
-  //     return;
-  //   }
-
-  //   if (!import.meta.env.VITE_API_RAZORPAY_KEY_ID) {
-  //     showToast({ message: "Razorpay key is not configured", type: "ERROR" });
-  //     console.error("Razorpay: VITE_API_RAZORPAY_KEY_ID is not defined.");
-  //     return;
-  //   }
-
-  //   const options = {
-  //     key: import.meta.env.VITE_API_RAZORPAY_KEY_ID,
-  //     amount: order.amount,
-  //     currency: "INR",
-  //     name: "Brij Divine Stay",
-  //     description: "Tour Booking",
-  //     order_id: order.id,
-
-  //     handler: function (response: any) {
-  //       console.log("Razorpay payment response:", response);
-  //       verifyPayment(response);
-  //     },
-  //   };
-
-  //   console.log("Razorpay Options:", options);
-
-  //   try {
-  //     new window.Razorpay(options).open();
-  //   } catch (razorpayError) {
-  //     console.error("Error opening Razorpay:", razorpayError);
-  //     showToast({ message: "Failed to open payment gateway", type: "ERROR" });
-  //   }
-  // };
   const getAmountToPay = () =>
     paymentOption === "partial" ? calculateTotal() * 0.3 : calculateTotal();
 
@@ -639,7 +572,7 @@ const Tours: React.FC = () => {
 
   const MobileOverlay = () => (
     <div className="fixed inset-0 z-50 flex items-end lg:hidden bg-black/40">
-      <div className="bg-white w-full rounded-t-2xl h-[95vh] shadow-2xl overflow-y-auto">
+      <div className="bg-white w-full rounded-t-2xl h-[90vh] shadow-2xl overflow-y-auto">
         {/* HEADER */}
         <div className="flex items-center justify-between px-4 py-3 border-b">
           <span className="font-bold text-lg">Complete Your Booking</span>
@@ -891,7 +824,14 @@ const Tours: React.FC = () => {
                 </p>
 
                 <div className="flex flex-col sm:flex-row gap-3 sm:gap-4 justify-center">
-                  <button className="mx-auto bg-[#EBC486] text-[#2D241C]  px-6 sm:px-6 py-3 sm:py-4 rounded-full font-semibold flex items-center justify-center gap-2 hover:bg-white transition text-sm sm:text-base shadow-lg hover:shadow-xl">
+                  <button
+                    onClick={() =>
+                      document
+                        .getElementById("itinerary")
+                        ?.scrollIntoView({ behavior: "smooth" })
+                    }
+                    className="mx-auto bg-[#EBC486] text-[#2D241C]  px-6 sm:px-6 py-3 sm:py-4 rounded-full font-semibold flex items-center justify-center gap-2 hover:bg-white transition text-sm sm:text-base shadow-lg hover:shadow-xl"
+                  >
                     Book Your Tour{" "}
                     <ArrowRight size={16} className="sm:w-[18px] sm:h-[18px]" />
                   </button>
@@ -985,7 +925,7 @@ const Tours: React.FC = () => {
         {/* Section Header */}
 
         <div className="relative max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-12 lg:py-16 xl:py-20">
-          <section className="max-w-7xl mx-auto px-4 mb-16">
+          <section id="itinerary" className="max-w-7xl mx-auto px-4 mb-16">
             <div className="text-center">
               <h2 className="text-2xl sm:text-3xl lg:text-4xl font-serif font-bold text-[#2D241C] mb-4">
                 Your Spiritual Journey

@@ -54,7 +54,7 @@ const HeroSlider = ({
   useEffect(() => {
     const interval = setInterval(
       () => setIndex((i) => (i + 1) % heroImages.length),
-      5000,
+      5000
     );
     return () => clearInterval(interval);
   }, []);
@@ -134,12 +134,12 @@ const PackagesLandingPage: React.FC = () => {
       initial={{ opacity: 0 }}
       animate={{ opacity: 1 }}
       transition={{ duration: 0.8, ease: "easeOut" }}
-      className="bg-[#FAF9F6] text-[#2D241C]"
+      className="bg-[#fcf9f2] text-[#2D241C]"
     >
       <HeroSlider packagesRef={packagesRef} />
 
       {/* PACKAGES */}
-      <section
+      {/* <section
         ref={packagesRef}
         id="packages"
         className="max-w-7xl mx-auto px-4 py-20"
@@ -222,6 +222,120 @@ const PackagesLandingPage: React.FC = () => {
                 >
                   View Itinerary
                 </Link>
+              </div>
+            </motion.div>
+          ))}
+        </motion.div>
+      </section> */}
+      <section
+        ref={packagesRef}
+        id="packages"
+        className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-16 sm:py-20 "
+      >
+        {/* Heading */}
+        <h2 className="text-2xl sm:text-3xl font-serif font-bold text-center mb-10 sm:mb-12">
+          Our Most Loved Braj Yatra Packages
+        </h2>
+
+        {/* Grid */}
+        <motion.div
+          initial="hidden"
+          whileInView="show"
+          viewport={{ once: true }}
+          variants={{
+            hidden: {},
+            show: {
+              transition: { staggerChildren: 0.25 },
+            },
+          }}
+          className="
+          grid
+          grid-cols-1
+          md:grid-cols-2
+          gap-8
+          place-items-center
+        "
+        >
+          {packages.map((pkg) => (
+            <motion.div
+              key={pkg.id}
+              variants={{
+                hidden: { y: 30, opacity: 0 },
+                show: { y: 0, opacity: 1 },
+              }}
+              transition={{ duration: 0.6, ease: "easeOut" }}
+              className={`
+              relative
+              bg-white
+              rounded-2xl
+              shadow-md
+              hover:shadow-xl
+              transition
+              flex
+              flex-col
+              w-full
+              max-w-[550px]
+              overflow-hidden
+              ${pkg.popular ? "ring-2 ring-[#EBC486]" : ""}
+            `}
+            >
+              {/* Popular badge */}
+              {pkg.popular && (
+                <div className="absolute top-4 right-4 bg-[#EBC486] text-[#2D241C] px-3 py-1 rounded-full text-xs font-semibold flex items-center gap-1 z-10">
+                  <Star size={12} /> Most Popular
+                </div>
+              )}
+
+              {/* Image */}
+              <img
+                src={pkg.image}
+                alt={pkg.title}
+                className="h-40 sm:h-44 md:h-48 w-full object-cover"
+              />
+
+              {/* Content */}
+              <div className="p-5 flex flex-col flex-1">
+                <h3 className="text-xl font-serif font-bold mb-2">
+                  {pkg.title}
+                </h3>
+
+                <div className="flex items-center gap-2 text-sm text-gray-500 mb-3">
+                  <Clock size={14} /> {pkg.tag}
+                </div>
+
+                <p className="text-gray-700 text-sm mb-4">{pkg.description}</p>
+
+                <ul className="space-y-2 mb-6">
+                  {pkg.highlights.map((item) => (
+                    <li key={item} className="flex items-start gap-2 text-sm">
+                      <MapPin size={14} className="text-[#EBC486] mt-0.5" />
+                      {item}
+                    </li>
+                  ))}
+                </ul>
+
+                {/* Footer */}
+                <div className="mt-auto">
+                  <div className="text-2xl font-bold">{pkg.price}</div>
+                  <p className="text-xs text-gray-500 mb-4">Per person</p>
+
+                  <Link
+                    to={pkg.link}
+                    className="
+                    block
+                    text-center
+                    bg-[#2D241C]
+                    text-white
+                    py-3
+                    rounded-full
+                    font-semibold
+                    hover:bg-black
+                    transition
+                  "
+                  >
+                    View Itinerary
+                  </Link>
+                </div>
               </div>
             </motion.div>
           ))}
