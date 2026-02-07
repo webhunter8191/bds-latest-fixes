@@ -20,6 +20,7 @@ import {
   Plus,
   Minus,
   Check,
+  X,
 } from "lucide-react";
 import { FaWhatsapp } from "react-icons/fa";
 const imageMap: Record<string, string> = {
@@ -36,13 +37,64 @@ const Tours: React.FC = () => {
   const tour = tourData.tours.find((tour) => tour.slug === slug);
   const navigate = useNavigate();
   const location = useLocation();
+  useEffect(() => {
+    console.log("TOUR PAGE STATE 👉", location.state);
+  }, []);
   const { currentUser, showToast } = useAppContext();
 
-  const getAmountToPay = () =>
-    paymentOption === "partial" ? calculateTotal() * 0.3 : calculateTotal();
+  const calculateTotal = (
+    currentGuests = guests,
+    currentIncludeFood = includeFood,
+    currentIncludeStay = includeStay
+  ) => {
+    let total = pricing.baseTour * currentGuests;
+    if (currentIncludeFood) total += pricing.food * currentGuests * DAYS;
+    if (currentIncludeStay)
+      total += calculateStayCost(currentGuests) * DAYS;
+    return total;
+  };
 
-  const startRazorpayPayment = async () => {
-    const amountToPay = getAmountToPay();
+  const getAmountToPay = (
+    currentGuests = guests,
+    currentIncludeFood = includeFood,
+    currentIncludeStay = includeStay,
+    currentPaymentOption = paymentOption
+  ) => {
+    const total = calculateTotal(
+      currentGuests,
+      currentIncludeFood,
+      currentIncludeStay
+    );
+    return currentPaymentOption === "partial" ? total * 0.3 : total;
+  };
+
+  const startRazorpayPayment = async (restoredState?: any) => {
+    console.log("DEBUG: startRazorpayPayment RECEIVED restoredState:", restoredState);
+    console.log("DEBUG: CURRENT COMPONENT STATE - tourDate:", tourDate, "guests:", guests);
+
+    // Merge restored state with component state for robustness
+    const params = {
+      guests: restoredState?.guests !== undefined ? Number(restoredState.guests) : guests,
+      includeFood: restoredState?.includeFood !== undefined ? restoredState.includeFood : includeFood,
+      includeStay: restoredState?.includeStay !== undefined ? restoredState.includeStay : includeStay,
+      paymentOption: restoredState?.paymentOption || paymentOption,
+      tourDate: restoredState?.tourDate || tourDate,
+    };
+
+    console.log("DEBUG: CALCULATED PARAMS FOR PAYMENT 👉", params);
+
+    if (!params.tourDate) {
+      console.error("DEBUG: CRITICAL ERROR - tourDate is missing in params!");
+      showToast({ message: "Tour date is missing. Please select it again.", type: "ERROR" });
+      return;
+    }
+
+    const amountToPay = getAmountToPay(
+      params.guests,
+      params.includeFood,
+      params.includeStay,
+      params.paymentOption
+    );
 
     // ✅ 1️⃣ Get token safely
     const token = tokenService.getToken();
@@ -53,7 +105,11 @@ const Tours: React.FC = () => {
         type: "ERROR",
       });
       navigate("/auth-choice", {
-        state: { redirectTo: location.pathname },
+        state: { 
+          redirectTo: location.pathname,
+          ...params,
+          startRazorpay: true 
+        },
       });
       return;
     }
@@ -100,7 +156,7 @@ const Tours: React.FC = () => {
         order_id: order.id,
 
         handler: (response: any) => {
-          verifyPayment(response);
+          verifyPayment(response, params);
         },
       };
 
@@ -115,26 +171,7 @@ const Tours: React.FC = () => {
     }
   };
 
-  // const verifyPayment = async (response: any) => {
-  //   const res = await fetch(`${API_BASE_URL}/api/payment/verify`, {
-  //     method: "POST",
-  //     headers: {
-  //       "Content-Type": "application/json",
-  //       Authorization: `Bearer ${tokenService.getToken()}`,
-  //     },
-  //     body: JSON.stringify({
-  //       ...response,
-  //       amount: calculateTotal(),
-  //     }),
-  //   });
-
-  //   if (res.ok) {
-  //     createTourBooking(response.razorpay_payment_id);
-  //   } else {
-  //     showToast({ message: "Payment failed", type: "ERROR" });
-  //   }
-  // };
-  const verifyPayment = async (response: any) => {
+  const verifyPayment = async (response: any, params: any) => {
     const token = tokenService.getToken();
 
     if (!token) {
@@ -145,6 +182,13 @@ const Tours: React.FC = () => {
       return;
     }
 
+    const amountToPay = getAmountToPay(
+      params.guests,
+      params.includeFood,
+      params.includeStay,
+      params.paymentOption
+    );
+
     const res = await fetch(`${API_BASE_URL}/api/payment/verify`, {
       method: "POST",
       headers: {
@@ -153,18 +197,46 @@ const Tours: React.FC = () => {
       },
       body: JSON.stringify({
         ...response,
-        amount: Math.round(getAmountToPay() * 100),
+        amount: Math.round(amountToPay * 100),
       }),
     });
 
     if (res.ok) {
-      createTourBooking(response.razorpay_payment_id);
+      createTourBooking(response.razorpay_payment_id, params);
     } else {
       showToast({ message: "Payment verification failed", type: "ERROR" });
     }
   };
 
-  const createTourBooking = async (paymentId: string) => {
+  const createTourBooking = async (paymentId: string, params: any) => {
+    const totalAmount = getAmountToPay(
+      params.guests,
+      params.includeFood,
+      params.includeStay,
+      params.paymentOption
+    );
+    const fullAmount = calculateTotal(
+      params.guests,
+      params.includeFood,
+      params.includeStay
+    );
+
+    const bookingPayload = {
+      tourId: tour?.id,
+      tourName: tour?.title,
+      tourDate: params.tourDate,
+      guests: params.guests,
+      includeFood: params.includeFood,
+      includeStay: params.includeStay,
+      totalAmount,
+      fullAmount,
+      paymentOption: params.paymentOption,
+      paymentStatus: "paid",
+      paymentIntentId: paymentId,
+    };
+
+    console.log("CREATING TOUR BOOKING WITH PAYLOAD 👉", bookingPayload);
+
     const res = await fetch(
       `${API_BASE_URL}/api/my-bookings/booking/${tour?.id}`,
       {
@@ -173,19 +245,7 @@ const Tours: React.FC = () => {
           "Content-Type": "application/json",
           Authorization: `Bearer ${tokenService.getToken()}`,
         },
-        body: JSON.stringify({
-          tourId: tour?.id,
-          tourName: tour?.title,
-          tourDate,
-          guests,
-          includeFood,
-          includeStay,
-          totalAmount: getAmountToPay(),
-          fullAmount: calculateTotal(),
-          paymentOption,
-          paymentStatus: "paid",
-          paymentIntentId: paymentId,
-        }),
+        body: JSON.stringify(bookingPayload),
       }
     );
 
@@ -219,16 +279,9 @@ const Tours: React.FC = () => {
       }
       return;
     }
-    // 1️⃣ Login check
-    if (!currentUser) {
-      navigate("/auth-choice", {
-        state: { redirectTo: location.pathname },
-      });
-      return;
-    }
 
     // 3️⃣ Go to payment
-    startRazorpayPayment();
+    setIsConfirmationOpen(true);
   };
 
   if (!tour) {
@@ -244,19 +297,77 @@ const Tours: React.FC = () => {
     "full"
   );
   const [tourDateError, setTourDateError] = useState("");
+  const [pendingPayment, setPendingPayment] = useState(false);
+  const [pendingRazorpay, setPendingRazorpay] = useState(false);
+  const [isConfirmationOpen, setIsConfirmationOpen] = useState(false);
 
   useEffect(() => {
     if (location.state && (location.state as any).fromSignIn) {
       const state = location.state as any;
+      console.log("DEBUG: RESTORING STATE FROM LOCATION.STATE 👉", state);
       if (state.guests !== undefined)
         setGuests(Math.max(4, Number(state.guests)));
       if (state.includeFood !== undefined) setIncludeFood(state.includeFood);
       if (state.includeStay !== undefined) setIncludeStay(state.includeStay);
-      if (state.tourDate !== undefined) setTourDate(state.tourDate);
+      if (state.tourDate !== undefined) {
+        console.log("DEBUG: Setting tourDate to:", state.tourDate);
+        setTourDate(state.tourDate);
+      }
       if (state.paymentOption !== undefined)
         setPaymentOption(state.paymentOption);
+      if (state.startRazorpay) {
+        setPendingRazorpay(true);
+      } else if (state.openPayment) {
+        setPendingPayment(true);
+      }
     }
   }, [location.state]);
+
+  useEffect(() => {
+    if (!pendingRazorpay) return;
+    if (!currentUser) return;
+
+    const openPayment = async () => {
+      setPendingRazorpay(false);
+
+      // let React apply restored state first
+      setTimeout(async () => {
+        // Use values directly from location.state to avoid stale closure issues
+        const restoredState = location.state as any;
+        await startRazorpayPayment(restoredState);
+
+        // clear route state so payment doesn't re-open
+        navigate(location.pathname, {
+          replace: true,
+          state: {},
+        });
+      }, 300);
+    };
+
+    openPayment();
+  }, [pendingRazorpay, currentUser]);
+
+  // useEffect(() => {
+  //   const handleAutoPayment = async () => {
+  //     if (pendingRazorpay && currentUser) {
+  //       setPendingRazorpay(false);
+  //       await startRazorpayPayment();
+  //       navigate(location.pathname, { replace: true, state: {} });
+  //     }
+  //   };
+  //   handleAutoPayment();
+  // }, [pendingRazorpay, currentUser]);
+
+  useEffect(() => {
+    if (pendingPayment && currentUser) {
+      setPendingPayment(false);
+      // Small delay to ensure state updates are applied
+      setTimeout(() => {
+        setIsConfirmationOpen(true);
+      }, 100);
+      navigate(location.pathname, { replace: true, state: {} });
+    }
+  }, [pendingPayment, currentUser]);
 
   // Pricing configuration
   const pricing = tour.pricing;
@@ -286,12 +397,7 @@ const Tours: React.FC = () => {
     return pricing.stay.sevenToEight;
   };
 
-  const calculateTotal = () => {
-    let total = pricing.baseTour * guests;
-    if (includeFood) total += pricing.food * guests * DAYS; // 3 days
-    if (includeStay) total += calculateStayCost(guests) * DAYS; // Stay cost for 3 days
-    return total;
-  };
+
 
   // Compact Vertical Card - Desktop calculator styled similar to mobile overlay
   const PricingCalculator = () => (
@@ -774,6 +880,133 @@ const Tours: React.FC = () => {
     </div>
   );
 
+  const ConfirmationModal = () => (
+    <div className="fixed inset-0 z-[60] flex items-center justify-center bg-black/60 backdrop-blur-sm p-4 animate-in fade-in duration-200">
+      <div className="bg-white rounded-2xl shadow-2xl w-full max-w-md overflow-hidden">
+        <div className="bg-[#2D241C] px-6 py-4 flex justify-between items-center">
+          <h3 className="text-white font-serif font-bold text-lg">
+            Confirm Booking
+          </h3>
+          <button
+            onClick={() => setIsConfirmationOpen(false)}
+            className="text-white/80 hover:text-white transition-colors"
+          >
+            <X size={24} />
+          </button>
+        </div>
+
+        <div className="p-6 space-y-5">
+          {/* Details */}
+          <div className="space-y-3 text-sm text-gray-700">
+            <div className="flex justify-between border-b border-gray-100 pb-2">
+              <span className="text-gray-500">Tour Package</span>
+              <span className="font-semibold text-gray-900">{tour?.title}</span>
+            </div>
+            <div className="flex justify-between border-b border-gray-100 pb-2">
+              <span className="text-gray-500">Start Date</span>
+              <span className="font-semibold text-gray-900">
+                {tourDate
+                  ? new Date(tourDate).toLocaleDateString("en-IN", {
+                      day: "numeric",
+                      month: "long",
+                      year: "numeric",
+                    })
+                  : "Not selected"}
+              </span>
+            </div>
+            <div className="flex justify-between border-b border-gray-100 pb-2">
+              <span className="text-gray-500">Guests</span>
+              <span className="font-semibold text-gray-900">
+                {guests} Person{guests > 1 ? "s" : ""}
+              </span>
+            </div>
+            <div className="flex justify-between border-b border-gray-100 pb-2">
+              <span className="text-gray-500">Inclusions</span>
+              <div className="text-right text-gray-900">
+                <span className="block font-medium">Base Tour</span>
+                {includeFood && (
+                  <span className="block font-medium text-green-600">
+                    + Meals
+                  </span>
+                )}
+                {includeStay && (
+                  <span className="block font-medium text-green-600">
+                    + Stay
+                  </span>
+                )}
+              </div>
+            </div>
+            <div className="flex justify-between border-b border-gray-100 pb-2">
+              <span className="text-gray-500">Payment Type</span>
+              <span className="font-semibold text-gray-900">
+                {paymentOption === "full"
+                  ? "Full Payment"
+                  : "Partial Payment (30%)"}
+              </span>
+            </div>
+          </div>
+
+          {/* Totals */}
+          <div className="bg-[#FAF9F6] p-4 rounded-xl space-y-2 border border-gray-100">
+            <div className="flex justify-between items-center">
+              <span className="text-gray-600">Total Package Cost</span>
+              <span className="font-bold text-gray-800">
+                ₹{calculateTotal().toLocaleString()}
+              </span>
+            </div>
+            {paymentOption === "partial" && (
+              <div className="flex justify-between items-center text-xs text-gray-500">
+                <span>Pay Later (at venue)</span>
+                <span>
+                  ₹{Math.round(calculateTotal() * 0.7).toLocaleString()}
+                </span>
+              </div>
+            )}
+            <div className="border-t border-gray-200 pt-3 mt-2 flex justify-between items-center">
+              <span className="text-lg font-bold text-[#6A5631]">
+                Amount to Pay
+              </span>
+              <span className="text-2xl font-bold text-[#6A5631]">
+                ₹{getAmountToPay().toLocaleString()}
+              </span>
+            </div>
+          </div>
+
+          <button
+            onClick={() => {
+              if (!currentUser) {
+                navigate("/auth-choice", {
+                  state: {
+                    redirectTo: location.pathname,
+                    guests,
+                    includeFood,
+                    includeStay,
+                    tourDate,
+                    paymentOption,
+                    startRazorpay: true,
+                  },
+                });
+                return;
+              }
+              setIsConfirmationOpen(false);
+              // Pass current state explicitly to avoid stale closures
+              startRazorpayPayment({
+                guests,
+                includeFood,
+                includeStay,
+                paymentOption,
+                tourDate,
+              });
+            }}
+            className="w-full py-3.5 bg-gradient-to-r from-[#EBC486] to-[#D4AF37] text-[#2D241C] font-bold rounded-xl shadow-lg hover:shadow-xl transition-all active:scale-[0.98] flex items-center justify-center gap-2"
+          >
+            Proceed to Payment <ArrowRight size={18} />
+          </button>
+        </div>
+      </div>
+    </div>
+  );
+
   return (
     <div className="bg-[#FAF9F6] text-[#2D241C] relative">
       {/* Mobile Bottom Bar */}
@@ -1223,6 +1456,8 @@ const Tours: React.FC = () => {
 
       {/* Mobile Overlay */}
       {showMobileOverlay && <MobileOverlay />}
+      {/* Confirmation Modal */}
+      {isConfirmationOpen && <ConfirmationModal />}
     </div>
   );
 };
