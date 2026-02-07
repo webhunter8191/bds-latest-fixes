@@ -33,7 +33,11 @@ const SignIn = ({ redirectState }: { redirectState?: any }) => {
       });
       await queryClient.invalidateQueries("validateToken");
       const state = redirectState || location.state;
-      if (state && state.hotelId) {
+      if (state && state.redirectTo) {
+        navigate(state.redirectTo, {
+          state: { ...state, fromSignIn: true, startRazorpay: true },
+        });
+      } else if (state && state.hotelId) {
         navigate(`/hotel/${state.hotelId}/booking`, { state });
       } else {
         navigate("/");

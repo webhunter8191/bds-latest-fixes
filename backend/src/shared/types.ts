@@ -5,7 +5,7 @@ export type UserType = {
   password: string;
   firstName: string;
   lastName: string;
-  isAdmin:boolean;
+  isAdmin: boolean;
   mobNo?: string; // Made optional for backward compatibility
 };
 

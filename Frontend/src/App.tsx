@@ -16,6 +16,7 @@ import Detail from "./pages/Detail";
 import Booking from "./pages/Booking";
 import MyBookings from "./pages/MyBookings";
 import Home from "./pages/Home";
+import Tours from "./pages/Tours";
 import Header from "./components/Header";
 import Footer from "./components/Footer";
 // import AdminBookings from "./components/AdminBookings";
@@ -28,6 +29,7 @@ import ContactUs from "./components/Contact";
 import AgreementTwoStep from "./pages/AgreementFrom";
 import TermsAndConditions from "./pages/Terms&Conditions";
 import AuthChoice from "./pages/AuthChoice";
+import PackagesLandingPage from "./pages/PackagesLandingPage";
 
 const App = () => {
   const { isLoggedIn, isAdmin } = useAppContext();
@@ -40,6 +42,26 @@ const App = () => {
             <div className="mx-auto">
               <Header />
               <Home />
+              <Footer />
+            </div>
+          }
+        />
+        <Route
+          path="/packages"
+          element={
+            <div className="mx-auto">
+              <Header />
+              <PackagesLandingPage />
+              <Footer />
+            </div>
+          }
+        />
+        <Route
+          path="/tours/:slug"
+          element={
+            <div className="mx-auto">
+              <Header />
+              <Tours />
               <Footer />
             </div>
           }

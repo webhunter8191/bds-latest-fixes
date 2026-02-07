@@ -12,6 +12,7 @@ import SearchBar from "../components/SearchBar";
 import room1img from "../assets/room1.jpg";
 import room2img from "../assets/room2.jpg";
 import room3img from "../assets/room3.jpg";
+import PackagesPromoSection from "../components/PackagesPromoSection";
 
 const Home = () => {
   const { data: hotels, error } = useQuery(
@@ -57,32 +58,41 @@ const Home = () => {
   }, [limitedHotels.length]);
 
   return (
-    <div className="bg-[#f0efed]">
+    <div className="bg-[#f0efed]  ">
       {/* Hero Section */}
       <div className="relative ">
-        <div className="md:mb-20">
+        <div className="">
           <Hero />
         </div>
-        <div className="absolute left-1/2 transform -translate-x-1/2 z-10 w-[85%] md:w-[80%] lg:w-[80%] bottom-[-100px]  lg:bottom-[-40px]">
+        <div
+          className="absolute
+    left-1/2 -translate-x-1/2
+    z-20
+    w-[90%] sm:w-[85%] lg:w-[80%]
+    -bottom-24 sm:-bottom-20 lg:-bottom-16"
+        >
           <SearchBar />
         </div>
       </div>
+      {/* 🔥 Packages Promotion Section */}
+      <section className="bg-[#fcf6ed]  w-full max-w-[100vw]   relative ">
+        <div className="h-15 sm:h-20 lg:h-10" />
+        <PackagesPromoSection />
+      </section>
 
       {/* Latest Destinations Section */}
-      <section className="container mx-auto px-4 py-8 space-y-6 mt-[80px] w-[100%] md:w-[80%] lg:w-[80%] relative">
+      <section className="container mx-auto px-4 py-8 space-y-6 mt-[30px] w-[100%] md:w-[80%] lg:w-[80%] relative">
         <h2 className="text-4xl font-bold text-gray-800 text-center">
           Latest Hotels
         </h2>
         <p className="text-lg text-gray-600 text-center">
           Discover our recently added Hotels and plan your stay
         </p>
-
         {loading && (
           <div className="absolute inset-0 flex items-center justify-center ">
             <div className="w-12 h-12 border-4 border-blue-500 border-t-transparent rounded-full animate-spin mt-20"></div>
           </div>
         )}
-
         {/* Cards Section */}
         <div
           className={`${

@@ -262,15 +262,16 @@ const SuperAdminPanel = () => {
               key={hotelIndex}
               className="bg-white shadow-xl rounded-xl overflow-hidden border border-gray-100"
             >
-              {/* Hotel Header with Image and Details */}
+              {/* Header with Image and Details */}
               <div className="relative">
-                {/* Hotel Image with Overlay - Centered */}
                 <div className="flex flex-col items-center">
                   <div className="w-full max-w-3xl h-64 overflow-hidden relative">
                     <img
                       src={
-                        hotel.imageUrl ||
-                        "https://placehold.co/1200x400?text=Hotel+Image"
+                        hotel.isTourBookings
+                          ? "https://placehold.co/1200x400?text=Tour+Bookings"
+                          : hotel.imageUrl ||
+                            "https://placehold.co/1200x400?text=Hotel+Image"
                       }
                       alt={hotel.hotelName}
                       className="w-full h-full object-cover"
@@ -280,16 +281,18 @@ const SuperAdminPanel = () => {
                         <h2 className="text-3xl md:text-4xl font-bold mb-2">
                           {hotel.hotelName}
                         </h2>
-                        <p className="text-gray-200 text-lg">
-                          Owner: {hotel.firstName} {hotel.lastName}
-                        </p>
+                        {!hotel.isTourBookings && (
+                          <p className="text-gray-200 text-lg">
+                            Owner: {hotel.firstName} {hotel.lastName}
+                          </p>
+                        )}
                       </div>
                     </div>
                   </div>
                 </div>
               </div>
 
-              {/* Hotel Info Section */}
+              {/* Info Section */}
               <div className="px-6 py-4 border-b border-gray-100">
                 <div className="grid grid-cols-1 sm:grid-cols-4 gap-4 text-center">
                   <div>
@@ -350,11 +353,35 @@ const SuperAdminPanel = () => {
                       <thead>
                         <tr className="bg-gray-50 text-left text-gray-600 text-sm uppercase">
                           <th className="py-4 px-5 font-semibold">Guest</th>
+                          <th className="py-4 px-5 font-semibold">Phone</th>
                           <th className="py-4 px-5 font-semibold">Email</th>
-                          <th className="py-4 px-5 font-semibold">Check-In</th>
-                          <th className="py-4 px-5 font-semibold">Check-Out</th>
-                          <th className="py-4 px-5 font-semibold">Room Type</th>
-                          <th className="py-4 px-5 font-semibold">Rooms</th>
+                          {hotel.isTourBookings ? (
+                            <>
+                              <th className="py-4 px-5 font-semibold">Tour</th>
+                              <th className="py-4 px-5 font-semibold">
+                                Tour Date
+                              </th>
+                              <th className="py-4 px-5 font-semibold">
+                                Guests
+                              </th>
+                              <th className="py-4 px-5 font-semibold">
+                                Add-ons
+                              </th>
+                            </>
+                          ) : (
+                            <>
+                              <th className="py-4 px-5 font-semibold">
+                                Check-In
+                              </th>
+                              <th className="py-4 px-5 font-semibold">
+                                Check-Out
+                              </th>
+                              <th className="py-4 px-5 font-semibold">
+                                Room Type
+                              </th>
+                              <th className="py-4 px-5 font-semibold">Rooms</th>
+                            </>
+                          )}
                           <th className="py-4 px-5 font-semibold">Payment</th>
                         </tr>
                       </thead>
@@ -380,60 +407,118 @@ const SuperAdminPanel = () => {
                               </td>
                               <td className="py-4 px-5">
                                 <p className="text-sm text-gray-600">
-                                  {guest.email}
+                                  {guest.phone || "—"}
                                 </p>
                               </td>
                               <td className="py-4 px-5">
-                                <div className="font-medium text-gray-800">
-                                  {new Date(booking.checkIn).toLocaleDateString(
-                                    undefined,
-                                    {
-                                      month: "short",
-                                      day: "numeric",
-                                      year: "numeric",
-                                    }
-                                  )}
-                                </div>
+                                <p className="text-sm text-gray-600">
+                                  {guest.email}
+                                </p>
                               </td>
-                              <td className="py-4 px-5">
-                                <div className="font-medium text-gray-800">
-                                  {new Date(
-                                    booking.checkOut
-                                  ).toLocaleDateString(undefined, {
-                                    month: "short",
-                                    day: "numeric",
-                                    year: "numeric",
-                                  })}
-                                </div>
-                                <div className="text-xs text-gray-500">
-                                  {Math.ceil(
-                                    (new Date(booking.checkOut).getTime() -
-                                      new Date(booking.checkIn).getTime()) /
-                                      (1000 * 60 * 60 * 24)
-                                  )}{" "}
-                                  nights
-                                </div>
-                              </td>
-                              <td className="py-4 px-5">
-                                <span className="inline-flex items-center">
-                                  <span className="w-3 h-3 rounded-full bg-amber-500 mr-2"></span>
-                                  <span className="font-medium text-gray-800">
-                                    {
-                                      categories[
-                                        booking.category as keyof typeof categories
-                                      ]
-                                    }
-                                  </span>
-                                </span>
-                              </td>
-                              <td className="py-4 px-5">
-                                <span className="inline-flex items-center px-2.5 py-1 rounded-full text-xs font-medium bg-gray-100 text-gray-800">
-                                  {booking.roomsCount}{" "}
-                                  {Number(booking.roomsCount) > 1
-                                    ? "rooms"
-                                    : "room"}
-                                </span>
-                              </td>
+                              {hotel.isTourBookings ? (
+                                <>
+                                  <td className="py-4 px-5">
+                                    <p className="font-medium text-gray-800">
+                                      {booking.tourName ||
+                                        booking.tourId ||
+                                        "—"}
+                                    </p>
+                                    {booking.tourId && (
+                                      <p className="text-xs text-gray-500 font-mono">
+                                        ID: {booking.tourId}
+                                      </p>
+                                    )}
+                                  </td>
+                                  <td className="py-4 px-5">
+                                    <div className="font-medium text-gray-800">
+                                      {booking.tourDate
+                                        ? new Date(
+                                            booking.tourDate
+                                          ).toLocaleDateString(undefined, {
+                                            month: "short",
+                                            day: "numeric",
+                                            year: "numeric",
+                                          })
+                                        : "—"}
+                                    </div>
+                                  </td>
+                                  <td className="py-4 px-5">
+                                    <span className="inline-flex items-center px-2.5 py-1 rounded-full text-xs font-medium bg-gray-100 text-gray-800">
+                                      {booking.guests || "—"} Guests
+                                    </span>
+                                  </td>
+                                  <td className="py-4 px-5">
+                                    <div className="flex flex-wrap gap-1">
+                                      {booking.includeFood && (
+                                        <span className="px-2 py-0.5 rounded-full text-xs font-medium bg-green-100 text-green-800">
+                                          Food
+                                        </span>
+                                      )}
+                                      {booking.includeStay && (
+                                        <span className="px-2 py-0.5 rounded-full text-xs font-medium bg-purple-100 text-purple-800">
+                                          Stay
+                                        </span>
+                                      )}
+                                      {!booking.includeFood &&
+                                        !booking.includeStay &&
+                                        "—"}
+                                    </div>
+                                  </td>
+                                </>
+                              ) : (
+                                <>
+                                  <td className="py-4 px-5">
+                                    <div className="font-medium text-gray-800">
+                                      {new Date(
+                                        booking.checkIn
+                                      ).toLocaleDateString(undefined, {
+                                        month: "short",
+                                        day: "numeric",
+                                        year: "numeric",
+                                      })}
+                                    </div>
+                                  </td>
+                                  <td className="py-4 px-5">
+                                    <div className="font-medium text-gray-800">
+                                      {new Date(
+                                        booking.checkOut
+                                      ).toLocaleDateString(undefined, {
+                                        month: "short",
+                                        day: "numeric",
+                                        year: "numeric",
+                                      })}
+                                    </div>
+                                    <div className="text-xs text-gray-500">
+                                      {Math.ceil(
+                                        (new Date(booking.checkOut).getTime() -
+                                          new Date(booking.checkIn).getTime()) /
+                                          (1000 * 60 * 60 * 24)
+                                      )}{" "}
+                                      nights
+                                    </div>
+                                  </td>
+                                  <td className="py-4 px-5">
+                                    <span className="inline-flex items-center">
+                                      <span className="w-3 h-3 rounded-full bg-amber-500 mr-2"></span>
+                                      <span className="font-medium text-gray-800">
+                                        {
+                                          categories[
+                                            booking.category as keyof typeof categories
+                                          ]
+                                        }
+                                      </span>
+                                    </span>
+                                  </td>
+                                  <td className="py-4 px-5">
+                                    <span className="inline-flex items-center px-2.5 py-1 rounded-full text-xs font-medium bg-gray-100 text-gray-800">
+                                      {booking.roomsCount}{" "}
+                                      {Number(booking.roomsCount) > 1
+                                        ? "rooms"
+                                        : "room"}
+                                    </span>
+                                  </td>
+                                </>
+                              )}
                               <td className="py-4 px-5">
                                 <div>
                                   <div className="flex items-center mb-1">
@@ -496,7 +581,7 @@ const SuperAdminPanel = () => {
                         const guest = getGuestDetails(hotel, booking);
                         return (
                           <div key={index} className="p-4">
-                            {/* Guest Info Row */}
+                            {/* Guest Info Row - Full Customer Details */}
                             <div className="flex items-start justify-between mb-4">
                               <div className="flex items-center">
                                 <div className="w-12 h-12 rounded-full bg-gradient-to-br from-[#6A5631] to-[#8B7442] flex items-center justify-center text-white font-bold mr-3">
@@ -509,6 +594,11 @@ const SuperAdminPanel = () => {
                                   <p className="text-sm text-gray-600">
                                     {guest.email}
                                   </p>
+                                  {guest.phone && (
+                                    <p className="text-sm text-gray-600">
+                                      {guest.phone}
+                                    </p>
+                                  )}
                                 </div>
                               </div>
                             </div>
@@ -516,74 +606,138 @@ const SuperAdminPanel = () => {
                             {/* Booking Details */}
                             <div className="bg-gray-50 rounded-lg p-3 mb-3">
                               <div className="grid grid-cols-2 gap-3">
-                                <div>
-                                  <p className="text-xs text-gray-500">
-                                    Check-In
-                                  </p>
-                                  <p className="font-medium text-gray-800">
-                                    {new Date(
-                                      booking.checkIn
-                                    ).toLocaleDateString(undefined, {
-                                      month: "short",
-                                      day: "numeric",
-                                      year: "numeric",
-                                    })}
-                                  </p>
-                                </div>
-                                <div>
-                                  <p className="text-xs text-gray-500">
-                                    Check-Out
-                                  </p>
-                                  <p className="font-medium text-gray-800">
-                                    {new Date(
-                                      booking.checkOut
-                                    ).toLocaleDateString(undefined, {
-                                      month: "short",
-                                      day: "numeric",
-                                      year: "numeric",
-                                    })}
-                                  </p>
-                                </div>
-                                <div>
-                                  <p className="text-xs text-gray-500">
-                                    Room Type
-                                  </p>
-                                  <div className="flex items-center">
-                                    <span className="w-2 h-2 rounded-full bg-amber-500 mr-1.5"></span>
-                                    <span className="font-medium text-gray-800 text-sm">
-                                      {
-                                        categories[
-                                          booking.category as keyof typeof categories
+                                {hotel.isTourBookings ? (
+                                  <>
+                                    <div>
+                                      <p className="text-xs text-gray-500">
+                                        Tour
+                                      </p>
+                                      <p className="font-medium text-gray-800">
+                                        {booking.tourName ||
+                                          booking.tourId ||
+                                          "—"}
+                                      </p>
+                                    </div>
+                                    <div>
+                                      <p className="text-xs text-gray-500">
+                                        Tour Date
+                                      </p>
+                                      <p className="font-medium text-gray-800">
+                                        {booking.tourDate
+                                          ? new Date(
+                                              booking.tourDate
+                                            ).toLocaleDateString(undefined, {
+                                              month: "short",
+                                              day: "numeric",
+                                              year: "numeric",
+                                            })
+                                          : "—"}
+                                      </p>
+                                    </div>
+                                    <div>
+                                      <p className="text-xs text-gray-500">
+                                        Guests
+                                      </p>
+                                      <p className="font-medium text-gray-800">
+                                        {booking.guests || "—"}
+                                      </p>
+                                    </div>
+                                    <div>
+                                      <p className="text-xs text-gray-500">
+                                        Add-ons
+                                      </p>
+                                      <p className="font-medium text-gray-800 text-sm">
+                                        {[
+                                          booking.includeFood && "Food",
+                                          booking.includeStay && "Stay",
                                         ]
-                                      }
-                                    </span>
-                                  </div>
-                                </div>
-                                <div>
-                                  <p className="text-xs text-gray-500">
-                                    Stay Duration
-                                  </p>
-                                  <p className="font-medium text-gray-800">
-                                    {Math.ceil(
-                                      (new Date(booking.checkOut).getTime() -
-                                        new Date(booking.checkIn).getTime()) /
-                                        (1000 * 60 * 60 * 24)
-                                    )}{" "}
-                                    nights
-                                  </p>
-                                </div>
+                                          .filter(Boolean)
+                                          .join(", ") || "—"}
+                                      </p>
+                                    </div>
+                                  </>
+                                ) : (
+                                  <>
+                                    <div>
+                                      <p className="text-xs text-gray-500">
+                                        Check-In
+                                      </p>
+                                      <p className="font-medium text-gray-800">
+                                        {new Date(
+                                          booking.checkIn
+                                        ).toLocaleDateString(undefined, {
+                                          month: "short",
+                                          day: "numeric",
+                                          year: "numeric",
+                                        })}
+                                      </p>
+                                    </div>
+                                    <div>
+                                      <p className="text-xs text-gray-500">
+                                        Check-Out
+                                      </p>
+                                      <p className="font-medium text-gray-800">
+                                        {new Date(
+                                          booking.checkOut
+                                        ).toLocaleDateString(undefined, {
+                                          month: "short",
+                                          day: "numeric",
+                                          year: "numeric",
+                                        })}
+                                      </p>
+                                    </div>
+                                    <div>
+                                      <p className="text-xs text-gray-500">
+                                        Room Type
+                                      </p>
+                                      <div className="flex items-center">
+                                        <span className="w-2 h-2 rounded-full bg-amber-500 mr-1.5"></span>
+                                        <span className="font-medium text-gray-800 text-sm">
+                                          {
+                                            categories[
+                                              booking.category as keyof typeof categories
+                                            ]
+                                          }
+                                        </span>
+                                      </div>
+                                    </div>
+                                    <div>
+                                      <p className="text-xs text-gray-500">
+                                        Stay Duration
+                                      </p>
+                                      <p className="font-medium text-gray-800">
+                                        {Math.ceil(
+                                          (new Date(
+                                            booking.checkOut
+                                          ).getTime() -
+                                            new Date(
+                                              booking.checkIn
+                                            ).getTime()) /
+                                            (1000 * 60 * 60 * 24)
+                                        )}{" "}
+                                        nights
+                                      </p>
+                                    </div>
+                                  </>
+                                )}
                               </div>
                             </div>
 
                             {/* Booking Payment */}
                             <div className="flex justify-between items-center">
                               <div>
-                                <span className="inline-flex items-center px-2.5 py-1 rounded-full text-xs font-medium bg-gray-100 text-gray-800">
-                                  {booking.roomsCount}{" "}
-                                  {Number(booking.roomsCount) > 1
-                                    ? "rooms"
-                                    : "room"}
-                                </span>
+                                {!hotel.isTourBookings ? (
+                                  <span className="inline-flex items-center px-2.5 py-1 rounded-full text-xs font-medium bg-gray-100 text-gray-800">
+                                    {booking.roomsCount}{" "}
+                                    {Number(booking.roomsCount) > 1
+                                      ? "rooms"
+                                      : "room"}
+                                  </span>
+                                ) : (
+                                  <span className="inline-flex items-center px-2.5 py-1 rounded-full text-xs font-medium bg-blue-100 text-blue-800">
+                                    Tour Booking
+                                  </span>
+                                )}
                               </div>
 
                               <div>
