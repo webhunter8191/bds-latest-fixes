@@ -24,14 +24,14 @@ export const sendBookingConfirmationToCustomer = async (
   const transporter = createTransporter();
 
   const mailOptions = {
-    from: `"Brij Divine Stay" <${EMAIL_USER}>`,
+    from: `"Brij Divine Tripz" <${EMAIL_USER}>`,
     to: customerEmail,
-    subject: "Booking Confirmation - Brij Divine Stay",
+    subject: "Booking Confirmation - Brij Divine Tripz",
     html: `
       <div style="font-family: Arial, sans-serif; color: #333; max-width: 600px; margin: 0 auto;">
         <div style="text-align: center; margin-bottom: 30px;">
-          <img src="https://res.cloudinary.com/dhsycku8t/image/upload/v1753526435/logo_bds_round_uwoqmw.png" alt="Brij Divine Stay Logo" style="height: 80px; border-radius: 50%;">
-          <h1 style="color: #7B3F00; margin: 10px 0;">Brij Divine Stay</h1>
+          <img src="https://res.cloudinary.com/dhsycku8t/image/upload/v1753526435/logo_bds_round_uwoqmw.png" alt="Brij Divine Tripz Logo" style="height: 80px; border-radius: 50%;">
+          <h1 style="color: #7B3F00; margin: 10px 0;">Brij Divine Tripz</h1>
           <p style="font-style: italic; color: #7B3F00; margin: 0;">Live The Divine, Love the Stay</p>
         </div>
 
@@ -41,7 +41,7 @@ export const sendBookingConfirmationToCustomer = async (
 
         <div style="background: #f8f9fa; padding: 20px; border-radius: 10px; margin-bottom: 20px;">
           <h3 style="color: #2D241C; margin-top: 0;">Dear ${bookingData.firstName} ${bookingData.lastName},</h3>
-          <p>Thank you for choosing Brij Divine Stay! Your booking has been confirmed successfully.</p>
+          <p>Thank you for choosing Brij Divine Tripz! Your booking has been confirmed successfully.</p>
         </div>
 
         <div style="background: white; border: 1px solid #e9ecef; border-radius: 10px; padding: 20px; margin-bottom: 20px;">
@@ -102,7 +102,7 @@ export const sendBookingConfirmationToCustomer = async (
 
         <div style="text-align: center; color: #666; font-size: 12px; border-top: 1px solid #e9ecef; padding-top: 20px;">
           <p>This is an automated email. Please do not reply to this message.</p>
-          <p>© 2024 Brij Divine Stay – Your Trusted Brij Travel Partner</p>
+          <p>© 2024 Brij Divine Tripz – Your Trusted Brij Travel Partner</p>
         </div>
       </div>
     `,
@@ -130,14 +130,14 @@ export const sendBookingNotificationToAdmin = async (
   const transporter = createTransporter();
 
   const mailOptions = {
-    from: `"Brij Divine Stay" <${EMAIL_USER}>`,
+    from: `"Brij Divine Tripz" <${EMAIL_USER}>`,
     to: ADMIN_EMAIL,
-    subject: "New Booking Alert - Brij Divine Stay",
+    subject: "New Booking Alert - Brij Divine Tripz",
     html: `
       <div style="font-family: Arial, sans-serif; color: #333; max-width: 600px; margin: 0 auto;">
         <div style="text-align: center; margin-bottom: 30px;">
-          <img src="https://res.cloudinary.com/dhsycku8t/image/upload/v1753526435/logo_bds_round_uwoqmw.png" alt="Brij Divine Stay Logo" style="height: 80px; border-radius: 50%;">
-          <h1 style="color: #7B3F00; margin: 10px 0;">Brij Divine Stay</h1>
+          <img src="https://res.cloudinary.com/dhsycku8t/image/upload/v1753526435/logo_bds_round_uwoqmw.png" alt="Brij Divine Tripz Logo" style="height: 80px; border-radius: 50%;">
+          <h1 style="color: #7B3F00; margin: 10px 0;">Brij Divine Tripz</h1>
           <p style="font-style: italic; color: #7B3F00; margin: 0;">Live The Divine, Love the Stay</p>
         </div>
 
@@ -219,7 +219,7 @@ export const sendBookingNotificationToAdmin = async (
 
         <div style="text-align: center; color: #666; font-size: 12px; border-top: 1px solid #e9ecef; padding-top: 20px;">
           <p>This is an automated notification for new bookings.</p>
-          <p>© 2024 Brij Divine Stay – Your Trusted Brij Travel Partner</p>
+          <p>© 2024 Brij Divine Tripz – Your Trusted Brij Travel Partner</p>
         </div>
       </div>
     `,
@@ -243,14 +243,14 @@ export const sendBookingNotificationToHotelOwner = async (
   const transporter = createTransporter();
 
   const mailOptions = {
-    from: `"Brij Divine Stay" <${EMAIL_USER}>`,
+    from: `"Brij Divine Tripz" <${EMAIL_USER}>`,
     to: hotelOwnerEmail,
-    subject: "New Booking for Your Hotel - Brij Divine Stay",
+    subject: "New Booking for Your Hotel - Brij Divine Tripz",
     html: `
       <div style="font-family: Arial, sans-serif; color: #333; max-width: 600px; margin: 0 auto;">
         <div style="text-align: center; margin-bottom: 30px;">
-          <img src="https://res.cloudinary.com/dhsycku8t/image/upload/v1753526435/logo_bds_round_uwoqmw.png" alt="Brij Divine Stay Logo" style="height: 80px; border-radius: 50%;">
-          <h1 style="color: #7B3F00; margin: 10px 0;">Brij Divine Stay</h1>
+          <img src="https://res.cloudinary.com/dhsycku8t/image/upload/v1753526435/logo_bds_round_uwoqmw.png" alt="Brij Divine Tripz Logo" style="height: 80px; border-radius: 50%;">
+          <h1 style="color: #7B3F00; margin: 10px 0;">Brij Divine Tripz</h1>
           <p style="font-style: italic; color: #7B3F00; margin: 0;">Live The Divine, Love the Stay</p>
         </div>
 
@@ -336,8 +336,8 @@ export const sendBookingNotificationToHotelOwner = async (
         </div>
 
         <div style="text-align: center; color: #666; font-size: 12px; border-top: 1px solid #e9ecef; padding-top: 20px;">
-          <p>This booking was made through the Brij Divine Stay platform.</p>
-          <p>© 2024 Brij Divine Stay – Your Trusted Brij Travel Partner</p>
+          <p>This booking was made through the Brij Divine Tripz platform.</p>
+          <p>© 2024 Brij Divine Tripz – Your Trusted Brij Travel Partner</p>
         </div>
       </div>
     `,
