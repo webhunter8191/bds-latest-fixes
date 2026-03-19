@@ -13,7 +13,7 @@ const Hero = () => {
   useEffect(() => {
     const interval = setInterval(() => {
       setCurrentImageIndex((prevIndex) =>
-        prevIndex === images.length - 1 ? 0 : prevIndex + 1
+        prevIndex === images.length - 1 ? 0 : prevIndex + 1,
       );
     }, 5000); // change image every 5 seconds
 
@@ -32,11 +32,11 @@ const Hero = () => {
     >
       {/* Hero Content */}
       <div className="text-center p-4 sm:p-6 md:p-8 max-w-lg sm:max-w-xl md:max-w-2xl lg:max-w-2xl ">
-        <h1 className="text-xl sm:text-2xl md:text-2xl lg:text-5xl font-bold text-white leading-tight md:leading-snug md:mt-[-100px] ">
-          Hotel for Every Moment Rich in Emotion
+        <h1 className="text-xl sm:text-2xl md:text-2xl lg:text-4xl font-bold text-white leading-tight md:leading-snug md:mt-[-100px] ">
+          Brij Stay and tour packages for your divine journey
         </h1>
         <p className="text-sm sm:text-base md:text-lg text-white mt-3  ">
-          Book a Divine stay with Brij Divine Stay
+          Discover the divine brij with Brij Divine Tripz
         </p>
         <div className="mt-3 md:mb-10">
           <button

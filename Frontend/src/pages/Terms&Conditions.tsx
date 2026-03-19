@@ -14,7 +14,7 @@ const TermsAndConditions = () => {
             Effective Date: 1 June 2025 | Last Updated: 1 June 2025
           </p>
           <p className="text-lg text-gray-600 max-w-3xl mx-auto">
-            Welcome to Brij Divine Stay. By accessing or using our website and
+            Welcome to Brij Divine Tripz. By accessing or using our website and
             services, you agree to comply with and be bound by the following
             Terms and Conditions. Please read them carefully before using our
             website.
@@ -23,7 +23,7 @@ const TermsAndConditions = () => {
 
         <div className="bg-white rounded-xl shadow-lg p-8 md:p-12 mb-12">
           <Section title="1. Acceptance of Terms">
-            By using Brij Divine Stay, you agree to be legally bound by these
+            By using Brij Divine Tripz, you agree to be legally bound by these
             Terms and Conditions, our Privacy Policy, and any additional
             guidelines or rules applicable to specific services.
           </Section>
@@ -130,12 +130,12 @@ const TermsAndConditions = () => {
           </Section>
 
           <Section title="8. Intellectual Property">
-            All content, trademarks, and logos on Brij Divine Stay are owned by
+            All content, trademarks, and logos on Brij Divine Tripz are owned by
             us or licensed to us. Unauthorized use is prohibited.
           </Section>
 
           <Section title="9. Limitation of Liability">
-            Brij Divine Stay is not liable for indirect, incidental, or
+            Brij Divine Tripz is not liable for indirect, incidental, or
             consequential damages from service use, including data or profit
             loss.
           </Section>
@@ -153,7 +153,7 @@ const TermsAndConditions = () => {
           <Section title="12. Contact Us" isLast={true}>
             <div className="bg-[#6A5631]/5 border border-[#6A5631]/20 rounded-lg p-5 text-center">
               <p className="font-semibold text-gray-800 mb-1">
-                Brij Divine Stay
+                Brij Divine Tripz
               </p>
               <p className="mb-1">Call Us: +91-9258 01 02 00</p>
               <p className="mb-1">Email: support@brijdivinestay.com</p>

@@ -8,7 +8,7 @@ const AboutUs: React.FC = () => {
         {/* Header Section */}
         <div className="text-center mb-16">
           <h1 className="text-4xl md:text-5xl font-extrabold text-gray-900 mb-4">
-            About Brij Divine Stay
+            About Brij Divine Tripz
           </h1>
           <div className="h-1 w-24 bg-[#6A5631] mx-auto my-4 rounded-full"></div>
           <p className="text-lg text-gray-600 max-w-3xl mx-auto">
@@ -33,7 +33,7 @@ const AboutUs: React.FC = () => {
             <h2 className="text-3xl font-bold text-gray-900 mb-6">Our Story</h2>
             <div className="space-y-4 text-gray-600">
               <p>
-                Brij Divine Stay was founded with a vision to simplify hotel
+                Brij Divine Tripz was founded with a vision to simplify hotel
                 room bookings in one of the most spiritually significant regions
                 of India.
               </p>
@@ -103,7 +103,7 @@ const AboutUs: React.FC = () => {
         <div className="bg-white rounded-xl shadow-lg overflow-hidden max-w-4xl mx-auto mb-16">
           <div className="p-8 md:p-12">
             <h2 className="text-2xl font-bold text-gray-900 mb-6 text-center">
-              Why Choose Brij Divine Stay?
+              Why Choose Brij Divine Tripz?
             </h2>
             <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
               <div className="text-center p-4 border border-[#6A5631]/20 rounded-lg bg-[#6A5631]/5">
@@ -135,7 +135,7 @@ const AboutUs: React.FC = () => {
         {/* Closing Statement */}
         <div className="text-center max-w-3xl mx-auto">
           <p className="text-gray-600 mb-6">
-            At <span className="font-semibold">Brij Divine Stay</span>, we
+            At <span className="font-semibold">Brij Divine Tripz</span>, we
             believe that a peaceful and comfortable stay is an integral part of
             a fulfilling spiritual journey. Whether you are visiting for
             pilgrimage, leisure, or exploration, we are here to make your trip

@@ -17,7 +17,7 @@ const Header = () => {
       <div className="container mx-auto flex items-center justify-between px-4 md:px-8">
         {/* Logo */}
         <span className="text-2xl font-bold text-black">
-          <NavLink to="/">Brij Divine Stay</NavLink>
+          <NavLink to="/">Brij Divine Tripz</NavLink>
         </span>
 
         {/* Mobile Menu Toggle */}

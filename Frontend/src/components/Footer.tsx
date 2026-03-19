@@ -7,11 +7,8 @@ const Footer: React.FC = () => {
         {/* Testimonial Section */}
         <div className="col-span-1 lg:col-span-2">
           <h2 className="text-xl font-semibold italic">
-            Brij Divine Stay-
-            <span className="font-normal">
-              {" "}
-              "Live the Divine, Love the Stay"
-            </span>
+            Brij Divine Tripz-
+            <span className="font-normal"> "Discover the divine brij"</span>
           </h2>
           {/* <p className="mt-2">
             "Find your perfect stay in the divine lands of Vrindavan & Mathura.
@@ -97,7 +94,7 @@ const Footer: React.FC = () => {
 
       {/* Copyright */}
       <div className="text-center text-sm mt-6">
-        © {new Date().getFullYear()} Brij Divine Stay. All rights reserved.
+        © {new Date().getFullYear()} Brij Divine Tripz. All rights reserved.
       </div>
     </footer>
   );
