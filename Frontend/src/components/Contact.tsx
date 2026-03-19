@@ -36,7 +36,7 @@ const ContactUs = () => {
 
           {/* Email */}
           <a
-            href="mailto:support@brijdivinestay.com"
+            href="mailto:support@brijdivinetripz.com"
             className="bg-white rounded-3xl shadow-lg p-8 text-center hover:shadow-2xl hover:bg-indigo-50 transition-all duration-300 transform hover:-translate-y-1"
           >
             <div className="bg-indigo-100 p-4 rounded-full w-20 h-20 mx-auto flex items-center justify-center mb-6">
@@ -44,7 +44,7 @@ const ContactUs = () => {
             </div>
             <h3 className="text-xl font-semibold mb-3">Email Us</h3>
             <p className="text-gray-600 font-medium break-words">
-              support@brijdivinestay.com
+              support@brijdivinetripz.com
             </p>
           </a>
 

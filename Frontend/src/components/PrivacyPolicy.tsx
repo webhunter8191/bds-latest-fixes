@@ -231,7 +231,7 @@ const PrivacyPolicy = () => {
                     href="mailto:support@brijdivinestay.com"
                     className="text-[#6A5631] hover:underline"
                   >
-                    support@brijdivinestay.com
+                    support@brijdivinetripz.com
                   </a>
                 </p>
                 <p className="flex items-center justify-center gap-2">
