@@ -3,6 +3,7 @@ import { NavLink } from "react-router-dom";
 import { FaBars, FaTimes, FaUserCircle } from "react-icons/fa";
 import { useAppContext } from "../contexts/AppContext"; // Assuming this provides isLoggedIn and isAdmin
 import SignOutButton from "./SignOutButton";
+import logoUrl from "../assets/side logo bdt.png";
 
 const Header = () => {
   const { isLoggedIn, isAdmin } = useAppContext();
@@ -13,16 +14,20 @@ const Header = () => {
   };
 
   return (
-    <header className="bg-white py-4 shadow-md relative">
+    <header className="bg-[#FFF9F2] py-2 shadow-md relative">
       <div className="container mx-auto flex items-center justify-between px-4 md:px-8">
         {/* Logo */}
-        <span className="text-2xl font-bold text-black">
-          <NavLink to="/">Brij Divine Tripz</NavLink>
-        </span>
+        <NavLink to="/" className="flex items-center">
+          <img
+            src={logoUrl}
+            alt="Brij Divine Tripz"
+            className="h-[70px] w-full object-cover"
+          />
+        </NavLink>
 
         {/* Mobile Menu Toggle */}
         <button
-          className="lg:hidden text-black focus:outline-none"
+          className="lg:hidden text-[#bf6706] focus:outline-none"
           onClick={toggleMenu}
         >
           {isMenuOpen ? <FaTimes size={24} /> : <FaBars size={24} />}
@@ -38,14 +43,14 @@ const Header = () => {
             {/* Close Button */}
             <button
               onClick={toggleMenu}
-              className="absolute top-4 right-4 text-black text-3xl z-60"
+              className="absolute top-4 right-4 text-[#bf6706] text-3xl z-60"
             >
               <FaTimes />
             </button>
 
             <NavLink
               to="/packages"
-              className="inline-block text-[#6A5631] font-bold text-xl hover:text-black transition duration-300 mb-8"
+              className="inline-flex items-center justify-center bg-[#6A5631] text-white px-5 py-2.5 rounded-lg hover:bg-black transition-colors duration-200 mb-8 font-semibold text-sm sm:text-base focus:outline-none focus-visible:ring-2 focus-visible:ring-offset-2 focus-visible:ring-[#6A5631] focus-visible:ring-offset-[#FFF9F2]"
               onClick={() => setIsMenuOpen(false)}
             >
               Tours
@@ -77,7 +82,7 @@ const Header = () => {
               // Show Sign In if the user is not logged in
               <NavLink
                 to="/sign-in"
-                className="inline-block bg-[#6A5631] text-white px-4 py-2 rounded-lg hover:bg-black transition duration-300"
+                className="inline-flex items-center justify-center bg-[#6A5631] text-white px-5 py-2.5 rounded-lg hover:bg-black transition-colors duration-200 font-semibold focus:outline-none focus-visible:ring-2 focus-visible:ring-offset-2 focus-visible:ring-[#6A5631] focus-visible:ring-offset-[#FFF9F2]"
                 onClick={() => setIsMenuOpen(false)}
               >
                 <FaUserCircle className="inline-block mr-2" />
@@ -91,7 +96,7 @@ const Header = () => {
         <nav className="hidden lg:flex items-center space-x-6">
           <NavLink
             to="/packages"
-            className="text-gray-700 font-semibold hover:text-[#6A5631] transition duration-300"
+            className="inline-flex items-center justify-center bg-[#6A5631] text-white px-5 py-2.5 rounded-lg hover:bg-black transition-colors duration-200 font-semibold focus:outline-none focus-visible:ring-2 focus-visible:ring-offset-2 focus-visible:ring-[#6A5631] focus-visible:ring-offset-[#FFF9F2]"
           >
             Tours
           </NavLink>
@@ -118,7 +123,7 @@ const Header = () => {
           ) : (
             <NavLink
               to="/sign-in"
-              className="bg-[#6A5651] text-white px-4 py-2 rounded-lg hover:bg-black transition duration-300"
+              className="inline-flex items-center justify-center bg-[#6A5631] text-white px-5 py-2.5 rounded-lg hover:bg-black transition-colors duration-200 font-semibold focus:outline-none focus-visible:ring-2 focus-visible:ring-offset-2 focus-visible:ring-[#6A5631] focus-visible:ring-offset-[#FFF9F2]"
             >
               <FaUserCircle className="inline-block mr-2" />
               Sign In
